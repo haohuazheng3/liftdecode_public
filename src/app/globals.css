@@ -1,0 +1,468 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   LiftDecode design tokens — "the void and the slab"
+   Everything that is not a floating slab sits on near-nothing.
+------------------------------------------------------------------- */
+@theme {
+  --color-void: #08080b;
+  --color-void-2: #0c0c10;
+  --color-slab: #121217;
+  --color-slab-2: #17171d;
+  --color-slab-3: #1e1e25;
+  --color-line: rgba(255, 255, 255, 0.075);
+  --color-line-2: rgba(255, 255, 255, 0.14);
+  --color-ink: #f3f2ee;
+  --color-ink-2: #b1b0ab;
+  --color-ink-3: #8a8990; /* lowest tone that still reads as text: ≥4.5:1 on a slab, so eyebrows and fine print pass AA */
+  --color-ink-4: #4a4a52; /* decoration only — hairlines, numbering, marks; never for words or links */
+  --color-signal: #f5b544;
+  --color-signal-2: #ffd58a;
+  --color-signal-deep: #b97c17;
+  --color-clear: #79e0b3;
+  --color-alert: #ff7b6b;
+  --color-alert-deep: #8e2f25;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+
+  --radius-slab: 28px;
+  --radius-slab-sm: 20px;
+  --radius-pill: 999px;
+
+  --shadow-slab: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 40px 90px -40px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(0, 0, 0, 0.5);
+  --shadow-slab-hover: 0 1px 0 0 rgba(255, 255, 255, 0.07) inset, 0 50px 110px -40px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(0, 0, 0, 0.5);
+  --shadow-signal: 0 12px 40px -12px rgba(245, 181, 68, 0.55);
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --animate-rise: rise 0.5s var(--ease-out-quart) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes pulse-soft {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-void);
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+  /* a sticky header or a wide slab must never hand the page a horizontal scrollbar */
+  overflow-x: clip;
+}
+
+/* the void: faint warm glow, nothing else */
+.void-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 50% -10%, rgba(245, 181, 68, 0.11), transparent 70%),
+    radial-gradient(40% 30% at 90% 100%, rgba(121, 224, 179, 0.05), transparent 70%),
+    var(--color-void);
+}
+.void-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+}
+
+::selection {
+  background: rgba(245, 181, 68, 0.35);
+  color: var(--color-ink);
+}
+
+/* ------------------------------------------------------------------
+   Components
+------------------------------------------------------------------- */
+@layer components {
+  .slab {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012)), var(--color-slab);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-slab);
+    box-shadow: var(--shadow-slab);
+    transition:
+      transform 0.25s var(--ease-out-quart),
+      box-shadow 0.25s var(--ease-out-quart),
+      border-color 0.2s ease;
+  }
+  @media (max-width: 640px) {
+    .slab {
+      border-radius: var(--radius-slab-sm);
+    }
+  }
+  .slab-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-slab-hover);
+    border-color: var(--color-line-2);
+  }
+  .slab-inset {
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+  .display em,
+  .display i {
+    font-style: italic;
+    color: var(--color-signal-2);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1;
+    padding: 0.95rem 1.4rem;
+    min-height: 48px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.12s var(--ease-out-quart),
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.2s ease,
+      opacity 0.15s ease;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-primary {
+    background: var(--color-signal);
+    color: #14100a;
+    box-shadow: var(--shadow-signal);
+  }
+  .btn-primary:hover {
+    background: var(--color-signal-2);
+  }
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line-2);
+  }
+  .btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .btn-quiet {
+    background: transparent;
+    color: var(--color-ink-2);
+  }
+  .btn-quiet:hover {
+    color: var(--color-ink);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .btn-sm {
+    padding: 0.6rem 1rem;
+    min-height: 44px; /* still the smallest tap target we ship */
+    font-size: 0.85rem;
+  }
+  .btn-lg {
+    padding: 1.1rem 1.7rem;
+    min-height: 56px;
+    font-size: 1.05rem;
+  }
+
+  /* quiz option row: instant feedback, no waiting on anything */
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    width: 100%;
+    text-align: left;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+    border: 1px solid var(--color-line);
+    background: rgba(255, 255, 255, 0.025);
+    color: var(--color-ink);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      border-color 0.12s ease,
+      background-color 0.12s ease,
+      transform 0.12s var(--ease-out-quart);
+  }
+  .option:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-line-2);
+  }
+  .option:active {
+    transform: scale(0.985);
+  }
+  .option[data-selected="true"] {
+    border-color: var(--color-signal);
+    background: rgba(245, 181, 68, 0.09);
+  }
+  .option .option-dot {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-ink-4);
+    display: grid;
+    place-items: center;
+    transition:
+      border-color 0.12s ease,
+      background-color 0.12s ease;
+  }
+  .option[data-multi="true"] .option-dot {
+    border-radius: 6px;
+  }
+  .option[data-selected="true"] .option-dot {
+    border-color: var(--color-signal);
+    background: var(--color-signal);
+  }
+  .option[data-selected="true"] .option-dot::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #14100a;
+  }
+  .option[data-multi="true"][data-selected="true"] .option-dot::after {
+    border-radius: 2px;
+  }
+
+  .input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-line-2);
+    border-radius: 16px;
+    padding: 0.85rem 1rem;
+    color: var(--color-ink);
+    font-size: 1rem;
+    outline: none;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  .input::placeholder {
+    color: var(--color-ink-3);
+  }
+  .input:focus {
+    border-color: var(--color-signal);
+    box-shadow: 0 0 0 4px rgba(245, 181, 68, 0.15);
+  }
+  .input[aria-invalid="true"] {
+    border-color: var(--color-alert);
+  }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.09) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    color: var(--color-ink-2);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .tag-signal {
+    color: var(--color-signal);
+    border-color: rgba(245, 181, 68, 0.35);
+    background: rgba(245, 181, 68, 0.08);
+  }
+  .tag-clear {
+    color: var(--color-clear);
+    border-color: rgba(121, 224, 179, 0.35);
+    background: rgba(121, 224, 179, 0.08);
+  }
+  .tag-alert {
+    color: var(--color-alert);
+    border-color: rgba(255, 123, 107, 0.35);
+    background: rgba(255, 123, 107, 0.08);
+  }
+
+  .prose-ld {
+    color: var(--color-ink-2);
+    font-size: 1.02rem;
+    line-height: 1.7;
+  }
+  .prose-ld p + p {
+    margin-top: 1em;
+  }
+  .prose-ld strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .prose-ld h2 {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    line-height: 1.1;
+    color: var(--color-ink);
+    margin: 2.2em 0 0.7em;
+    letter-spacing: -0.01em;
+  }
+  .prose-ld h3 {
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin: 1.8em 0 0.5em;
+  }
+  .prose-ld ul,
+  .prose-ld ol {
+    margin: 0.8em 0 0.8em 1.2em;
+  }
+  .prose-ld li + li {
+    margin-top: 0.4em;
+  }
+  .prose-ld ul li {
+    list-style: disc;
+  }
+  .prose-ld ol li {
+    list-style: decimal;
+  }
+  .prose-ld a {
+    color: var(--color-signal);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-line-2), transparent);
+  }
+
+  /* locked report: blur the real thing behind the unlock slab */
+  .locked-veil {
+    position: relative;
+  }
+  .locked-veil > .locked-content {
+    filter: blur(7px) saturate(0.7);
+    opacity: 0.55;
+    pointer-events: none;
+    user-select: none;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%);
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%);
+  }
+}
+
+/* reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* print (report export) */
+@media print {
+  .void-bg,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .slab {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+  .prose-ld,
+  .prose-ld h2,
+  .prose-ld h3,
+  .prose-ld strong {
+    color: #111 !important;
+  }
+}

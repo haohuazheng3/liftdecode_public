@@ -1,0 +1,9 @@
+export { Hero } from "./Hero";
+export { TwoDoors } from "./TwoDoors";
+export { Lenses } from "./Lenses";
+export { FindingExcerpt } from "./FindingExcerpt";
+export { HowItWorks } from "./HowItWorks";
+export { Pricing } from "./Pricing";
+export { FaqTeaser } from "./FaqTeaser";
+export { FinalCta } from "./FinalCta";
+export { SectionHeading } from "./SectionHeading";
