@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { stripeEvents } from "@/lib/db/schema";
 import { Empty, PageHead, Stat, StatusTag, Table, Td, Th } from "../_components/ui";
 import { ago, fmtDate, fmtInt } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminEventsPage() {
+  await requireAdmin();
   const [rows, [total], [failed]] = await Promise.all([
     db
       .select({

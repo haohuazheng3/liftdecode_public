@@ -146,10 +146,11 @@ export async function grantFromCheckoutSession(
   source: EntitlementSource,
 ): Promise<GrantResult> {
   const s = stripe();
-  const session =
-    typeof sessionInput.subscription === "string" || sessionInput.mode === "subscription"
-      ? await s.checkout.sessions.retrieve(sessionInput.id, { expand: ["subscription", "payment_intent"] })
-      : sessionInput;
+  // Always re-read from Stripe: the webhook payload does not carry the expansions
+  // we need, and the promotion code arrives as a bare id unless expanded.
+  const session = await s.checkout.sessions.retrieve(sessionInput.id, {
+    expand: ["subscription", "payment_intent", "discounts.promotion_code"],
+  });
 
   const md = session.metadata ?? {};
   const userId = md.userId ?? session.client_reference_id ?? null;

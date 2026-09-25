@@ -97,6 +97,8 @@ export async function POST(req: Request) {
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
       metadata,
+      // The account's public name differs from this brand; say so before they pay.
+      custom_text: { submit: { message: CHECKOUT_BRAND.operatorNote } },
       // Brand shown on the Checkout page — server-side whitelist, never from the client.
       branding_settings: {
         display_name: CHECKOUT_BRAND.displayName,

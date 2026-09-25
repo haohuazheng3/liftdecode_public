@@ -408,7 +408,8 @@ export function Quiz() {
       </div>
 
       <p className="mt-4 text-center text-xs text-ink-3">
-        Your answers are saved on this device as you go. Keys 1–9 select, Enter continues.
+        Your answers are saved on this device as you go.{" "}
+        <span className="hidden sm:inline">Keys 1–9 select, Enter continues.</span>
       </p>
     </div>
   );

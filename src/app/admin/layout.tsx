@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { count, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -31,7 +30,10 @@ async function badges(): Promise<AdminBadges> {
 
 export default async function AdminLayout(props: LayoutProps<"/admin">) {
   const cu = await currentUser();
-  if (!isAdminEmail(cu?.primaryEmailAddress?.emailAddress)) notFound();
+  // The 404 itself is raised by each page's requireAdmin(): notFound() from a
+  // layout renders the not-found UI but leaves the response at 200. Here we
+  // only decide whether to run the owner queries and draw the nav.
+  if (!isAdminEmail(cu?.primaryEmailAddress?.emailAddress)) return <>{props.children}</>;
   const b = await badges();
 
   return (

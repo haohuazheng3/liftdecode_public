@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { orders, users } from "@/lib/db/schema";
 import { Empty, PageHead, StatusTag, Table, Td, Th } from "../_components/ui";
 import { fmtDate, fmtMoney, shortId } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ function stripeLink(o: { stripePaymentIntentId: string | null; stripeSubscriptio
 }
 
 export default async function AdminOrdersPage() {
+  await requireAdmin();
   const rows = await db
     .select({
       id: orders.id,

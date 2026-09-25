@@ -23,9 +23,18 @@ export function stripeMode(): "live" | "test" | "missing" {
  */
 export const CHECKOUT_BRAND = {
   displayName: "LiftDecode",
-  statementSuffix: "LIFTDECODE", // final descriptor: <account prefix>* LIFTDECODE
+  statementSuffix: "LIFTDECODE", // final descriptor: FUTURE TREE* LIFTDECODE
   icon: undefined as string | undefined,
   color: "#f5b544",
+  /**
+   * The Stripe account serves several brands, so its Public business name
+   * ("Future Tree") is what Stripe puts in the browser tab title, the
+   * authorisation sentence under the pay button and the card statement —
+   * no session-level parameter can change those. Rather than let a buyer meet
+   * an unfamiliar name at the moment of payment, we say who we are first.
+   */
+  operatorNote:
+    "LiftDecode is operated by Future Tree. Your card statement will show FUTURE TREE* LIFTDECODE.",
 } as const;
 
 export const PRICES = {

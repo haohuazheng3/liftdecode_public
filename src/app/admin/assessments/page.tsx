@@ -6,6 +6,7 @@ import { assessments } from "@/lib/db/schema";
 import { FINDINGS } from "@/content/findings";
 import { Empty, PageHead, StatusTag, Table, Td, Th } from "../_components/ui";
 import { fmtDate, fmtDuration, fmtInt, shortId } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminAssessmentsPage() {
+  await requireAdmin();
   const rows = await db
     .select({
       id: assessments.id,

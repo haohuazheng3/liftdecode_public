@@ -29,8 +29,6 @@ export const metadata: Metadata = {
   description:
     "Answer 25 honest questions about how you train, eat, recover and measure progress. Get a detailed report on why you're stuck — and exactly what to change.",
   applicationName: BRAND,
-  // Development-period noindex (removed at launch)
-  robots: { index: false, follow: false },
   openGraph: {
     type: "website",
     siteName: BRAND,

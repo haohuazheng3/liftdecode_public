@@ -1,12 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// Exact segment matches only. A trailing "(.*)" would also catch sibling paths
+// such as a dotted file under the same prefix, answering a redirect where the
+// site must answer 404.
 const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/report(.*)",
-  "/account(.*)",
-  "/admin(.*)",
-  "/library(.*)",
+  "/dashboard",
+  "/dashboard/(.*)",
+  "/report",
+  "/report/(.*)",
+  "/account",
+  "/account/(.*)",
+  "/admin",
+  "/admin/(.*)",
+  "/library",
+  "/library/(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

@@ -6,6 +6,7 @@ import { assessments, contactMessages, entitlements, errorEvents, inboxMessages,
 import { FINDINGS } from "@/content/findings";
 import { Empty, PageHead, Stat, StatusTag, Table, Td, Th } from "./_components/ui";
 import { ago, fmtDate, fmtInt, fmtMoney, shortId } from "./_components/format";
+import { requireAdmin } from "./guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ interface FreqRow {
 }
 
 export default async function AdminOverviewPage() {
+  await requireAdmin();
   const now = new Date();
   const d7 = new Date(now.getTime() - 7 * 864e5);
   const d30 = new Date(now.getTime() - 30 * 864e5);

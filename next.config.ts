@@ -10,7 +10,7 @@ const CLERK = [
 ];
 const CLERK_WS = ["wss://*.clerk.accounts.dev", "wss://clerk.liftdecode.com", "wss://*.clerk.com"];
 const STRIPE = ["https://js.stripe.com", "https://checkout.stripe.com", "https://api.stripe.com", "https://m.stripe.network"];
-const FLOWGLANCE = ["https://flowglance.com"];
+const FLOWGLANCE = ["https://flowglance.com", "https://*.flowglance.com"];
 const TURNSTILE = ["https://challenges.cloudflare.com"];
 
 // Pages are static (no per-request nonce), so Next.js needs 'unsafe-inline' for its
@@ -56,11 +56,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        headers: [
-          // Development-period noindex (removed at launch)
-          { key: "X-Robots-Tag", value: "noindex, nofollow" },
-          ...securityHeaders,
-        ],
+        headers: [...securityHeaders],
       },
     ];
   },

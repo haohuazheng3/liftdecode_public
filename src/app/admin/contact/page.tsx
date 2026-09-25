@@ -6,6 +6,7 @@ import type { ContactStatus } from "../actions";
 import { Empty, FilterPills, PageHead, Table, Td, Th } from "../_components/ui";
 import { ContactActions } from "../_components/ContactActions";
 import { ago, fmtDate } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ function asStatus(v: string | undefined): ContactStatus | "all" {
 }
 
 export default async function AdminContactPage(props: PageProps<"/admin/contact">) {
+  await requireAdmin();
   const sp = await props.searchParams;
   const filter = asStatus(one(sp.status));
 

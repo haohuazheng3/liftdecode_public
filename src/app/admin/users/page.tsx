@@ -5,6 +5,7 @@ import { assessments, entitlements, users } from "@/lib/db/schema";
 import { pickActiveMembership } from "@/lib/entitlements";
 import { Empty, PageHead, StatusTag, Table, Td, Th } from "../_components/ui";
 import { ago, fmtDate, fmtDay, fmtInt, shortId } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ function membershipLabel(rows: MembershipRow[]): { status: string; label: string
 }
 
 export default async function AdminUsersPage() {
+  await requireAdmin();
   const rows = await db
     .select({
       id: users.id,

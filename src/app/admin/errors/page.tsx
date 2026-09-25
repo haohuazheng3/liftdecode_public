@@ -5,6 +5,7 @@ import { errorEvents } from "@/lib/db/schema";
 import { Empty, FilterPills, PageHead, Table, Td, Th } from "../_components/ui";
 import { ErrorActions } from "../_components/ErrorActions";
 import { ago, fmtDate, fmtInt } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ function one(v: string | string[] | undefined): string | undefined {
 }
 
 export default async function AdminErrorsPage(props: PageProps<"/admin/errors">) {
+  await requireAdmin();
   const sp = await props.searchParams;
   const filter = one(sp.filter) === "all" ? "all" : "unresolved";
 

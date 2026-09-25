@@ -95,7 +95,12 @@ export function Report({
   const FULL_SECTIONS = 6;
   const inFull = ranked.slice(0, FULL_SECTIONS);
   const alsoFlagged = ranked.slice(FULL_SECTIONS);
-  const secondaryTitles = ranked.slice(1, 3).map((f) => FINDINGS[f.id]?.title.toLowerCase()).filter(Boolean);
+  // Finding titles are written as standalone sentences, so they are quoted rather than
+  // folded into a clause — "compounded by you're testing strength…" is not English.
+  const secondaryTitles = ranked
+    .slice(1, 3)
+    .map((f) => FINDINGS[f.id]?.title)
+    .filter((t): t is string => Boolean(t));
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
@@ -118,13 +123,23 @@ export function Report({
         <p className="mt-4 text-ink-2 text-lg leading-relaxed max-w-2xl">
           {primaryContent ? (
             <>
-              Your primary bottleneck is <strong className="text-ink">{primaryContent.title.toLowerCase()}</strong>
+              Your primary bottleneck: <strong className="text-ink">{primaryContent.title}</strong>.{" "}
               {secondaryTitles.length > 0 && (
                 <>
-                  , compounded by {secondaryTitles.join(" and ")}
+                  {secondaryTitles.length === 1 ? "Working against you as well: " : "Two more are working against you: "}
+                  {secondaryTitles.map((t, i) => (
+                    <span key={t}>
+                      {i > 0 && " and "}
+                      <strong className="text-ink">{t}</strong>
+                    </span>
+                  ))}
+                  .{" "}
                 </>
               )}
-              . {r.clearances.length > 0 && `${r.clearances.length} things you may have suspected are not the problem.`}{" "}
+              {r.clearances.length > 0 &&
+                `${r.clearances.length} thing${r.clearances.length === 1 ? "" : "s"} you may have suspected ${
+                  r.clearances.length === 1 ? "is" : "are"
+                } not the problem. `}
               Read the findings in order — the first one is where the change starts.
             </>
           ) : (

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { inboxMessages } from "@/lib/db/schema";
 import { Empty, PageHead, StatusTag, Table, Td, Th } from "../_components/ui";
 import { ago, fmtDate } from "../_components/format";
+import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ function fmtBytes(n: number | null): string {
 }
 
 export default async function AdminInboxPage() {
+  await requireAdmin();
   const rows = await db
     .select({
       id: inboxMessages.id,
