@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Big_Shoulders, Big_Shoulders_Stencil, Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import "./globals.css";
@@ -13,11 +13,26 @@ import { APP_URL, BRAND } from "@/lib/env";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const display = Instrument_Serif({
+// Athletic display face: condensed, heavy, gym-signage energy. One variable file
+// (CSS uses 700–900) with the optical-size axis, so big headlines get the tight display cut.
+// next/font has no fallback metrics for either Big Shoulders cut, so it emits the bare family
+// name; the explicit fallback keeps headlines condensed sans (not the browser's serif) while
+// the file loads, and turning the metric adjustment off silences the build warning.
+const display = Big_Shoulders({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  axes: ["opsz"],
+  fallback: ["Impact", "Arial Narrow", "sans-serif"],
+  adjustFontFallback: false,
+});
+// Stencil cut for numerals and the stall ticker only (homepage) — not preloaded site-wide.
+const stencil = Big_Shoulders_Stencil({
+  variable: "--font-stencil",
+  subsets: ["latin"],
+  weight: "800",
+  preload: false,
+  fallback: ["Big Shoulders", "Impact", "sans-serif"],
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -27,7 +42,7 @@ export const metadata: Metadata = {
     template: `%s · ${BRAND}`,
   },
   description:
-    "Answer 25 honest questions about how you train, eat, recover and measure progress. Get a detailed report on why you're stuck — and exactly what to change.",
+    "Find the real reason your training stopped working — and what to change first. A diagnostic that reads your training, effort, food, sleep and recovery.",
   applicationName: BRAND,
   openGraph: {
     type: "website",
@@ -35,7 +50,7 @@ export const metadata: Metadata = {
     url: APP_URL,
     title: `${BRAND} — Find out why your training stopped working`,
     description:
-      "A diagnostic for lifters who stopped progressing. Twenty-odd honest questions, one detailed answer to why.",
+      "Find the real reason your training stopped working — and what to change first. Training, food, sleep and recovery, decoded.",
   },
   twitter: { card: "summary_large_image" },
   icons: {
@@ -80,7 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
     >
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full`}>
+      <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${stencil.variable} h-full`}>
         <body className="min-h-full flex flex-col">
           <JsonLd />
           <div className="void-bg" aria-hidden="true" />

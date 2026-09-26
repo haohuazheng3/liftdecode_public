@@ -7,7 +7,7 @@ import { PageHero } from "@/components/trust/PageHero";
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "Twenty-odd uncomfortable questions, a rule engine that cross-references your answers into ranked bottlenecks, and a report that says what to change and what to stop worrying about.",
+    "Quick, honest taps about how you train, eat, sleep and live, a rule engine that cross-references your answers into ranked bottlenecks, and a report that says what to change and what to stop worrying about.",
 };
 
 const jsonLd = {
@@ -15,14 +15,13 @@ const jsonLd = {
   "@type": "HowTo",
   name: "How a LiftDecode diagnosis works",
   description:
-    "Answer honest questions about how you train, eat, recover and measure progress; the engine cross-references them into ranked bottlenecks and clearances; the report tells you what to change over the next four weeks.",
-  totalTime: "PT10M",
+    "Answer quick, honest questions about how you train, eat, sleep, recover and live between sessions; the engine cross-references them into ranked bottlenecks and clearances; the report tells you what to change over the next four weeks.",
   estimatedCost: { "@type": "MonetaryAmount", currency: "USD", value: "5" },
   step: [
     {
       "@type": "HowToStep",
       name: "Answer the questions",
-      text: "Pick your track (physique or strength) and answer 24 to 28 questions about training, effort, progression, recovery, nutrition, consistency and how you measure progress. Answer what you actually do, not what you plan to do.",
+      text: "Pick your track (physique or strength), then answer quick questions about your training, effort, recovery, food, sleep, consistency and life load. Most are one tap on a 1-10 scale or a short choice. Answer what you actually do, not what you plan to do.",
       url: "https://liftdecode.com/how-it-works#answer",
     },
     {
@@ -116,30 +115,30 @@ export default function HowItWorksPage() {
           </ol>
         </PageHero>
 
-        <Stage id="answer" number="1" eyebrow="Stage one · about ten minutes" title={<>The questions are meant to be <em>uncomfortable</em>.</>}>
+        <Stage id="answer" number="1" eyebrow="Stage one · your answers" title={<>Light to answer. Honest by <em>design</em>.</>}>
           <div className="prose-ld mt-5">
             <p>
               The first question picks your track — <strong>physique</strong> (you want to look different) or{" "}
-              <strong>strength</strong> (you want the bar to move) — and the bank adapts. From there you answer 24 to
-              28 questions across seven areas: how you measure progress, how you progress load and reps, how hard your
-              sets really end, how much you do, how your programme is built, how you recover, and how you eat and live
-              between sessions.
+              <strong>strength</strong> (you want the bar to move) — and the questions adapt. From there they cover
+              the things that actually decide progress: how you train and progress, how hard your sets really end, how
+              much you do, how your programme is built, how you sleep and recover, how you eat, and how much the rest
+              of your life is asking of you.
             </p>
             <p>
-              Every option is a concrete behaviour, not a rating. Not &ldquo;how consistent are you, 1–5?&rdquo; but
-              &ldquo;in the last eight weeks, how many planned sessions did you actually skip?&rdquo; with answers you
-              can only pick by admitting what happened. That is deliberate. A diagnosis built on the version of yourself
-              you would like to be is a diagnosis of nobody.
+              Answering is meant to feel light: mostly one tap per question, either a point on a 1–10 scale or one of
+              a few short choices. No weighing, no counting, no numbers to look up. We do not need your data — we need
+              to see where the problem is. Answer for a normal recent week, not the version of yourself you would like
+              to be; a diagnosis of that lifter is a diagnosis of nobody.
             </p>
             <p>
-              Under most questions there is a line that says why we ask. Read it if you want; the point is that no
-              question is a trap and none is filler. Each one exists because at least one finding rule depends on it.
+              No question is a trap and none is filler. Each one exists because at least one finding rule depends on
+              it.
             </p>
           </div>
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
-              ["What it probes", "Behaviour over the last 8–12 weeks, not intentions or knowledge."],
-              ["What it does not ask", "Your name, your weight, your history. Nothing that is not used by a rule."],
+              ["What it reads", "Your training, effort, food, sleep, recovery and life load right now — not intentions or knowledge."],
+              ["What it does not ask", "Your name, your weight, your lifts or any other numbers. Nothing that is not used by a rule."],
               ["If you are unsure", "Pick the option closest to a normal week. The engine weights, it does not punish."],
             ].map(([t, b]) => (
               <div key={t} className="slab-inset p-4">

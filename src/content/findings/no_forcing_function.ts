@@ -6,24 +6,23 @@ export const FINDING: FindingContent = {
   category: "progression",
   title: "Nothing in your plan forces the weight up",
   verdict:
-    "Your load goes up when you feel like it, and after a few years of training that means it doesn't go up.",
+    "Beating last session isn't the goal of your sessions, so nothing in how you train makes the load or reps climb.",
   summary:
-    "You walk up to the bar and the weight is decided by habit, by what's already loaded, or by how you feel today — not by a rule that says \"last time you did this, so today you do more.\" That worked in year one, when almost anything was a new demand. It stopped working when your body caught up with the weights you're comfortable with, and every month since you've been rehearsing your current level with growing precision.",
+    "Whether your weights come from habit, from how you feel today or from a program on paper, beating last session isn't the point of the session. Even where a program exists on paper, nothing under the bar makes the load or the reps climb. In your first months almost anything is a new demand, so that can carry you for a while. Once your body catches up with the weights you're comfortable with, it stops working, and every month after that you're rehearsing your current level with growing precision.",
   mechanism: [
-    "Muscle and strength adapt to a demand slightly bigger than the one they already handle. That is the whole mechanism. In your first year the gap between what you could do and what you were doing was so wide that any half-serious session was an overload; the weight went up because your body was chasing it. A few years in, that gap has closed. From here, the demand only grows if you deliberately make it grow — and \"deliberately\" means a rule that fires whether or not you feel like it.",
+    "Muscle and strength adapt to a demand slightly bigger than the one they already handle. That is the whole mechanism. Early in a lifter's training, the gap between what they could do and what they are doing is so wide that any half-serious session is an overload; the weight goes up because the body is chasing it. That gap closes fast, and once it has, the demand only grows if you deliberately make it grow — and \"deliberately\" means a rule that fires whether or not you feel like it.",
     "Feel is a poor rule because it is biased in one direction. On a rested day you might add weight; on a normal day you repeat; on a tired day you drop. Average that across a month and the load drifts flat or slightly down, because normal and tired days outnumber fresh ones. \"Whatever's on the bar\" drifts the same way — plates already loaded are, by definition, plates someone found comfortable. Memory is worse: you remember the best sessions, forget the ordinary ones, then round down to be safe.",
-    "The evidence here is clear in shape even where the exact numbers vary. In the studies that have looked at self-selected loads, lifters left to choose their own weights settle well below what they could handle, and groups following a written target that rises over the block have consistently out-gained groups doing the same exercises at loads picked by feel. The stimulus isn't the exercise; it's the increment. Without a written next step, you're generating fatigue at an intensity your body adapted to long ago.",
-    "This is also why the same routine for years stops working. The exercises aren't wrong; a routine without a built-in progression rule simply becomes a maintenance dose. The body keeps exactly what it needs to handle the demand and no more. If the demand hasn't changed in three years, neither has the adaptation. Hard effort at the same load produces the same result every week — exactly what your log would show if you kept one.",
-    "The cost compounds. A lifter adding a couple of kilos every two to three weeks — a normal intermediate rate — can end a year 30–50 kg ahead on a squat or deadlift and clearly heavier on pressing. A lifter with no rule ends the year where they started, having done roughly the same number of sessions. You're paying full price in time and recovery for training that isn't converted into progress, and the difference is one written sentence about next time.",
+    "The evidence here is clear in shape even where the exact numbers vary. In the studies that have looked at self-selected loads, lifters left to choose their own weights settle well below what they could handle, and groups following a written target that rises over the block have consistently out-gained groups doing the same exercises at loads picked by feel. The stimulus isn't the exercise; it's the increment. Without a written next step, you're generating fatigue at an intensity your body has already adapted to.",
+    "This is also why the same routine run for months or years stops working. The exercises aren't wrong; a routine without a built-in progression rule simply becomes a maintenance dose. The body keeps exactly what it needs to handle the demand and no more. If the demand hasn't changed in a year, neither will the adaptation. Hard effort at the same load produces the same result every week.",
+    "The cost compounds. Small increments every few weeks, held for a year, add up to a clearly heavier bar by the end of it. With no rule, the same year of sessions tends to end at roughly the same bar it started with. You're paying full price in time and recovery for training that isn't converted into progress, and the difference is one written sentence about next time.",
   ],
   howItShowsUp: [
     "Ask yourself what you're going to lift next session and the honest answer is \"the same as usual\" — or \"depends how I feel.\"",
     "Some sessions you load the bar with whatever's already on it, or grab the next dumbbell up only when you happen to think of it.",
-    "There's no written record of your last session, so nothing on paper to beat, and no session starts with a target.",
-    "You've run the same routine, same order, same loads, for years — and you'd call that being consistent.",
-    "Your log, if you keep one, shows the same weights and reps for weeks, and you read that as \"I'm stuck\" rather than \"nothing told me to add.\"",
-    "Your target lift sits at the same numbers as 4 or 8 weeks ago, and you can't name a session where you tried to change that.",
-    "Working up to a heavy single most sessions has become your \"progression\" — you test where you are, but never train beyond it.",
+    "You finish a session without knowing whether you did more than last time, because beating it was never the goal walking in.",
+    "You have a program that sets your weights, but you run it on autopilot: the numbers on the page move, the effort to hit them doesn't.",
+    "Every few weeks a new program starts, so no single plan runs long enough to push a number up.",
+    "You'd call your training consistent, and it is — consistently the same demand, week after week.",
   ],
   fix: [
     {
@@ -71,7 +70,7 @@ export const FINDING: FindingContent = {
   ],
   trackNotes: {
     physique:
-      "Your muscle only knows whether the demand grew. Rep progression is your primary tool: one more rep per set at the same weight is a real overload and the safest way to progress isolation and machine work. The mirror lags the log by 6–10 weeks, so trust the log first. If your lifts climb for 8 weeks and your body still isn't changing, that becomes a nutrition question.",
+      "Your muscle only knows whether the demand grew. Rep progression is your primary tool: one more rep per set at the same weight is a real overload and the safest way to progress isolation and machine work. Visible change lags the rising numbers by 6–10 weeks, so judge the first two months by whether the rule keeps firing. If your lifts climb for 8 weeks and your body still isn't changing, that becomes a nutrition question.",
     strength:
       "Work up to a heavy single at most once every 3–4 weeks; otherwise the top set sits at a fixed weight for a target rep count, and that count is what climbs. Percentage-based and RPE progressions both work — pick one and hold it for 12 weeks. A stall on one lift after 4 weeks on the rule is a technique or sticking-point question; a stall across every lift is a recovery question.",
   },

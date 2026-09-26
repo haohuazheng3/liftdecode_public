@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogoMark, Wordmark } from "./Logo";
+import { LogoMark } from "./Logo";
 import { CONTACT_EMAIL } from "@/lib/env";
 
 const COLS = [
@@ -39,15 +39,16 @@ export function Footer() {
         <div className="hairline mb-10" />
         <div className="grid gap-10 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2.5 text-ink">
-              <span className="grid place-items-center w-8 h-8 rounded-[10px] bg-ink text-void">
-                <LogoMark size={18} />
-              </span>
-              <Wordmark className="text-base" />
-            </div>
+            <Link
+              href="/"
+              aria-label="LiftDecode home"
+              className="inline-grid place-items-center w-11 h-11 rounded-[12px] bg-slab border border-line text-ink hover:border-line-2 active:scale-[0.94] transition-[transform,border-color] duration-150"
+            >
+              <LogoMark size={20} />
+            </Link>
             <p className="mt-4 text-sm text-ink-3 max-w-xs leading-relaxed">
-              A diagnostic for lifters who stopped progressing. Twenty-odd honest questions, one detailed answer to
-              &ldquo;why&rdquo;.
+              A diagnostic for lifters who stopped progressing. Honest answers in, one clear bottleneck and the plan to
+              break it out.
             </p>
             <a href={`mailto:${CONTACT_EMAIL}`} className="mt-4 inline-block text-sm text-ink-2 hover:text-signal">
               {CONTACT_EMAIL}

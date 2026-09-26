@@ -36,7 +36,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           LiftDecode is a <strong>training and nutrition education</strong> product. You answer questions about how
-          you train, eat, recover and measure progress; a rule-based engine turns those answers into a written report:
+          you train, eat, sleep, recover and live between sessions; a rule-based engine turns those answers into a written report:
           ranked bottlenecks, things that are not your problem, and a 4-week plan. Members also get tools to track
           numbers and compare reports over time.
         </p>

@@ -5,7 +5,7 @@ export const dynamic = "force-static";
 
 const PAGE_NOTES: Record<string, string> = {
   "/": "Home. What the diagnostic does and who it is for.",
-  "/diagnose": "Start the diagnostic. 24-28 questions, about six minutes, no account needed to answer.",
+  "/diagnose": "Start the diagnostic. Quick one-tap questions, no account needed to answer.",
   "/pricing": "Membership $15/month (all reports, the fix library, plan tracking) or a single report for $5.",
   "/how-it-works": "How answers become findings: the rule-based engine, the two tracks, what a report contains.",
   "/library": "The fix library: every bottleneck the engine can detect, what causes it and how to fix it.",
@@ -26,7 +26,7 @@ export function GET() {
     "",
     "## What it does",
     "",
-    "A lifter answers 24-28 honest questions about how they train, eat, sleep, recover and measure progress. The first question picks one of two tracks: physique (building muscle or losing fat) or strength (moving more weight). A rule-based engine, not a language model, cross-references the answers into \"findings\" (the bottlenecks most likely holding progress back, ranked, with the answers that triggered each one) and \"clearances\" (things that are not the problem and can stop being worried about). The report explains each finding, gives a concrete fix, and lays out a four-week plan built from the top three findings.",
+    "A lifter answers quick, honest questions (mostly 1-10 scales and short choices, no numbers or measurements) about how they train, eat, sleep, recover and live. The first question picks one of two tracks: physique (building muscle or losing fat) or strength (moving more weight). A rule-based engine, not a language model, cross-references the answers into \"findings\" (the bottlenecks most likely holding progress back, ranked, with the answers that triggered each one) and \"clearances\" (things that are not the problem and can stop being worried about). The report explains each finding, gives a concrete fix, and lays out a four-week plan built from the top three findings.",
     "",
     "LiftDecode gives training and lifestyle guidance for healthy adults. It does not diagnose, treat or prevent any medical condition and is not a substitute for a doctor, physiotherapist or registered dietitian.",
     "",

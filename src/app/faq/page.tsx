@@ -28,12 +28,12 @@ const GROUPS: { id: string; title: string; items: Faq[] }[] = [
         a: "Lifters who have trained consistently for at least a few months and have stopped seeing progress — in their physique or in their lifts. If you are in your first weeks of training you do not have a bottleneck yet; come back when the easy gains slow down. You must be 16 or older.",
       },
       {
-        q: "How long does it take, and do I need to sign in first?",
-        a: "Plan on about ten minutes for 24 to 28 questions. You do not need an account to take it: your result is tied to your browser with a cookie, and you only sign in (email plus a 6-digit code, no password) when you want to unlock the full report.",
+        q: "What is answering like, and do I need to sign in first?",
+        a: "Quick and light: most questions are one tap on a 1–10 scale or one of a few short answers, with nothing to look up or measure. You do not need an account to take it: your result is tied to your browser with a cookie, and you only sign in (email plus a 6-digit code, no password) when you want to unlock the full report.",
       },
       {
-        q: "Why are the questions so specific — and a bit uncomfortable?",
-        a: "Because a diagnosis of the lifter you would like to be is a diagnosis of nobody. Every option describes a concrete behaviour over the last weeks, so you can only answer by admitting what actually happened. That is what makes the findings trustworthy.",
+        q: "Why no weights, macros or measurements?",
+        a: "Because the numbers are not where a stall hides. The questions read your current training, effort, food, sleep, recovery and life load — the factors that actually decide progress — so the engine can see where the problem is. Answer for a normal recent week, not the week you would like to have had; that honesty is what makes the findings trustworthy.",
       },
       {
         q: "Is this an AI guessing at my answers?",

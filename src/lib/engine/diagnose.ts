@@ -2,7 +2,7 @@ import type { Condition, FindingRule, Question, Track } from "@/content/types";
 import type { Answers } from "@/lib/db/schema";
 import type { ClearanceResult, DiagnosisResult, FindingResult } from "./types";
 
-export const ENGINE_VERSION = "1.0.0";
+export const ENGINE_VERSION = "2.0.0";
 
 type QuestionIndex = Map<string, Question>;
 
@@ -28,6 +28,10 @@ export function evalCondition(c: Condition, answers: Answers, track: Track): boo
   if ("all" in c) return c.all.every((x) => evalCondition(x, answers, track));
   if ("any" in c) return c.any.some((x) => evalCondition(x, answers, track));
   const values = selected(answers, c.q);
+  if ("range" in c) {
+    const n = Number(values[0]);
+    return values.length === 1 && Number.isInteger(n) && n >= c.range[0] && n <= c.range[1];
+  }
   if ("in" in c) return values.some((v) => c.in.includes(v));
   if ("notIn" in c) return values.length > 0 && !values.some((v) => c.notIn.includes(v));
   return false;
@@ -39,6 +43,7 @@ export function renderBecause(template: string, answers: Answers, qi: QuestionIn
     const q = qi.get(qid);
     const values = selected(answers, qid);
     if (!q || values.length === 0) return "your answer";
+    if (q.type === "scale") return `${values[0]}/${q.scale?.max ?? 10}`;
     const labels = values
       .map((v) => q.options.find((o) => o.value === v)?.label)
       .filter((x): x is string => Boolean(x));
@@ -93,7 +98,11 @@ export function diagnose(input: EngineInput): DiagnosisResult {
     const sup = ruleById.get(f.id)?.suppressedBy ?? [];
     const hidden = sup.some((sid) => {
       const other = byId.get(sid);
-      return other !== undefined && other.score > f.score;
+      if (other === undefined) return false;
+      if (other.score > f.score) return true;
+      // Mutually exclusive pair on an exact tie: keep exactly one, deterministically.
+      const mutual = (ruleById.get(sid)?.suppressedBy ?? []).includes(f.id);
+      return mutual && other.score === f.score && other.id < f.id;
     });
     if (hidden) suppressed.push(f.id);
     return !hidden;

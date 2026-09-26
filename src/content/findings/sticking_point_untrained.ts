@@ -4,25 +4,23 @@ export const FINDING: FindingContent = {
   id: "sticking_point_untrained",
   audience: "strength",
   category: "technique",
-  title: "Your weak position has no work of its own",
+  title: "Your weak position gets no real work of its own",
   verdict:
-    "Your lift fails in the same position every time, and nothing in your week is aimed at that position — so you keep training the whole lift harder to fix a problem that lives in one spot.",
+    "Your lift fails at the same point every time, and almost nothing in your program is built for that point.",
   summary:
-    "You already know where the bar dies: it is the same place on every missed rep, and you could describe it in one sentence. Yet nothing in your week is built for that spot — you train the lift, add weight when you can, and hope the weak link catches up. It will not, because a lift is only as strong as its worst position. Until that position gets its own work, every extra kilo just arrives at the same wall a little heavier.",
+    "You already know where the bar dies: it is the same place on every missed rep, and you could describe it in one sentence. Yet almost nothing in your week is built for that spot — you train the lift, add weight when you can, and hope the weak link catches up. It will not, because a lift is only as strong as its worst position. Until that position gets its own work, every extra kilo just arrives at the same wall a little heavier.",
   mechanism: [
     "A barbell lift is not one strength but a chain of positions, and the load you can lift is capped by the weakest link. Leverage changes through the range, so different muscles and joint angles are limiting at the bottom, in the middle and at lockout. A rep fails where your capacity dips furthest below what the bar demands. Training the whole lift trains every position at once, but only the weak one is pushed to its limit; the strong positions get an easy ride on the same set and keep pulling ahead.",
     "This is why simply adding weight stops working. Strength gains are noticeably specific to the joint angles you train hard: in the studies that compared full-range and partial-range training, strength rose most at the angles loaded near limit, with only partial carry-over elsewhere. Your heavy full-range sets load the sticking point for a fraction of a second per rep before momentum or leverage helps out. The weak spot gets the least time under real tension and the least practice at grinding through — the opposite of what it needs.",
     "A form collapse rather than a clean stall is the same story from a different angle. Hips shooting up in a squat or deadlift, elbows flaring out of the bottom of a bench, a back rounding off the floor — these are your body finding the strongest available position because the one you set up in cannot hold the load. The muscle that should hold that position is the real limiter. The rep still dies in one spot; the breakdown just hides it.",
-    "Coaches solve this with one family of tools: pauses, pins, deficits, tempo work and variations chosen for the position that fails. Each removes the help — the stretch reflex, momentum from a stronger position, a shortened range — and forces the weak position to carry the bar on its own. A few weeks of that at moderate loads and the weak link rises to meet the rest of the chain; the full lift moves because the wall has moved. Without it, the position improves only by accident, and your log already tells you how that is going.",
-    "Never having filmed the lift compounds this quietly. Where a rep feels like it dies and where it actually slows are often different places, because the sensation of effort peaks after bar speed has already dropped. Lifters routinely call a mid-range stall a lockout problem, or blame the bottom for a rep that lost its position halfway up. Fix the wrong spot and you get a stronger lift that fails in exactly the same place. One side-on video turns a guess into an observation.",
+    "Coaches solve this with one family of tools: pauses, pins, deficits, tempo work and variations chosen for the position that fails. Each removes the help — the stretch reflex, momentum from a stronger position, a shortened range — and forces the weak position to carry the bar on its own. A few weeks of that at moderate loads and the weak link rises to meet the rest of the chain; the full lift moves because the wall has moved. Without it, the position improves only by accident — which is why the bar keeps stopping in the same place.",
   ],
   howItShowsUp: [
-    "Every missed rep looks identical: it stops off the floor, halfway up, or a few centimetres from lockout — never anywhere else.",
-    "Or the rep does not stall cleanly at all: your hips shoot, your back rounds, or your elbows flare, and the lift finishes ugly or not at all.",
-    "Your training for the lift is the lift itself — sets and reps at a percentage — with no pause, pin, deficit or tempo variation chosen for the spot that fails.",
-    "If someone asked what you do for that position, the honest answer is nothing, or that you would not know what to do.",
+    "Every missed rep looks identical: it stops at the bottom, halfway up, or just short of lockout — never anywhere else.",
+    "Your training for the lift is the lift itself — sets and reps at a percentage — with little or no pause, pin, deficit or tempo work chosen for the spot that fails.",
+    "If someone asked what you do for that position, the honest answer is very little, or you would not know what to do.",
     "Reps below the sticking point feel fast and easy; the bar stops in the same window every session, and going heavier just moves the stop earlier.",
-    "You have never filmed a set, so where the bar actually slows is a feeling rather than something you have watched.",
+    "Whatever accessory work you do is generic — a few sets tacked on when there is time, not chosen for the spot that fails — so the muscles that carry the weak position get no extra help.",
     "Variations and accessories keep climbing while the competition-style lift holds: the strong positions get stronger, the weak one does not.",
   ],
   fix: [
@@ -70,5 +68,5 @@ export const FINDING: FindingContent = {
     "Running the variation at maximal loads so it becomes a second max attempt; the position improves at 65–80% with clean reps, not at 95% with another grind.",
     "Blaming a form collapse on \"bad technique\" and cueing harder, when the position gives way because the muscle holding it is not yet strong enough for that load.",
   ],
-  relatedFindings: ["nobody_has_seen_your_lift", "rom_shrinking", "testing_instead_of_training"],
+  relatedFindings: ["form_breaks_under_load", "strength_without_muscle", "testing_instead_of_training"],
 };

@@ -8,7 +8,7 @@ This repository is the source of the site at [liftdecode.com](https://liftdecode
 
 ## How it works
 
-1. **Quiz** — two tracks (physique or strength), chosen by the first question. Each track is 24–28 questions, all multiple choice.
+1. **Quiz** — two tracks (physique or strength), chosen by the first question. Every question is one tap: mostly a 1–10 intensity scale, otherwise two to four short options. It asks about habits and how things feel, never for numbers or measurements, and it never shows its length or a progress bar.
 2. **Engine** — `src/lib/engine/` turns the answers into a `DiagnosisResult`: scored *findings* (bottlenecks), *clearances* (ruled-out causes) and a primary finding. The result is stored with the assessment and never recomputed, so an old report stays the same report.
 3. **Preview and unlock** — the result page shows what was found without the details. A membership or a single-report purchase unlocks the full report and the plan.
 4. **Report** — findings with the reasoning behind them, what to change, and a week-by-week plan with check-offs.

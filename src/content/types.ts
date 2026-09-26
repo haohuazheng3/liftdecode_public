@@ -12,41 +12,54 @@
 export type Track = "physique" | "strength";
 export type Audience = Track | "both";
 
-export type QuestionType = "single" | "multi";
+/**
+ * Question formats. The quiz must never feel like work:
+ *   - "scale"  — a 1–10 intensity tap with two short anchors (most questions)
+ *   - "single" — 2–4 very short options (a few words each)
+ * "multi" exists only so answers stored before v2 still type-check; new
+ * content must not use it (scripts/rules-sim.ts fails if it does).
+ */
+export type QuestionType = "single" | "scale" | "multi";
 
 export interface AnswerOption {
   /** stable snake_case id, unique within the question */
   value: string;
-  /** shown to the user: a concrete, self-recognizable behaviour or state */
+  /** shown to the user: a few words, no explanation */
   label: string;
-  /** optional one-line clarifier under the label */
-  detail?: string;
+}
+
+/** 1–10 intensity scale. Answers are stored as the strings "1" … "10". */
+export interface ScaleSpec {
+  min: 1;
+  max: 10;
+  /** anchor under 1, e.g. "Never" (1–3 words) */
+  low: string;
+  /** anchor under 10, e.g. "Every set" (1–3 words) */
+  high: string;
 }
 
 export interface Question {
-  /** snake_case, globally unique, e.g. "progress_measure" */
+  /** snake_case, globally unique, e.g. "sleep_quality" */
   id: string;
   /** which track sees it */
   audience: Audience;
-  /** id of the section (chapter) it belongs to — see SECTIONS */
+  /** id of the group it belongs to (ordering only — never shown to the user) */
   section: string;
   type: QuestionType;
-  /** the question itself */
+  /** the question itself — short, plain, no explanation under it */
   prompt: string;
-  /** "Why we ask" microcopy shown under the prompt (1–2 sentences) */
-  help?: string;
-  /** 3–7 options */
+  /** single: 2–4 short options; scale: leave empty */
   options: AnswerOption[];
-  /** for multi: max number of selections (default unlimited) */
+  /** required when type === "scale" */
+  scale?: ScaleSpec;
+  /** legacy multi only */
   maxSelect?: number;
 }
 
+/** Internal grouping for ordering the questions. Never rendered. */
 export interface Section {
   id: string;
-  /** chapter title shown to the user */
   title: string;
-  /** one line under the title explaining what this chapter uncovers */
-  intro: string;
 }
 
 export type FindingCategory =
@@ -64,13 +77,16 @@ export type FindingCategory =
 
 /**
  * Conditions are evaluated against the user's answers.
- * For single-choice questions the answer is a string; for multi it is a string[].
+ * For single-choice questions the answer is a string; for scale questions it
+ * is "1" … "10"; legacy multi answers are string[].
  * `in` matches when the answer (or any selected value) is in the list.
  * `notIn` matches when the question was answered and none of the values are in the list.
+ * `range` matches a scale answer inside [low, high], both inclusive.
  */
 export type Condition =
   | { q: string; in: string[] }
   | { q: string; notIn: string[] }
+  | { q: string; range: [number, number] }
   | { all: Condition[] }
   | { any: Condition[] }
   | { track: Track };
@@ -82,7 +98,7 @@ export interface Trigger {
   /**
    * Shown in the report under "What you told us".
    * Second person, one sentence, may quote the answer with {answer:question_id}
-   * which renders as the label the user selected.
+   * which renders as the label the user selected, or as "7/10" for a scale.
    */
   because: string;
 }
@@ -143,4 +159,23 @@ export interface FindingContent {
   trackNotes?: { physique?: string; strength?: string };
   /** ids of findings that commonly co-occur */
   relatedFindings?: string[];
+}
+
+/**
+ * Hand-written answer sets with the outcome a coach would expect. The rule
+ * simulator (scripts/rules-sim.ts) fails if the engine disagrees.
+ */
+export interface Persona {
+  name: string;
+  track: Track;
+  /** every question of the track except "goal"; scale answers as "1" … "10" */
+  answers: Record<string, string>;
+  expect: {
+    min: number;
+    max: number;
+    mustInclude?: string[];
+    mustExclude?: string[];
+    /** the top-ranked finding should be one of these */
+    primaryOneOf?: string[];
+  };
 }

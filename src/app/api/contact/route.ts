@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const rl = await rateLimit(`contact:${ip}`, 5, 600);
     if (!rl.ok) {
       return NextResponse.json(
-        { error: "You've sent a few messages already — give it ten minutes and try again, or email us directly." },
+        { error: "You've sent a few messages already — try again a little later, or email us directly." },
         { status: 429 },
       );
     }

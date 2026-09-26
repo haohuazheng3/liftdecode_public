@@ -145,7 +145,7 @@ export function Report({
           ) : (
             <>
               Your answers describe a well-run programme with nothing clearly broken — which is itself useful to know.
-              Read the clearances below, then re-run in four weeks with your numbers.
+              Read the clearances below, then re-run in four weeks.
             </>
           )}
         </p>
@@ -267,8 +267,8 @@ export function Report({
           <h2 className="display text-3xl sm:text-4xl">One month, in order.</h2>
           <p className="mt-3 text-ink-2 leading-relaxed">
             Built from your top {plan[0].items.length} bottleneck{plan[0].items.length === 1 ? "" : "s"}. Do week one before
-            you read week two. Tick things off as you go — then re-run the diagnosis at the end of week four with your
-            new numbers.
+            you read week two. Tick things off as you go — then re-run the diagnosis at the end of week four to see
+            what cleared.
           </p>
           <div className="mt-6">
             <PlanChecklist assessmentId={assessment.id} weeks={plan} done={doneSteps} canCheck={isOwner} />

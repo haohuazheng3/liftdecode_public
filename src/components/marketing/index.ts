@@ -1,9 +1,13 @@
 export { Hero } from "./Hero";
-export { TwoDoors } from "./TwoDoors";
-export { Lenses } from "./Lenses";
+export { StallTicker } from "./StallTicker";
+export { Tracks } from "./Tracks";
+export { QuizFeel } from "./QuizFeel";
+export { WhatWeCheck } from "./WhatWeCheck";
 export { FindingExcerpt } from "./FindingExcerpt";
 export { HowItWorks } from "./HowItWorks";
 export { Pricing } from "./Pricing";
 export { FaqTeaser } from "./FaqTeaser";
 export { FinalCta } from "./FinalCta";
 export { SectionHeading } from "./SectionHeading";
+export { Barbell, PLATE } from "./Barbell";
+export { FitIcon, PhysiquePictogram, StrengthPictogram, PlateFace } from "./graphics";

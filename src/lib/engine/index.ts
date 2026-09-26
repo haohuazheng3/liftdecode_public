@@ -27,6 +27,14 @@ export function sanitizeAnswers(track: Track, raw: unknown): { answers: Answers;
   const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   for (const q of questionsForTrack(QUESTIONS, track)) {
     const v = obj[q.id];
+    if (q.type === "scale") {
+      const min = q.scale?.min ?? 1;
+      const max = q.scale?.max ?? 10;
+      const n = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
+      if (Number.isInteger(n) && n >= min && n <= max) answers[q.id] = String(n);
+      else missing.push(q.id);
+      continue;
+    }
     const valid = new Set(q.options.map((o) => o.value));
     if (q.type === "single") {
       if (typeof v === "string" && valid.has(v)) answers[q.id] = v;

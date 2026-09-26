@@ -1,677 +1,178 @@
 /**
- * LiftDecode rules — findings (answer patterns → bottlenecks) and clearances
- * ("this is NOT your problem").
+ * LiftDecode rules (v2): 31 findings, 17 clearances.
  *
- * Scoring (see src/lib/engine/diagnose.ts): a finding's score is the sum of the
- * weights of its matching triggers; it appears when score ≥ threshold. A finding
- * listed in `suppressedBy` is hidden when the named finding is present with a
- * strictly higher score. Clearances fire when `when` matches.
- *
- * Design rules baked into the thresholds:
- *   - No finding fires on a single weight-1 or weight-2 answer. Several fire on a
- *     single weight-4/5 answer because that answer is, on its own, the diagnosis
- *     (e.g. "6+ reps in reserve", "under 60 s rest", "weekends undo the week").
- *   - Interaction findings (volume_outruns_recovery, deficit_while_expecting_muscle,
- *     no_surplus_no_growth, consistency_gap, cardio_eating_the_budget) require both
- *     halves of the interaction; neither half fires them alone.
- *   - Nutrition findings are gated by the stated goal or by the body-weight trend,
- *     so a deliberate cutter is never told "stop dieting", and a strength lifter
- *     is only told to eat when body weight is actually falling.
- *   - Contradictory pairs are resolved with suppressedBy (hidden_progress beats
- *     "nothing forces the weight up"; failure_every_set vs sets_end_too_early is
- *     mutual; the consistency illusion beats the plain missed-dose finding; the
- *     recomp finding outscores "no surplus" by construction whenever both fire).
- *
- * Every `because` line is second person and may quote the answer with
- * {answer:question_id}; the engine renders the selected label(s) in quotes.
- *
- * 36 findings, 12 clearances. Track-gated triggers inside "both" findings use
- * { all: [{ track }, ...] }. The "goal" question is the track selector; it feeds
- * every track-gated trigger through the track it selects, and one trigger
- * directly (rest_too_short).
+ * score = sum of matched trigger weights; a finding shows when score ≥ threshold.
+ * Every threshold is above the largest single weight, so no finding is named from
+ * one answer. Findings whose premise is one fact (you diet, you train to failure,
+ * your week is big) carry that fact as a gate: the other triggers can't reach the
+ * threshold without it. Corroborations are written as all(factor, symptom) so a
+ * tired lifter is never told they drink or run too much, and a busy week is never
+ * called too much work unless something says recovery is failing.
+ * because-lines read naturally whether {answer:x} renders a quoted label or "7/10";
+ * clearance text uses no {answer:} tokens.
  */
 import type { ClearanceRule, Condition, FindingRule } from "./types";
 
-/* ───────────────────────── reusable conditions ───────────────────────── */
+/* ───────────── shared conditions ───────────── */
+const r = (q: string, lo: number, hi: number): Condition => ({ q, range: [lo, hi] });
+const is = (q: string, ...values: string[]): Condition => ({ q, in: values });
+const not = (q: string, ...values: string[]): Condition => ({ q, notIn: values });
+const all = (...c: Condition[]): Condition => ({ all: c });
+const any = (...c: Condition[]): Condition => ({ any: c });
 
 const PHYSIQUE: Condition = { track: "physique" };
 const STRENGTH: Condition = { track: "strength" };
+const LOW_ENERGY = r("session_energy", 1, 4);
+const POOR_WAKE = r("wake_rested", 1, 4);
+/** ends up eating less than planned most days */
+const UNDER_EATS = r("meal_skip", 7, 10);
+const HIGH_VOLUME = r("volume_feel", 8, 10);
+const BIG_WEEK = r("volume_feel", 7, 10);
+const LOW_VOLUME = r("volume_feel", 1, 3);
+const HIGH_STRESS = r("stress", 8, 10);
+const STRESSED = r("stress", 6, 10);
+const IN_PAIN = r("pain_limits", 6, 10);
+const ACTIVE = r("activity_load", 6, 10);
+/** a symptom that recovery is failing, required before a big week is blamed */
+const NOT_RECOVERING = any(LOW_ENERGY, IN_PAIN);
+const PAST_YEAR_ONE = not("training_age", "under_1y");
+const TRAINED_3Y = is("training_age", "3_6y", "over_6y");
+const TO_FAILURE = is("hard_set_habit", "failure");
+/** says "At failure" and the reps agree: the last rep really grinds */
+const FAILS = all(TO_FAILURE, r("effort_grind", 5, 10));
+const DIETING = is("eating_phase", "lose");
+const NOT_DIETING = not("eating_phase", "lose");
+const DRINKS = is("alcohol", "weekends", "often");
+const STEADY = is("training_pattern", "steady");
+const COMEBACK = is("training_pattern", "comeback");
+const SPECIFIC_LAG = not("lagging_area", "everything");
+const KNOWN_FAIL_POINT = is("fail_point", "bottom", "middle", "top");
+const FREQUENCY_VARIES = any(is("muscle_frequency", "varies"), is("lift_frequency", "varies"));
+const SHORTER = is("range_under_load", "shorter");
+const SWITCHES = r("program_switch", 7, 10);
+const TESTS_OFTEN = is("max_testing", "monthly", "weekly");
+const BIG_APPETITE = is("appetite", "big");
+const WANTS_LESS_FAT = is("physique_aim", "leaner");
+const LEAN_AIM = is("physique_aim", "leaner", "both");
+const WANTS_MUSCLE = is("physique_aim", "muscle", "both");
 
-/** Body weight falling over the last 8 weeks. */
-const WEIGHT_DOWN: Condition = { q: "bodyweight_trend_8wk", in: ["down_over_2kg", "down_slightly"] };
-
-/** Working sets that genuinely approach failure. */
-const RIR_HARD: Condition = { q: "rir_last_set", in: ["0_1", "2_3", "past_failure"] };
-/** Working sets that end far from failure (or unknown, which usually means far). */
-const RIR_FAR: Condition = { q: "rir_last_set", in: ["4_5", "6_plus", "no_idea"] };
-
-/** Fewer than 4 nights of 7+ hours in the last week. */
-const SLEEP_SHORT: Condition = { q: "sleep_7h_nights", in: ["0_1", "2_3"] };
-
-/** Life load that spends recovery: sustained stress, a crisis, or a physical job. */
-const LIFE_LOAD: Condition = { q: "lifestyle_load", in: ["high_stress", "crisis", "physical_job"] };
-
-/** Protein not known to clear 1.6 g/kg. */
-const PROTEIN_NOT_COVERED: Condition = { q: "protein_yesterday", in: ["know_low", "guess", "no_idea", "day_varies"] };
-
-/** Three or more years of structured training. */
-const TRAINED_3Y_PLUS: Condition = { q: "training_age", in: ["3_6y", "over_6y"] };
-
-/** Physique goals that want new muscle out of the next six months. */
-const WANTS_MUSCLE: Condition = { q: "physique_goal", in: ["gain_muscle", "lagging_part"] };
-
+/** food points the way the goal does (strength: not dieting; physique: plan matches aim, no leak) */
+const DIET_ALIGNED = any(
+  all(STRENGTH, NOT_DIETING),
+  all(
+    PHYSIQUE,
+    not("appetite", "big"),
+    r("weekend_eating", 1, 6),
+    any(all(WANTS_MUSCLE, is("eating_phase", "gain")), all(WANTS_LESS_FAT, DIETING)),
+  ),
+);
 /**
- * A high training dose, expressed per track: 16+ genuinely hard sets a week on
- * the target muscle (physique), 16+ heavy sets or an all-heavy / test-every-week
- * intensity pattern (strength), or every set to failure (either).
+ * No red flag anywhere else. "Slow is normal" is only honest when recovery,
+ * attendance, effort, progression, pain and food are all in order.
  */
-const HIGH_DOSE: Condition = {
-  any: [
-    { all: [PHYSIQUE, { q: "hard_sets_lagging", in: ["16_22", "over_22"] }, RIR_HARD] },
-    {
-      all: [
-        STRENGTH,
-        {
-          any: [
-            { q: "main_lift_sets", in: ["16_plus"] },
-            { q: "intensity_mix", in: ["always_heavy", "max_attempts_weekly"] },
-          ],
-        },
-      ],
-    },
-    { q: "last_true_failure", in: ["every_set"] },
-  ],
-};
-
-/* ───────────────────────────── findings ───────────────────────────── */
+const CLEAN = all(
+  is("alcohol", "none", "light"),
+  r("session_energy", 5, 10),
+  r("missed_sessions", 1, 5),
+  r("full_nights", 5, 10),
+  r("pain_limits", 1, 7),
+  r("protein_meals", 4, 10),
+  r("beat_last", 5, 10),
+  any(not("hard_set_habit", "stop"), r("heavy_practice", 6, 10)),
+  DIET_ALIGNED,
+);
 
 export const FINDING_RULES: FindingRule[] = [
-  /* ============================ measurement ============================ */
-  {
-    id: "wrong_progress_signal",
-    audience: "physique",
-    category: "measurement",
-    threshold: 6,
-    suppressedBy: ["hidden_progress", "no_numbers_no_stall"],
-    triggers: [
-      {
-        when: { q: "stall_evidence", in: ["scale"] },
-        weight: 3,
-        because:
-          "You count the number on the scale as evidence that you're stuck — and daily scale weight can't see the 100–250 g a month that muscle arrives at.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["mirror", "others"] },
-        weight: 3,
-        because:
-          "Your evidence is what you see in the mirror or what other people say — neither has a baseline to compare against, and neither has a memory.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk", "4_8wk"] },
-        weight: 2,
-        because:
-          "Your \"stall\" is {answer:stall_duration} old, which is inside the noise of every measure you named.",
-      },
-      {
-        when: { q: "lift_progress_8wk", in: ["up_clearly", "up_barely"] },
-        weight: 2,
-        because:
-          "Your lift on the target muscle is moving ({answer:lift_progress_8wk}) — the earliest signal of growth, and the one you're not looking at.",
-      },
-      {
-        when: { q: "progress_record", in: ["memory", "nowhere"] },
-        weight: 1,
-        because: "Your lifting record lives {answer:progress_record}, so rep progress can't rescue the picture either.",
-      },
-      {
-        when: { q: "stall_evidence", notIn: ["photos_tape", "log"] },
-        weight: 1,
-        because: "None of your evidence comes from something you recorded the same way twice.",
-      },
-    ],
-  },
-  {
-    id: "bad_comparison",
-    audience: "both",
-    category: "measurement",
-    threshold: 7,
-    suppressedBy: ["hidden_progress", "no_numbers_no_stall"],
-    triggers: [
-      {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["comparing_pr"] }] },
-        weight: 5,
-        because:
-          "You told us you've been measuring against an old PR rather than the last month: {answer:lift_calibration_4wk}. A rested, tested best against a tired working set isn't a stall — it's a bad comparison.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk"] },
-        weight: 4,
-        because:
-          "Your last clear step forward was {answer:stall_duration} ago — inside normal noise for anyone past their first year.",
-      },
-      {
-        when: { q: "training_age", in: ["1_3y"] },
-        weight: 1,
-        because: "You're at {answer:training_age}, where four flat weeks happen inside every good month.",
-      },
-      {
-        when: TRAINED_3Y_PLUS,
-        weight: 2,
-        because: "You're at {answer:training_age}: flat weeks are nothing and flat months are normal.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["feel"] },
-        weight: 1,
-        because:
-          "Part of your evidence is that sessions feel harder, which tracks last night's sleep and this week's fatigue, not your strength.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["warmups_heavy"] },
-        weight: 1,
-        because: "Your warm-ups feel heavy, which makes every working set feel like a stall before it is one.",
-      },
-    ],
-  },
-  {
-    id: "no_numbers_no_stall",
-    audience: "both",
-    category: "measurement",
-    threshold: 7,
-    triggers: [
-      {
-        when: { q: "progress_record", in: ["nowhere"] },
-        weight: 4,
-        because: "Asked where we'd find what you lifted three sessions ago, you said: {answer:progress_record}.",
-      },
-      {
-        when: { q: "progress_record", in: ["memory"] },
-        weight: 3,
-        because: "Your record is {answer:progress_record} — and memory rounds toward whatever you did last time.",
-      },
-      {
-        when: { q: "progress_record", in: ["top_sets_only"] },
-        weight: 1,
-        because:
-          "You log {answer:progress_record}, which hides the back-off work where most rep progress happens.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "lift_progress_8wk", in: ["dont_know"] }] },
-        weight: 3,
-        because: "You can't say what your target lift did over 8 weeks: {answer:lift_progress_8wk}.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["no_record"] }] },
-        weight: 3,
-        because: "You don't have your heaviest set from four weeks ago to compare with this week.",
-      },
-      {
-        when: { q: "progression_rule", in: ["memory_feel", "same_always", "plates"] },
-        weight: 1,
-        because: "You choose your load by {answer:progression_rule}, so no log is being written.",
-      },
-      {
-        when: { q: "bodyweight_trend_8wk", in: ["dont_weigh"] },
-        weight: 1,
-        because: "You don't weigh yourself regularly, so the body-weight trend is missing too.",
-      },
-      {
-        when: { q: "stall_evidence", notIn: ["log", "photos_tape"] },
-        weight: 1,
-        because: "None of your evidence comes from something you recorded the same way twice.",
-      },
-      {
-        when: { q: "stall_duration", in: ["over_1y"] },
-        weight: 1,
-        because: "And you can't point to your last clear step forward.",
-      },
-    ],
-    suppressedBy: ["hidden_progress"],
-  },
-  {
-    id: "hidden_progress",
-    audience: "both",
-    category: "measurement",
-    threshold: 7,
-    triggers: [
-      {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["higher_now"] }] },
-        weight: 5,
-        because:
-          "Your heaviest set this week beat four weeks ago: {answer:lift_calibration_4wk}. That is progress by every definition a coach uses.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "lift_progress_8wk", in: ["up_clearly"] }] },
-        weight: 5,
-        because:
-          "Your lift on the muscle you want to change is {answer:lift_progress_8wk} over 8 weeks — the earliest signal of growth, and it's positive.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk", "4_8wk"] },
-        weight: 3,
-        because: "And your \"stall\" is {answer:stall_duration} old, inside normal noise.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["mirror", "scale"] },
-        weight: 1,
-        because: "You're judging by the mirror or the scale, which lag rep progress by months.",
-      },
-    ],
-  },
-
-  /* ============================ progression ============================ */
-  {
-    id: "no_forcing_function",
-    audience: "both",
-    category: "progression",
-    threshold: 7,
-    suppressedBy: ["hidden_progress"],
-    triggers: [
-      {
-        when: { q: "progression_rule", in: ["same_always"] },
-        weight: 5,
-        because: "You use {answer:progression_rule} — which is a description of a plateau, not a plan.",
-      },
-      {
-        when: { q: "progression_rule", in: ["plates"] },
-        weight: 4,
-        because: "Your load is {answer:progression_rule} — there is no rule, so overload happens by accident.",
-      },
-      {
-        when: { q: "progression_rule", in: ["memory_feel"] },
-        weight: 3,
-        because: "You decide by memory and feel, which drifts toward comfortable.",
-      },
-      {
-        when: { q: "progression_rule", in: ["max_out_daily"] },
-        weight: 1,
-        because: "You work up to a daily max, which is a test, not a progression.",
-      },
-      {
-        when: { q: "program_changes_6mo", in: ["same_for_years"] },
-        weight: 1,
-        because: "And you've run the same routine for years, so nothing outside the rule forces a change either.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["log"] },
-        weight: 1,
-        because: "Your log shows the same weights for weeks — that's the rule doing exactly what it does.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "lift_progress_8wk", in: ["same", "down"] }] },
-        weight: 1,
-        because: "Your target lift over 8 weeks: {answer:lift_progress_8wk}.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["same", "lower_now"] }] },
-        weight: 1,
-        because: "And four weeks later your heaviest set is {answer:lift_calibration_4wk}.",
-      },
-      {
-        when: { q: "program_changes_6mo", in: ["no_program"] },
-        weight: 1,
-        because: "You don't run a program, so nothing carries a target from one session to the next.",
-      },
-      {
-        when: { q: "progress_record", in: ["memory", "nowhere"] },
-        weight: 1,
-        because: "You have no written last time, so there is nothing to beat.",
-      },
-    ],
-  },
-
-  /* ============================== effort ============================== */
+  /* ═════════════ effort ═════════════ */
   {
     id: "sets_end_too_early",
     audience: "both",
     category: "effort",
-    threshold: 7,
+    threshold: 6,
     suppressedBy: ["failure_every_set"],
     triggers: [
+      { when: is("hard_set_habit", "stop"), weight: 3, because: "Asked how most of your sets end, you said {answer:hard_set_habit}." },
       {
-        when: { q: "rir_last_set", in: ["6_plus"] },
-        weight: 5,
-        because: "On your last set last week you had {answer:rir_last_set} in reserve.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["4_5"] },
-        weight: 4,
-        because: "You had {answer:rir_last_set} reps left on your last hard set.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["no_idea"] },
+        when: all(PHYSIQUE, r("effort_grind", 1, 4)),
         weight: 3,
-        because:
-          "Asked how many reps you had left, you said {answer:rir_last_set} — and an untested estimate almost always runs easy.",
+        because: "You rated how often your last rep slows to a grind at {answer:effort_grind}.",
       },
       {
-        when: { q: "last_true_failure", in: ["never_intentionally"] },
-        weight: 2,
-        because: "You've never deliberately taken a set to failure, so your \"hard\" has no anchor.",
+        when: all(STRENGTH, r("effort_grind", 1, 4), r("heavy_practice", 1, 5)),
+        weight: 3,
+        because: "Your last rep rarely grinds ({answer:effort_grind}) and you rarely lift close to your max ({answer:heavy_practice}): nothing in your week is hard.",
       },
+      { when: r("effort_grind", 5, 6), weight: 1, because: "Your last rep only sometimes slows to a grind ({answer:effort_grind})." },
       {
-        when: { q: "last_true_failure", in: ["months_ago"] },
+        when: all(is("hard_set_habit", "push", "failure"), r("effort_grind", 1, 3)),
         weight: 1,
-        because: "It has been months since you felt a rep not go up.",
+        because: "Your sets end {answer:hard_set_habit}, yet your last rep rarely slows down ({answer:effort_grind}): the sets feel hard without getting there.",
       },
-      {
-        when: { q: "deload_practice", in: ["constantly_easy"] },
-        weight: 2,
-        because: "You told us most weeks are already easy.",
-      },
-      {
-        when: { q: "progression_rule", in: ["memory_feel"] },
-        weight: 1,
-        because: "You load by feel, and feel tends to pick the weight you can be comfortable with.",
-      },
-      {
-        when: { q: "training_age", in: ["under_1y"] },
-        weight: 1,
-        because: "You're in your first year, when the bar should still move most weeks — and effort is the first suspect when it doesn't.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "sticking_point", in: ["never_fails"] }] },
-        weight: 1,
-        because: "Your lift never fails — you stop before it grinds.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "hard_sets_lagging", in: ["16_22", "over_22"] }, RIR_FAR] },
-        weight: 1,
-        because:
-          "And you do {answer:hard_sets_lagging} of those sets a week, so the fatigue is real even when the stimulus isn't.",
-      },
+      { when: r("beat_last", 1, 4), weight: 1, because: "You rarely try to beat your last session ({answer:beat_last}), so nothing pulls a set past comfortable." },
+      { when: is("load_choice", "usual"), weight: 1, because: "You pick your weights {answer:load_choice}, which keeps every set inside a load you already own." },
     ],
   },
   {
     id: "failure_every_set",
     audience: "both",
     category: "effort",
-    threshold: 6,
+    threshold: 5,
     suppressedBy: ["sets_end_too_early"],
     triggers: [
+      { when: FAILS, weight: 3, because: "Most of your sets end {answer:hard_set_habit}." },
       {
-        when: { q: "last_true_failure", in: ["every_set"] },
-        weight: 4,
-        because: "You take {answer:last_true_failure} to failure.",
+        when: all(FAILS, r("effort_grind", 9, 10)),
+        weight: 2,
+        because: "You go to failure and rated how often your last rep grinds at {answer:effort_grind}: almost every set is a max effort.",
       },
-      {
-        when: { q: "rir_last_set", in: ["past_failure"] },
-        weight: 3,
-        because: "You routinely go past the point where form holds: {answer:rir_last_set}.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["0_1"] },
-        weight: 1,
-        because: "Your last set ended at {answer:rir_last_set}.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["warmups_heavy", "constant_soreness"] },
-        weight: 1,
-        because: "Your warm-ups feel heavy or your soreness never clears — that's what accumulated fatigue looks like.",
-      },
-      {
-        when: { q: "deload_practice", in: ["never", "when_beat_up"] },
-        weight: 1,
-        because: "And you never clear the fatigue on purpose: {answer:deload_practice}.",
-      },
-      {
-        when: { q: "rest_between_sets", in: ["under_60", "60_90"] },
-        weight: 1,
-        because: "You rest {answer:rest_between_sets}, so each \"failure\" is mostly the previous set's fatigue.",
-      },
+      { when: all(FAILS, HIGH_VOLUME), weight: 1, because: "Every set goes to failure, and you train more than most lifters ({answer:volume_feel})." },
+      { when: all(FAILS, LOW_ENERGY), weight: 1, because: "Sets to failure, and you rate the energy you bring to sessions at {answer:session_energy}." },
+      { when: all(FAILS, IN_PAIN), weight: 1, because: "You train to failure while pain changes how you train at {answer:pain_limits}." },
+      { when: all(FAILS, TESTS_OFTEN), weight: 1, because: "On top of sets to failure, you test a max {answer:max_testing}." },
     ],
   },
+
+  /* ═════════════ progression & programming ═════════════ */
   {
-    id: "rest_too_short",
+    id: "no_forcing_function",
     audience: "both",
-    category: "effort",
-    threshold: 7,
+    category: "progression",
+    threshold: 6,
     triggers: [
+      { when: is("load_choice", "usual", "feel"), weight: 3, because: "Asked how you pick your weights, you said {answer:load_choice}." },
+      { when: r("beat_last", 1, 4), weight: 3, because: "You rated how often you try to beat your last session at {answer:beat_last}." },
+      { when: r("beat_last", 5, 6), weight: 1, because: "You only sometimes try to beat your last session ({answer:beat_last})." },
       {
-        when: { q: "rest_between_sets", in: ["under_60"] },
-        weight: 5,
-        because: "You rest {answer:rest_between_sets} — you're resting for cardio and lifting for muscle.",
-      },
-      {
-        when: { q: "rest_between_sets", in: ["60_90"] },
+        when: all(is("load_choice", "plan"), r("beat_last", 1, 3)),
         weight: 3,
-        because: "You rest {answer:rest_between_sets}; at that length, compound sets are limited by breathing before the muscle is.",
+        because: "Your program sets your weights, yet you rarely try to beat what you did last time: the rule lives on paper, not under the bar.",
       },
-      {
-        when: { q: "rest_between_sets", in: ["never_timed"] },
-        weight: 2,
-        because: "You've never timed your rest, and untimed rest is almost always short.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["4_5", "6_plus"] },
-        weight: 1,
-        because: "Your sets also end early ({answer:rir_last_set}), so each one delivers very little.",
-      },
-      {
-        when: { q: "goal", in: ["strength"] },
-        weight: 1,
-        because: "You're training for strength, where rest is part of the dose: a 60-second squat set is a fatigue test, not a strength stimulus.",
-      },
-      {
-        when: { q: "last_true_failure", in: ["every_set"] },
-        weight: 1,
-        because: "And you take every set to failure, which makes short rest cost even more.",
-      },
-    ],
-  },
-
-  /* ============================== volume ============================== */
-  {
-    id: "target_muscle_underdosed",
-    audience: "physique",
-    category: "volume",
-    threshold: 7,
-    triggers: [
-      {
-        when: { q: "hard_sets_lagging", in: ["under_6"] },
-        weight: 5,
-        because: "The muscle you most want to change gets {answer:hard_sets_lagging} working sets a week from you.",
-      },
-      {
-        when: { q: "hard_sets_lagging", in: ["6_9"] },
-        weight: 3,
-        because: "You give it {answer:hard_sets_lagging} sets a week, which is below the effective floor for a trained lifter.",
-      },
-      {
-        when: { q: "hard_sets_lagging", in: ["no_idea"] },
-        weight: 2,
-        because: "You couldn't count its sets, which usually means they aren't planned.",
-      },
-      {
-        when: { q: "lagging_frequency", in: ["1"] },
-        weight: 2,
-        because: "You train it on {answer:lagging_frequency}, so half those sets land on a muscle that's already tired.",
-      },
-      {
-        when: { q: "lagging_frequency", in: ["irregular"] },
-        weight: 1,
-        because: "You give it {answer:lagging_frequency}.",
-      },
-      {
-        when: { q: "lagging_priority", in: ["end_of_session", "whenever"] },
-        weight: 2,
-        because: "And you train it {answer:lagging_priority}, with whatever energy is left.",
-      },
-      {
-        when: { q: "lagging_priority", in: ["not_directly"] },
-        weight: 3,
-        because: "You don't train it directly: {answer:lagging_priority}.",
-      },
-      {
-        when: { q: "physique_goal", in: ["lagging_part"] },
-        weight: 1,
-        because: "And bringing it up is your stated goal.",
-      },
-    ],
-    suppressedBy: ["volume_outruns_recovery"],
-  },
-  {
-    id: "main_lift_underpractised",
-    audience: "strength",
-    category: "volume",
-    threshold: 7,
-    triggers: [
-      {
-        when: { q: "main_lift_sets", in: ["under_5"] },
-        weight: 5,
-        because: "You do {answer:main_lift_sets} sets a week on the lift and its close variations.",
-      },
-      {
-        when: { q: "main_lift_sets", in: ["5_9"] },
-        weight: 2,
-        because: "You do {answer:main_lift_sets} heavy sets a week — enough to maintain a trained lifter, rarely enough to build one.",
-      },
-      {
-        when: { q: "main_lift_sets", in: ["no_idea"] },
-        weight: 2,
-        because: "You can't count the sets on your priority lift.",
-      },
-      {
-        when: { q: "main_lift_frequency", in: ["variations_only"] },
-        weight: 5,
-        because:
-          "You barely do the lift itself: {answer:main_lift_frequency}. Variations build muscle, not the exact skill and positions the lift is failing on.",
-      },
-      {
-        when: { q: "main_lift_frequency", in: ["1"] },
-        weight: 3,
-        because: "And you practise it {answer:main_lift_frequency} a week.",
-      },
-      {
-        when: { q: "main_lift_frequency", in: ["irregular"] },
-        weight: 2,
-        because: "Your frequency is irregular, so some weeks it's zero.",
-      },
-      {
-        when: { q: "intensity_mix", in: ["high_rep_only"] },
-        weight: 1,
-        because: "Most of your reps are at loads too light to count as practice.",
-      },
-    ],
-    suppressedBy: ["volume_outruns_recovery"],
-  },
-
-  /* ============================ programming ============================ */
-  {
-    id: "testing_instead_of_training",
-    audience: "strength",
-    category: "programming",
-    threshold: 7,
-    triggers: [
-      {
-        when: { q: "intensity_mix", in: ["max_attempts_weekly"] },
-        weight: 5,
-        because: "You told us: {answer:intensity_mix}. That's a test week, every week.",
-      },
-      {
-        when: { q: "intensity_mix", in: ["always_heavy"] },
-        weight: 4,
-        because: "Your loads are {answer:intensity_mix}.",
-      },
-      {
-        when: { q: "progression_rule", in: ["max_out_daily"] },
-        weight: 3,
-        because: "You work up to the heaviest you can manage most sessions — a test, not a progression.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["0_1", "past_failure"] },
-        weight: 1,
-        because: "And your sets end at {answer:rir_last_set}.",
-      },
-      {
-        when: { q: "deload_practice", in: ["never", "when_beat_up"] },
-        weight: 1,
-        because: "And you never clear the fatigue on purpose: {answer:deload_practice}.",
-      },
-      {
-        when: { q: "lift_calibration_4wk", in: ["comparing_pr"] },
-        weight: 1,
-        because: "You judge yourself against the last test.",
-      },
-      {
-        when: TRAINED_3Y_PLUS,
-        weight: 1,
-        because: "You're at {answer:training_age}, where tests cost more and move less.",
-      },
-    ],
-  },
-  {
-    id: "never_heavy_enough",
-    audience: "strength",
-    category: "programming",
-    threshold: 7,
-    triggers: [
-      {
-        when: { q: "intensity_mix", in: ["high_rep_only"] },
-        weight: 5,
-        because: "You told us: {answer:intensity_mix}.",
-      },
-      {
-        when: { q: "intensity_mix", in: ["always_moderate"] },
-        weight: 4,
-        because: "You rarely do anything under 5 reps, so a heavy single is something your nervous system hasn't rehearsed.",
-      },
-      {
-        when: { q: "sticking_point", in: ["never_fails"] },
-        weight: 2,
-        because: "Your lift never fails, because you never load it enough to.",
-      },
-      {
-        when: { q: "weak_point_work", in: ["nothing_to_aim_at"] },
-        weight: 1,
-        because: "You have no weak position to aim at because the load has never been high enough to find one.",
-      },
-      {
-        when: { q: "expected_strength_rate", in: ["weekly_pr", "monthly_small"] },
-        weight: 1,
-        because: "And you expect the max to move anyway.",
-      },
-      {
-        when: { q: "deload_practice", in: ["constantly_easy"] },
-        weight: 1,
-        because: "You told us most weeks are already easy.",
-      },
+      { when: r("program_switch", 8, 10), weight: 1, because: "You start new programs often ({answer:program_switch}), so no plan lives long enough to push a number up." },
     ],
   },
   {
     id: "program_hopping",
     audience: "both",
     category: "programming",
-    threshold: 7,
+    threshold: 5,
     triggers: [
+      { when: r("program_switch", 8, 10), weight: 3, because: "You rated how often you start a new program at {answer:program_switch}." },
+      { when: r("program_switch", 7, 7), weight: 2, because: "You start new programs fairly often ({answer:program_switch})." },
+      { when: all(SWITCHES, is("load_choice", "feel")), weight: 1, because: "You pick your weights {answer:load_choice}, and a plan run by feel is easy to abandon." },
       {
-        when: { q: "program_changes_6mo", in: ["4_plus"] },
-        weight: 5,
-        because: "You changed programs {answer:program_changes_6mo} in six months.",
-      },
-      {
-        when: { q: "program_changes_6mo", in: ["2_3"] },
-        weight: 3,
-        because: "You changed it {answer:program_changes_6mo} in six months, so no block ran long enough to read.",
-      },
-      {
-        when: { q: "program_changes_6mo", in: ["no_program"] },
-        weight: 4,
-        because: "You don't run a program at all: {answer:program_changes_6mo}.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "intensity_mix", in: ["feel_based"] }] },
-        weight: 2,
-        because: "Your intensity has no pattern either: {answer:intensity_mix}.",
-      },
-      {
-        when: { q: "compare_to", in: ["lifters_online"] },
+        when: all(SWITCHES, FREQUENCY_VARIES),
         weight: 1,
-        because: "And your reference point is online, where the next method is always one scroll away.",
+        because: "Asked how often things get trained, you said it depends on the week: that happens when the program underneath keeps changing.",
       },
       {
-        when: { q: "progression_rule", in: ["plates"] },
+        when: all(SWITCHES, r("beat_last", 1, 4)),
         weight: 1,
-        because: "Your load follows whatever's on the bar — the same instinct that swaps the plan.",
+        because: "You rarely try to beat your last session ({answer:beat_last}), so a program never gets the chance to prove itself.",
+      },
+      {
+        when: all(SWITCHES, is("training_pattern", "on_off", "comeback")),
+        weight: 1,
+        because: "You described your last few months as {answer:training_pattern}, and every restart tends to bring a new program.",
       },
     ],
   },
@@ -679,230 +180,251 @@ export const FINDING_RULES: FindingRule[] = [
     id: "lagging_part_trained_last",
     audience: "physique",
     category: "programming",
-    threshold: 4,
-    suppressedBy: ["target_muscle_underdosed"],
+    threshold: 5,
     triggers: [
       {
-        when: { q: "lagging_priority", in: ["end_of_session"] },
+        when: all(SPECIFIC_LAG, is("lagging_priority", "skipped")),
         weight: 4,
-        because: "Your weakest part is trained {answer:lagging_priority} — it gets your worst energy.",
+        because: "You named {answer:lagging_area} as slowest to grow; asked when you train it, you said {answer:lagging_priority}.",
       },
       {
-        when: { q: "lagging_priority", in: ["whenever"] },
+        when: all(SPECIFIC_LAG, is("lagging_priority", "last")),
         weight: 3,
-        because: "You fit it in {answer:lagging_priority}, which means after everything that matters more in the moment.",
+        because: "You named {answer:lagging_area} as slowest to grow; asked when you train it, you said {answer:lagging_priority}.",
       },
       {
-        when: { q: "lagging_frequency", in: ["1", "irregular"] },
+        when: all(SPECIFIC_LAG, is("lagging_priority", "middle")),
         weight: 1,
-        because: "And you give it {answer:lagging_frequency}.",
+        because: "Your slowest area, {answer:lagging_area}, gets trained {answer:lagging_priority}: nobody decided it matters most.",
+      },
+      {
+        when: all(SPECIFIC_LAG, r("feel_target", 1, 3)),
+        weight: 2,
+        because: "You rated how well you feel the target muscle working at {answer:feel_target}, so even the sets it gets land partly somewhere else.",
+      },
+      {
+        when: all(SPECIFIC_LAG, r("feel_target", 4, 5)),
+        weight: 1,
+        because: "You only partly feel the target muscle working ({answer:feel_target}), so some of the work lands somewhere else.",
+      },
+      { when: is("muscle_frequency", "once"), weight: 1, because: "Each muscle gets trained {answer:muscle_frequency}, so a lagging area gets one shot a week." },
+      {
+        when: all(is("lagging_priority", "last"), LOW_ENERGY),
+        weight: 1,
+        because: "It comes last, and you rate the energy you bring to sessions at {answer:session_energy}: it gets what's left of very little.",
+      },
+    ],
+  },
+  {
+    id: "never_heavy_enough",
+    audience: "strength",
+    category: "programming",
+    threshold: 5,
+    suppressedBy: ["testing_instead_of_training"],
+    triggers: [
+      { when: r("heavy_practice", 1, 3), weight: 3, because: "You rated how often you lift close to your max at {answer:heavy_practice}." },
+      { when: r("heavy_practice", 4, 5), weight: 1, because: "You only sometimes train close to your max ({answer:heavy_practice})." },
+      { when: r("form_breakdown", 6, 10), weight: 2, because: "Your form changes on heavy reps at {answer:form_breakdown}: heavy weights still feel foreign." },
+      {
+        when: all(r("heavy_practice", 1, 4), TESTS_OFTEN),
+        weight: 1,
+        because: "You rarely train close to your max yet test it {answer:max_testing}: the heaviest weight you meet is the one you're judged on.",
+      },
+      {
+        when: r("muscle_work", 8, 10),
+        weight: 1,
+        because: "Much of your training is accessory or bodybuilding work ({answer:muscle_work}), which rarely goes near a max.",
+      },
+      { when: is("load_choice", "feel", "usual"), weight: 1, because: "Asked how you pick your weights, you said {answer:load_choice}, and that rarely lands on heavy." },
+    ],
+  },
+  {
+    id: "testing_instead_of_training",
+    audience: "strength",
+    category: "programming",
+    threshold: 5,
+    suppressedBy: ["never_heavy_enough"],
+    triggers: [
+      { when: TESTS_OFTEN, weight: 3, because: "Asked how often you test a max, you said {answer:max_testing}." },
+      { when: r("heavy_practice", 8, 10), weight: 2, because: "You lift close to your max at {answer:heavy_practice}, so almost every session is a test." },
+      { when: r("volume_feel", 1, 4), weight: 1, because: "You train less than most lifters ({answer:volume_feel}): little of it builds, most of it measures." },
+      {
+        when: all(any(TESTS_OFTEN, r("heavy_practice", 8, 10)), LOW_ENERGY),
+        weight: 1,
+        because: "Living that close to your max, you bring {answer:session_energy} energy to sessions.",
+      },
+      { when: r("form_breakdown", 7, 10), weight: 1, because: "Your form changes a lot on heavy reps ({answer:form_breakdown}), which is what repeated max attempts do." },
+    ],
+  },
+  {
+    id: "strength_without_muscle",
+    audience: "strength",
+    category: "programming",
+    threshold: 4,
+    triggers: [
+      {
+        when: all(PAST_YEAR_ONE, r("muscle_work", 1, 3)),
+        weight: 3,
+        because: "You rated your accessory and bodybuilding work at {answer:muscle_work}, and past the first year that work is what grows the lift.",
+      },
+      { when: all(PAST_YEAR_ONE, r("muscle_work", 4, 5)), weight: 1, because: "Accessory work is a side dish in your training ({answer:muscle_work})." },
+      {
+        when: TRAINED_3Y,
+        weight: 1,
+        because: "With {answer:training_age} behind you, the easy strength that comes from skill is already spent.",
+      },
+      { when: r("heavy_practice", 8, 10), weight: 1, because: "You lift close to your max at {answer:heavy_practice}, which tests muscle without adding any." },
+      { when: DIETING, weight: 1, because: "You're eating to {answer:eating_phase}, which gives new muscle nothing to be built from." },
+    ],
+  },
+  {
+    id: "main_lift_underpractised",
+    audience: "strength",
+    category: "volume",
+    threshold: 5,
+    suppressedBy: ["volume_outruns_recovery"],
+    triggers: [
+      { when: is("lift_frequency", "once"), weight: 3, because: "You train your stuck lift {answer:lift_frequency}." },
+      { when: is("lift_frequency", "varies"), weight: 2, because: "Asked how often you train your stuck lift, you said {answer:lift_frequency}." },
+      { when: r("volume_feel", 1, 4), weight: 2, because: "You rated how much you train next to most lifters at {answer:volume_feel}." },
+      {
+        when: all(is("main_lift", "bench", "press"), is("lift_frequency", "once", "varies")),
+        weight: 1,
+        because: "Your stuck lift is the {answer:main_lift}, and pressing lifts respond to frequency more than any other.",
+      },
+      { when: r("missed_sessions", 7, 10), weight: 1, because: "You miss planned sessions at {answer:missed_sessions}, which thins out the practice further." },
+    ],
+  },
+  {
+    id: "target_muscle_underdosed",
+    audience: "physique",
+    category: "volume",
+    threshold: 4,
+    suppressedBy: ["volume_outruns_recovery"],
+    triggers: [
+      { when: LOW_VOLUME, weight: 3, because: "You rated how much you train next to most lifters at {answer:volume_feel}." },
+      { when: r("volume_feel", 4, 5), weight: 1, because: "You train a little less than most lifters ({answer:volume_feel})." },
+      { when: is("muscle_frequency", "once"), weight: 2, because: "Each muscle gets trained {answer:muscle_frequency}." },
+      { when: is("muscle_frequency", "varies"), weight: 1, because: "Asked how often each muscle gets trained, you said {answer:muscle_frequency}." },
+      {
+        when: r("missed_sessions", 7, 10),
+        weight: 1,
+        because: "You miss planned sessions at {answer:missed_sessions}, so the dose on paper is bigger than the one you get.",
       },
     ],
   },
 
-  /* ============================= technique ============================= */
-  {
-    id: "rom_shrinking",
-    audience: "both",
-    category: "technique",
-    threshold: 6,
-    triggers: [
-      {
-        when: { q: "technique_video", in: ["rom_shrinks_with_load"] },
-        weight: 4,
-        because: "You said a video would show {answer:technique_video}. Some of your past \"progress\" was range leaving the lift.",
-      },
-      {
-        when: { q: "technique_video", in: ["setup_varies"] },
-        weight: 3,
-        because: "You said {answer:technique_video}, so the lift you're progressing changes every week.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "rep_execution", in: ["partial_top"] }] },
-        weight: 4,
-        because: "You told us: {answer:rep_execution}. The stretched half of the range is where most of the growth stimulus lives.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "rep_execution", in: ["momentum", "heavy_fast"] }] },
-        weight: 2,
-        because: "You told us {answer:rep_execution} — which usually means the bottom of the range disappears first.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "rep_execution", in: ["not_sure"] }] },
-        weight: 1,
-        because: "You've never watched for it.",
-      },
-      {
-        when: { q: "rir_last_set", in: ["past_failure"] },
-        weight: 1,
-        because: "You go past the point where form holds, which is exactly where reps shorten.",
-      },
-      {
-        when: { q: "progression_rule", in: ["max_out_daily"] },
-        weight: 1,
-        because: "You max out most sessions, and daily maxing rewards whatever gets the bar up.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "sticking_point", in: ["form_breaks"] }] },
-        weight: 1,
-        because: "And when your lift fails, {answer:sticking_point}.",
-      },
-    ],
-  },
-  {
-    id: "nobody_has_seen_your_lift",
-    audience: "both",
-    category: "technique",
-    threshold: 6,
-    suppressedBy: ["rom_shrinking"],
-    triggers: [
-      {
-        when: { q: "technique_video", in: ["never_filmed"] },
-        weight: 4,
-        because: "You told us {answer:technique_video}. Everything you believe about your technique is a guess made mid-rep.",
-      },
-      {
-        when: TRAINED_3Y_PLUS,
-        weight: 1,
-        because: "You're {answer:training_age} in, and by now your habits are load-bearing.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "sticking_point", in: ["form_breaks"] }] },
-        weight: 1,
-        because: "Your lift fails by form collapse, which is exactly what video catches.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "weak_point_work", in: ["dont_know_how"] }] },
-        weight: 1,
-        because: "You don't know what would fix the position — film would show it in one set.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "rep_execution", in: ["not_sure"] }] },
-        weight: 1,
-        because: "You've never looked at how your reps end.",
-      },
-    ],
-  },
+  /* ═════════════ technique ═════════════ */
   {
     id: "sticking_point_untrained",
     audience: "strength",
     category: "technique",
-    threshold: 5,
+    threshold: 4,
     triggers: [
       {
-        when: { q: "sticking_point", in: ["off_floor_bottom", "midrange", "lockout"] },
+        when: all(KNOWN_FAIL_POINT, r("weak_point_work", 1, 3)),
         weight: 3,
-        because: "Your lift fails {answer:sticking_point}.",
+        because: "Your {answer:main_lift} fails {answer:fail_point}, and you rated the work aimed at that spot at {answer:weak_point_work}.",
       },
       {
-        when: { q: "sticking_point", in: ["form_breaks"] },
-        weight: 3,
-        because: "Your lift doesn't fail cleanly — {answer:sticking_point}.",
-      },
-      {
-        when: { q: "weak_point_work", in: ["no_just_the_lift"] },
-        weight: 3,
-        because: "And nothing in your week is aimed at that position: {answer:weak_point_work}.",
-      },
-      {
-        when: { q: "weak_point_work", in: ["dont_know_how"] },
+        when: all(KNOWN_FAIL_POINT, r("weak_point_work", 4, 5)),
         weight: 2,
-        because: "You wouldn't know what to do for it: {answer:weak_point_work}.",
+        because: "Your heavy reps fail {answer:fail_point}, and that spot gets only some targeted work ({answer:weak_point_work}).",
+      },
+      { when: r("form_breakdown", 7, 10), weight: 1, because: "Your form changes a lot on heavy reps ({answer:form_breakdown}), usually right at the weak position." },
+      {
+        when: r("muscle_work", 1, 3),
+        weight: 1,
+        because: "You do little accessory work ({answer:muscle_work}), so the muscles behind that position never get extra help.",
+      },
+    ],
+  },
+  {
+    id: "form_breaks_under_load",
+    audience: "strength",
+    category: "technique",
+    threshold: 5,
+    triggers: [
+      { when: r("form_breakdown", 7, 10), weight: 3, because: "You rated how much your form changes on heavy reps at {answer:form_breakdown}." },
+      { when: r("form_breakdown", 5, 6), weight: 1, because: "Your form shifts somewhat on heavy reps ({answer:form_breakdown})." },
+      {
+        when: TO_FAILURE,
+        weight: 1,
+        because: "Your sets end {answer:hard_set_habit}, and the last reps of a failure set are the ugliest ones you practise.",
+      },
+      { when: r("pain_limits", 5, 10), weight: 1, because: "Pain changes how you train at {answer:pain_limits}." },
+      {
+        when: all(r("form_breakdown", 5, 10), r("heavy_practice", 1, 3)),
+        weight: 1,
+        because: "Your form changes under heavy weight and you rarely lift close to your max ({answer:heavy_practice}), so heavy technique never gets rehearsed.",
+      },
+      { when: is("fail_point", "unsure"), weight: 1, because: "You're not sure where your heavy reps fail, which usually means nobody has watched them." },
+    ],
+  },
+  {
+    id: "rom_shrinking",
+    audience: "physique",
+    category: "technique",
+    threshold: 5,
+    triggers: [
+      { when: SHORTER, weight: 4, because: "As the weight goes up, your range of motion {answer:range_under_load}." },
+      {
+        when: all(SHORTER, r("beat_last", 8, 10)),
+        weight: 1,
+        because: "You try to beat your last session at {answer:beat_last}, faster than a full range usually survives.",
       },
       {
-        when: { q: "technique_video", in: ["never_filmed"] },
+        when: all(SHORTER, IN_PAIN),
         weight: 1,
-        because: "You've never filmed it, so you're guessing at why it dies there.",
+        because: "Pain changes how you train at {answer:pain_limits}, and a range that shrinks is often pain steering the rep.",
+      },
+      {
+        when: all(SHORTER, TO_FAILURE),
+        weight: 1,
+        because: "Your sets end {answer:hard_set_habit}, and the last reps of a failure set are the ones that get cut short.",
       },
     ],
   },
 
-  /* ============================== recovery ============================== */
+  /* ═════════════ volume & recovery ═════════════ */
   {
     id: "volume_outruns_recovery",
     audience: "both",
     category: "recovery",
-    threshold: 7,
-    triggers: [
-      {
-        when: { all: [HIGH_DOSE, SLEEP_SHORT] },
-        weight: 5,
-        because:
-          "You're running a high training dose on {answer:sleep_7h_nights} of 7+ hours' sleep out of the last seven — the extra work is turning into fatigue instead of progress.",
-      },
-      {
-        when: { all: [HIGH_DOSE, LIFE_LOAD] },
-        weight: 4,
-        because: "You're running a high training dose on top of what's going on outside the gym: {answer:lifestyle_load}.",
-      },
-      {
-        when: { q: "deload_practice", in: ["never"] },
-        weight: 1,
-        because: "And you never clear it with a deload.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["warmups_heavy", "constant_soreness"] },
-        weight: 1,
-        because: "Your body is already saying so: {answer:readiness_signals}.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["drinks_8_plus"] },
-        weight: 1,
-        because: "Plus the drinking you described.",
-      },
-      {
-        when: { q: "last_true_failure", in: ["every_set"] },
-        weight: 1,
-        because: "You take nearly every set to failure, which doubles the fatigue cost of each one.",
-      },
-    ],
-  },
-  {
-    id: "fatigue_never_cleared",
-    audience: "both",
-    category: "recovery",
     threshold: 6,
-    suppressedBy: ["volume_outruns_recovery", "failure_every_set"],
+    suppressedBy: ["target_muscle_underdosed", "main_lift_underpractised"],
     triggers: [
+      { when: HIGH_VOLUME, weight: 3, because: "You rated how much you train next to most lifters at {answer:volume_feel}." },
       {
-        when: { q: "deload_practice", in: ["never"] },
-        weight: 4,
-        because: "You told us: {answer:deload_practice}.",
-      },
-      {
-        when: { q: "deload_practice", in: ["when_beat_up"] },
+        when: all(BIG_WEEK, LOW_ENERGY),
         weight: 2,
-        because: "You only back off once you're already wrecked — that's damage control, not a deload.",
+        because: "You train a lot ({answer:volume_feel}) yet rate the energy you bring to sessions at {answer:session_energy}.",
       },
       {
-        when: { q: "deload_practice", in: ["forced_by_life"] },
-        weight: 2,
-        because: "Your only deloads are the ones life forces.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["warmups_heavy"] },
-        weight: 2,
-        because: "Your warm-up weights feel heavy — the clearest sign of fatigue hiding fitness.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["constant_soreness", "joints_ache", "dread_sessions"] },
+        when: all(BIG_WEEK, POOR_WAKE, r("full_nights", 6, 10)),
         weight: 1,
-        because: "And your body is sending more than one signal: {answer:readiness_signals}.",
+        because: "You sleep full nights most of the time ({answer:full_nights}) yet rate how rested you wake up at {answer:wake_rested}: the training, not the sleep, is outrunning you.",
       },
       {
-        when: { q: "stall_evidence", in: ["feel"] },
+        when: all(BIG_WEEK, IN_PAIN),
         weight: 1,
-        because: "Your sessions feel harder and flatter, which is the signature of unmanaged fatigue.",
+        because: "Pain changes how you train at {answer:pain_limits}, a common cost of more work than the body can absorb.",
+      },
+      { when: all(BIG_WEEK, HIGH_STRESS), weight: 1, because: "Life stress sits at {answer:stress}, drawing on the same recovery as your training." },
+      {
+        when: all(BIG_WEEK, is("muscle_frequency", "three"), NOT_RECOVERING),
+        weight: 1,
+        because: "Each muscle gets trained {answer:muscle_frequency}, and the signs above say it isn't recovering in between.",
       },
       {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["lower_now"] }] },
+        when: all(BIG_WEEK, is("lift_frequency", "three"), NOT_RECOVERING),
         weight: 1,
-        because: "Your heaviest set is lower than four weeks ago — the number went down before the strength did.",
+        because: "You train your stuck lift {answer:lift_frequency}, and the signs above say it isn't recovering in between.",
       },
       {
-        when: { q: "stall_duration", in: ["2_4mo", "4_12mo", "over_1y"] },
+        when: all(BIG_WEEK, r("heavy_practice", 8, 10), NOT_RECOVERING),
         weight: 1,
-        because: "And you've been stuck for {answer:stall_duration}.",
+        because: "You lift close to your max at {answer:heavy_practice}, the most expensive work there is to recover from.",
       },
     ],
   },
@@ -910,37 +432,16 @@ export const FINDING_RULES: FindingRule[] = [
     id: "sleep_under_dose",
     audience: "both",
     category: "recovery",
-    threshold: 7,
+    threshold: 4,
     triggers: [
+      { when: r("full_nights", 1, 3), weight: 3, because: "You rated how often you get a full night's sleep at {answer:full_nights}." },
+      { when: r("full_nights", 4, 5), weight: 1, because: "You get a full night's sleep only about half the time ({answer:full_nights})." },
+      { when: r("wake_rested", 1, 3), weight: 2, because: "You rated how rested you wake up at {answer:wake_rested}." },
+      { when: r("wake_rested", 4, 5), weight: 1, because: "You wake up only half-rested ({answer:wake_rested})." },
       {
-        when: { q: "sleep_7h_nights", in: ["0_1"] },
-        weight: 5,
-        because: "You got 7 hours on {answer:sleep_7h_nights} of the last seven nights.",
-      },
-      {
-        when: { q: "sleep_7h_nights", in: ["2_3"] },
-        weight: 3,
-        because: "You got 7 hours on only {answer:sleep_7h_nights} of the last seven nights.",
-      },
-      {
-        when: { q: "sleep_7h_nights", in: ["4_5"] },
+        when: all(any(r("full_nights", 1, 5), r("wake_rested", 1, 5)), LOW_ENERGY),
         weight: 1,
-        because: "You got 7 hours on {answer:sleep_7h_nights} of the last seven — the edge, not the floor.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["sleep_broken"] },
-        weight: 2,
-        because: "And the sleep you do get is broken or unrefreshing.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["high_stress", "crisis"] },
-        weight: 1,
-        because: "With what you told us is going on outside the gym, the short nights aren't an accident.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["drinks_8_plus"] },
-        weight: 1,
-        because: "You drink several nights a week, which breaks the deep sleep you do get.",
+        because: "Poor sleep follows you into the gym: you rate the energy you bring to sessions at {answer:session_energy}.",
       },
     ],
   },
@@ -948,179 +449,112 @@ export const FINDING_RULES: FindingRule[] = [
     id: "life_is_the_limiter",
     audience: "both",
     category: "recovery",
-    threshold: 6,
-    suppressedBy: ["volume_outruns_recovery"],
+    threshold: 5,
     triggers: [
+      { when: HIGH_STRESS, weight: 3, because: "You rated how stressful life is right now at {answer:stress}." },
+      { when: r("stress", 6, 7), weight: 1, because: "Life is fairly stressful right now ({answer:stress})." },
+      { when: all(STRESSED, POOR_WAKE), weight: 1, because: "With stress at {answer:stress}, you wake up at {answer:wake_rested} on the rested scale." },
+      { when: all(STRESSED, LOW_ENERGY), weight: 1, because: "Stress follows you into the gym: you bring {answer:session_energy} energy to sessions." },
       {
-        when: { q: "lifestyle_load", in: ["crisis"] },
-        weight: 4,
-        because:
-          "You told us something big happened in the last two months, and it's spending from the same recovery account your training does.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["high_stress"] },
-        weight: 3,
-        because: "Your life has been high-stress for months — sleep or meals slip most weeks — and your plan was written for a calmer life.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["physical_job"] },
+        when: all(STRESSED, r("full_nights", 1, 4)),
         weight: 1,
-        because: "Your job is physical, and it isn't in your training plan.",
+        because: "You rarely get a full night's sleep ({answer:full_nights}), which is where stress collects its bill.",
       },
-      {
-        when: SLEEP_SHORT,
-        weight: 1,
-        because: "You got 7 hours on {answer:sleep_7h_nights} last week.",
-      },
-      {
-        when: { q: "sessions_missed_4wk", in: ["4_6", "7_plus"] },
-        weight: 1,
-        because: "You missed {answer:sessions_missed_4wk} sessions last month.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["dread_sessions"] },
-        weight: 1,
-        because: "You dread sessions you used to look forward to.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk", "4_8wk", "2_4mo"] },
-        weight: 1,
-        because: "And your stall lines up with the period you describe.",
-      },
+      { when: all(STRESSED, r("missed_sessions", 6, 10)), weight: 1, because: "You miss planned sessions at {answer:missed_sessions}; life is taking them." },
     ],
   },
   {
     id: "training_around_pain",
     audience: "both",
     category: "recovery",
-    threshold: 6,
+    threshold: 4,
     triggers: [
+      { when: r("pain_limits", 8, 10), weight: 3, because: "You rated how often pain changes how you train at {answer:pain_limits}." },
+      { when: r("pain_limits", 6, 7), weight: 1, because: "Pain changes how you train fairly often ({answer:pain_limits})." },
       {
-        when: { q: "readiness_signals", in: ["pain_limits_lift"] },
-        weight: 4,
-        because:
-          "You told us a nagging pain changes how you lift — it limits the load or range, or you've swapped exercises around it. No program fixes a ceiling that pain is setting.",
+        when: all(IN_PAIN, TO_FAILURE),
+        weight: 1,
+        because: "Your sets end {answer:hard_set_habit}, and failure reps are where irritated joints get worse.",
       },
       {
-        when: { q: "readiness_signals", in: ["joints_ache"] },
+        when: all(IN_PAIN, HIGH_VOLUME),
         weight: 1,
-        because: "Your joints ache during warm-ups.",
+        because: "You train more than most lifters ({answer:volume_feel}), which leaves sore tissue little time to settle.",
       },
       {
-        when: { q: "deload_practice", in: ["when_beat_up"] },
+        when: all(IN_PAIN, r("form_breakdown", 7, 10)),
         weight: 1,
-        because: "And you only back off when your joints complain.",
+        because: "Your form changes a lot on heavy reps ({answer:form_breakdown}), which puts load where it hurts.",
       },
       {
-        when: { all: [STRENGTH, { q: "sticking_point", in: ["form_breaks"] }] },
+        when: all(IN_PAIN, SHORTER),
         weight: 1,
-        because: "Your lift fails by form collapse, which is often the body steering around something.",
+        because: "Your range of motion {answer:range_under_load} as the weight climbs, which often means pain is steering the rep.",
+      },
+      {
+        when: all(IN_PAIN, SWITCHES),
+        weight: 1,
+        because: "You start new programs often ({answer:program_switch}), which is sometimes a search for one that doesn't hurt.",
       },
     ],
   },
 
-  /* ============================== nutrition ============================== */
+  /* ═════════════ nutrition ═════════════ */
   {
     id: "deficit_while_expecting_muscle",
     audience: "physique",
     category: "nutrition",
-    threshold: 6,
+    threshold: 5,
+    suppressedBy: ["no_surplus_no_growth", "gaining_too_fast", "fat_loss_without_deficit"],
     triggers: [
       {
-        when: { all: [{ q: "bodyweight_trend_8wk", in: ["down_over_2kg"] }, WANTS_MUSCLE] },
+        when: all(is("physique_aim", "muscle"), DIETING),
         weight: 4,
-        because:
-          "Your weight is {answer:bodyweight_trend_8wk} over 8 weeks and your goal is {answer:physique_goal} — past the first year or two, a falling weight and new muscle don't coexist.",
+        because: "You want {answer:physique_aim} most, and you're eating to {answer:eating_phase}.",
       },
       {
-        when: { all: [{ q: "bodyweight_trend_8wk", in: ["down_slightly"] }, WANTS_MUSCLE] },
+        when: all(is("physique_aim", "both"), DIETING, PAST_YEAR_ONE),
         weight: 3,
-        because: "Your weight is drifting down ({answer:bodyweight_trend_8wk}) while your goal is {answer:physique_goal}.",
+        because: "You want {answer:physique_aim}, and you're eating to {answer:eating_phase}.",
       },
-      {
-        when: { all: [WEIGHT_DOWN, { q: "physique_goal", in: ["recomp", "lean_stay_lean"] }] },
-        weight: 2,
-        because: "You want to hold your weight and grow ({answer:physique_goal}), and the scale is going the other way.",
-      },
-      {
-        when: { all: [WEIGHT_DOWN, { q: "eating_setup", in: ["recomp_hope"] }] },
-        weight: 2,
-        because: "Your food is set up to lean out and grow at the same time, and the scale says it's only doing the first.",
-      },
-      {
-        when: { all: [WEIGHT_DOWN, { q: "eating_setup", in: ["deficit_planned"] }] },
-        weight: 1,
-        because: "You're in a planned deficit while expecting size.",
-      },
-      {
-        when: TRAINED_3Y_PLUS,
-        weight: 1,
-        because: "You're at {answer:training_age}, past the point where a deficit can also build muscle.",
-      },
-      {
-        when: { q: "expected_body_change", in: ["noticeable_others", "transformation"] },
-        weight: 1,
-        because: "And you're expecting {answer:expected_body_change} from it.",
-      },
+      { when: all(DIETING, UNDER_EATS), weight: 1, because: "On top of the diet, you end up eating less than planned at {answer:meal_skip}." },
+      { when: all(DIETING, LOW_ENERGY), weight: 1, because: "Dieting, you bring {answer:session_energy} energy to your sessions." },
+      { when: PAST_YEAR_ONE, weight: 1, because: "You've trained for {answer:training_age}, past the stage where muscle grows easily on a diet." },
     ],
   },
   {
     id: "no_surplus_no_growth",
     audience: "physique",
     category: "nutrition",
-    threshold: 6,
-    suppressedBy: ["recomp_window_closed"],
+    threshold: 5,
+    suppressedBy: ["deficit_while_expecting_muscle", "gaining_too_fast", "recomp_window_closed"],
     triggers: [
       {
-        when: {
-          all: [
-            { q: "bodyweight_trend_8wk", in: ["flat"] },
-            { q: "physique_goal", in: ["gain_muscle", "lagging_part", "lean_stay_lean"] },
-          ],
-        },
+        when: all(is("physique_aim", "muscle"), is("eating_phase", "maintain", "none")),
         weight: 4,
-        because:
-          "Your weight is {answer:bodyweight_trend_8wk} over 8 weeks and your goal is {answer:physique_goal} — a trained body doesn't add tissue on a flat energy balance.",
+        because: "You want {answer:physique_aim}, and asked what you're eating for, you said {answer:eating_phase}.",
       },
       {
-        when: {
-          all: [
-            { q: "bodyweight_trend_8wk", in: ["flat"] },
-            {
-              any: [
-                { q: "eating_setup", in: ["maintenance_planned", "no_plan"] },
-                { all: [{ q: "eating_setup", in: ["recomp_hope"] }, { q: "training_age", in: ["under_1y", "1_3y"] }] },
-              ],
-            },
-          ],
-        },
-        weight: 2,
-        because: "Your food is set to: {answer:eating_setup} — which lands at maintenance by default.",
+        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), UNDER_EATS),
+        weight: 4,
+        because: "You're eating to {answer:eating_phase}, yet you end up eating less than planned at {answer:meal_skip}: the surplus exists on paper.",
       },
       {
-        when: { all: [{ q: "bodyweight_trend_8wk", in: ["flat"] }, { q: "eating_setup", in: ["surplus_planned"] }] },
-        weight: 2,
-        because: "You call it a surplus, but your scale hasn't moved — so it isn't one.",
+        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), is("appetite", "small"), r("meal_skip", 1, 6)),
+        weight: 4,
+        because: "You're eating to {answer:eating_phase}, but asked about your appetite you said {answer:appetite}: the surplus you're eating for rarely happens.",
       },
+      { when: UNDER_EATS, weight: 1, because: "You rated how often you end up eating less than planned at {answer:meal_skip}." },
+      { when: r("meal_skip", 5, 6), weight: 1, because: "Some days you end up eating less than planned ({answer:meal_skip})." },
       {
-        when: { q: "lift_progress_8wk", in: ["up_clearly", "up_barely"] },
+        when: all(is("appetite", "small"), not("eating_phase", "gain")),
         weight: 1,
-        because: "Your lifts are up ({answer:lift_progress_8wk}), so the stimulus is there and the material isn't.",
+        because: "Asked about your appetite, you said {answer:appetite}, and a small appetite quietly caps what you eat.",
       },
       {
-        when: TRAINED_3Y_PLUS,
+        when: PAST_YEAR_ONE,
         weight: 1,
-        because: "You're at {answer:training_age}, where growth without a surplus is rare.",
-      },
-      {
-        when: { q: "stall_duration", in: ["4_12mo", "over_1y"] },
-        weight: 1,
-        because: "And you've been waiting {answer:stall_duration}.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["photos_tape"] },
-        weight: 1,
-        because: "Your photos or tape, taken the same way each time, agree: the body isn't changing.",
+        because: "You've trained for {answer:training_age}, past the stage where muscle grows easily without extra food.",
       },
     ],
   },
@@ -1128,43 +562,23 @@ export const FINDING_RULES: FindingRule[] = [
     id: "recomp_window_closed",
     audience: "physique",
     category: "nutrition",
-    threshold: 8,
+    threshold: 5,
     triggers: [
       {
-        when: { all: [{ q: "eating_setup", in: ["recomp_hope"] }, TRAINED_3Y_PLUS] },
-        weight: 5,
-        because:
-          "You told us: {answer:eating_setup} — with {answer:training_age} of training, years past the point where that reliably works.",
+        when: all(is("physique_aim", "both"), is("eating_phase", "maintain", "none")),
+        weight: 3,
+        because: "You want {answer:physique_aim}, and asked what you're eating for, you said {answer:eating_phase}.",
       },
       {
-        when: { all: [{ q: "physique_goal", in: ["recomp"] }, TRAINED_3Y_PLUS] },
-        weight: 4,
-        because: "Your goal is {answer:physique_goal}, and at {answer:training_age} the same body weight mostly means the same body.",
-      },
-      {
-        when: { all: [{ q: "eating_setup", in: ["recomp_hope"] }, { q: "physique_goal", in: ["recomp"] }] },
+        when: TRAINED_3Y,
         weight: 2,
-        because: "Both your goal and your food are set to recomp — and you've been at it a while.",
+        because: "You've trained for {answer:training_age}, well past the stage where fat loss and muscle gain happen together.",
       },
+      { when: is("training_age", "1_3y"), weight: 1, because: "You've trained for {answer:training_age}, and the recomp window closes fast after year one." },
       {
-        when: { q: "physique_goal", in: ["gain_muscle", "lagging_part", "lean_stay_lean", "recomp"] },
+        when: r("protein_meals", 1, 5),
         weight: 1,
-        because: "And you want new muscle out of it: {answer:physique_goal}.",
-      },
-      {
-        when: { q: "bodyweight_trend_8wk", in: ["flat"] },
-        weight: 1,
-        because: "Your weight has been flat, which is what \"neither\" looks like.",
-      },
-      {
-        when: { q: "lift_progress_8wk", in: ["up_clearly", "up_barely"] },
-        weight: 1,
-        because: "Your lifts are creeping up while the body waits — the surplus never arrived.",
-      },
-      {
-        when: { q: "stall_duration", in: ["4_12mo", "over_1y"] },
-        weight: 1,
-        because: "And you've been waiting {answer:stall_duration}.",
+        because: "Only some of your meals are built around protein ({answer:protein_meals}), and recomposition runs on protein.",
       },
     ],
   },
@@ -1173,37 +587,101 @@ export const FINDING_RULES: FindingRule[] = [
     audience: "physique",
     category: "nutrition",
     threshold: 6,
+    suppressedBy: ["deficit_while_expecting_muscle", "no_surplus_no_growth"],
     triggers: [
       {
-        when: { q: "bodyweight_trend_8wk", in: ["up_over_2kg"] },
+        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), BIG_APPETITE, r("meal_skip", 1, 6)),
         weight: 4,
-        because:
-          "Your weight is {answer:bodyweight_trend_8wk} in eight weeks — faster than muscle can be built, so most of the extra is hiding the shape you're training for.",
+        because: "You're eating to {answer:eating_phase}, and asked about your appetite you said {answer:appetite}: the surplus is easy to overshoot.",
       },
       {
-        when: { q: "eating_setup", in: ["surplus_planned"] },
+        when: all(is("eating_phase", "gain"), r("meal_skip", 1, 5)),
         weight: 1,
-        because: "You call it a small surplus, but one that adds over 2 kg in two months isn't small.",
+        because: "You rarely end up eating less than planned ({answer:meal_skip}), so the whole surplus arrives, and then some.",
       },
       {
-        when: { q: "eating_setup", in: ["no_plan"] },
-        weight: 1,
-        because: "You have no plan, so the surplus is whatever your appetite decides.",
+        when: r("weekend_eating", 8, 10),
+        weight: 2,
+        because: "Your weekends run much looser than your weekdays ({answer:weekend_eating}): the surplus is bigger than the plan.",
+      },
+      { when: r("weekend_eating", 6, 7), weight: 1, because: "Your weekends run looser than your weekdays ({answer:weekend_eating})." },
+      { when: DRINKS, weight: 1, because: "You described your drinking as {answer:alcohol}: calories that build nothing." },
+    ],
+  },
+  {
+    id: "fat_loss_without_deficit",
+    audience: "physique",
+    category: "nutrition",
+    threshold: 5,
+    suppressedBy: ["week_cancels_itself", "deficit_while_expecting_muscle"],
+    triggers: [
+      {
+        when: all(WANTS_LESS_FAT, NOT_DIETING),
+        weight: 4,
+        because: "You want {answer:physique_aim} most; asked what you're eating for, you said {answer:eating_phase}.",
       },
       {
-        when: PROTEIN_NOT_COVERED,
-        weight: 1,
-        because: "Your protein is {answer:protein_yesterday}, so a big surplus is mostly other things.",
+        when: all(LEAN_AIM, DIETING, BIG_APPETITE),
+        weight: 3,
+        because: "You're eating to {answer:eating_phase}, and on a diet an appetite that's hard to keep in check is where the deficit leaks.",
       },
       {
-        when: TRAINED_3Y_PLUS,
-        weight: 1,
-        because: "You're at {answer:training_age}, where the muscle share of a fast gain is small.",
+        when: all(LEAN_AIM, BIG_APPETITE),
+        weight: 2,
+        because: "Asked about your appetite, you said {answer:appetite}, and eating until satisfied lands at maintenance or above, never below it.",
       },
       {
-        when: { q: "physique_goal", in: ["recomp", "lose_fat_keep", "lean_stay_lean"] },
+        when: all(LEAN_AIM, DIETING, r("weekend_eating", 7, 10)),
+        weight: 2,
+        because: "You rated how much looser your weekend eating gets at {answer:weekend_eating}: two loose days can erase five careful ones.",
+      },
+      {
+        when: all(WANTS_LESS_FAT, is("eating_phase", "gain")),
         weight: 1,
-        because: "And your goal was {answer:physique_goal}.",
+        because: "A plan built to gain weight can't take fat off, whatever the training does.",
+      },
+      {
+        when: all(WANTS_LESS_FAT, is("eating_phase", "none")),
+        weight: 1,
+        because: "With no plan, appetite decides, and appetite defends the weight you're already at.",
+      },
+      {
+        when: all(WANTS_LESS_FAT, NOT_DIETING, PAST_YEAR_ONE),
+        weight: 1,
+        because: "You've trained for {answer:training_age}; past the beginner stage, fat rarely comes off without a deliberate deficit.",
+      },
+      { when: all(LEAN_AIM, DRINKS), weight: 1, because: "You described your drinking as {answer:alcohol}, and drinks are the calories nobody plans for." },
+      {
+        when: all(LEAN_AIM, r("protein_meals", 1, 4)),
+        weight: 1,
+        because: "Few of your meals are built around protein ({answer:protein_meals}), the food that keeps hunger quiet on a diet.",
+      },
+    ],
+  },
+  {
+    id: "week_cancels_itself",
+    audience: "physique",
+    category: "nutrition",
+    threshold: 5,
+    suppressedBy: ["gaining_too_fast", "fat_loss_without_deficit"],
+    triggers: [
+      { when: r("weekend_eating", 8, 10), weight: 3, because: "You rated how much looser your weekend eating gets at {answer:weekend_eating}." },
+      { when: r("weekend_eating", 6, 7), weight: 1, because: "Your weekends run a little looser than your weekdays ({answer:weekend_eating})." },
+      { when: is("alcohol", "weekends"), weight: 2, because: "You described your drinking as {answer:alcohol}." },
+      {
+        when: all(r("weekend_eating", 6, 10), UNDER_EATS),
+        weight: 1,
+        because: "You end up eating less than planned at {answer:meal_skip} and loosen up at the weekend: restriction, then rebound.",
+      },
+      {
+        when: all(r("weekend_eating", 6, 10), DIETING),
+        weight: 1,
+        because: "You're eating to {answer:eating_phase}: a strict week and a loose weekend average out to maintenance.",
+      },
+      {
+        when: all(r("weekend_eating", 6, 10), HIGH_STRESS),
+        weight: 1,
+        because: "You rated your stress at {answer:stress}, and the weekend is where stress gets eaten.",
       },
     ],
   },
@@ -1211,37 +689,19 @@ export const FINDING_RULES: FindingRule[] = [
     id: "protein_unknown",
     audience: "both",
     category: "nutrition",
-    threshold: 6,
+    threshold: 4,
     triggers: [
+      { when: r("protein_meals", 1, 3), weight: 3, because: "You rated how often a meal is built around protein at {answer:protein_meals}." },
+      { when: r("protein_meals", 4, 5), weight: 2, because: "Only about half your meals are built around protein ({answer:protein_meals})." },
       {
-        when: { q: "protein_yesterday", in: ["no_idea"] },
-        weight: 5,
-        because: "Asked about yesterday's protein, you said: {answer:protein_yesterday}.",
-      },
-      {
-        when: { q: "protein_yesterday", in: ["guess"] },
-        weight: 4,
-        because: "You'd guess \"a fair amount\" — that's the answer we hear right before 0.9 g/kg.",
-      },
-      {
-        when: { q: "protein_yesterday", in: ["day_varies"] },
-        weight: 4,
-        because: "You eat plenty some days and almost none on others — the average is what your muscle sees.",
-      },
-      {
-        when: { q: "protein_yesterday", in: ["know_low"] },
-        weight: 3,
-        because: "You know the number, and it's under 1.6 g/kg.",
-      },
-      {
-        when: { q: "eating_setup", in: ["no_plan"] },
+        when: all(r("protein_meals", 1, 6), UNDER_EATS),
         weight: 1,
-        because: "Your food is {answer:eating_setup}, so nothing corrects it.",
+        because: "You also end up eating less than planned at {answer:meal_skip}, and the meals that shrink take their protein with them.",
       },
       {
-        when: WEIGHT_DOWN,
+        when: is("eating_phase", "none"),
         weight: 1,
-        because: "Your weight is going down, and in a body that's losing weight, low protein costs muscle, not just gains.",
+        because: "Asked what you're eating for, you said {answer:eating_phase}, and protein is the first thing to go missing without a plan.",
       },
     ],
   },
@@ -1249,149 +709,118 @@ export const FINDING_RULES: FindingRule[] = [
     id: "strength_leaking_bodyweight",
     audience: "strength",
     category: "nutrition",
-    threshold: 7,
+    threshold: 5,
     triggers: [
+      { when: DIETING, weight: 3, because: "You're eating to {answer:eating_phase} while asking your lifts to go up." },
+      { when: UNDER_EATS, weight: 2, because: "You rated how often you end up eating less than planned at {answer:meal_skip}." },
+      { when: all(DIETING, LOW_ENERGY), weight: 1, because: "Dieting, you bring {answer:session_energy} energy to your sessions." },
       {
-        when: { q: "bodyweight_trend_8wk", in: ["down_over_2kg"] },
-        weight: 5,
-        because: "Your weight is {answer:bodyweight_trend_8wk} — for a strength lifter that's the most common reason the bar stops before anything in the gym is.",
-      },
-      {
-        when: { q: "bodyweight_trend_8wk", in: ["down_slightly"] },
-        weight: 3,
-        because: "Your weight is drifting down: {answer:bodyweight_trend_8wk}.",
-      },
-      {
-        when: { q: "lift_calibration_4wk", in: ["lower_now"] },
-        weight: 2,
-        because: "And your heaviest set is lower than four weeks ago — the two move together.",
-      },
-      {
-        when: { q: "eating_setup", in: ["deficit_planned", "cycling"] },
+        when: all(DIETING, r("activity_load", 7, 10)),
         weight: 1,
-        because: "Your food is {answer:eating_setup}.",
-      },
-      {
-        when: { q: "eating_setup", in: ["no_plan"] },
-        weight: 1,
-        because: "You didn't plan the loss: {answer:eating_setup}.",
-      },
-      {
-        when: PROTEIN_NOT_COVERED,
-        weight: 1,
-        because: "And your protein isn't covering the loss: {answer:protein_yesterday}.",
-      },
-    ],
-  },
-  {
-    id: "week_cancels_itself",
-    audience: "both",
-    category: "nutrition",
-    threshold: 6,
-    triggers: [
-      {
-        when: { q: "lifestyle_load", in: ["weekend_food_blowout"] },
-        weight: 4,
-        because: "You told us weekdays are controlled and weekends undo them — five careful days and two loose ones average out to a diet you never chose.",
-      },
-      {
-        when: { q: "eating_setup", in: ["cycling"] },
-        weight: 4,
-        because: "Your eating is {answer:eating_setup} — it never points one way long enough to build anything.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["drinks_8_plus"] },
-        weight: 1,
-        because: "Plus the drinking you described, which usually lands on the same two days.",
-      },
-      {
-        when: { q: "bodyweight_trend_8wk", in: ["flat"] },
-        weight: 1,
-        because: "And your weight is flat — the signature of a week that cancels itself.",
-      },
-      {
-        when: { q: "bodyweight_trend_8wk", in: ["dont_weigh"] },
-        weight: 1,
-        because: "You don't weigh yourself regularly, so the cancellation is invisible.",
+        because: "You do a lot of cardio, sport or physical work ({answer:activity_load}) on top of the diet.",
       },
     ],
   },
 
-  /* ============================= consistency ============================= */
+  /* ═════════════ lifestyle ═════════════ */
   {
-    id: "consistency_gap",
+    id: "cardio_eating_the_budget",
     audience: "both",
-    category: "consistency",
-    threshold: 6,
+    category: "lifestyle",
+    threshold: 5,
     triggers: [
+      { when: r("activity_load", 8, 10), weight: 3, because: "You rated your cardio, sport and physical work at {answer:activity_load}." },
+      { when: r("activity_load", 6, 7), weight: 1, because: "You do a fair amount of cardio, sport or physical work ({answer:activity_load})." },
       {
-        when: { q: "consistency_self_image", in: ["never_miss", "odd_miss"] },
-        weight: 3,
-        because: "You'd be described as: {answer:consistency_self_image}.",
-      },
-      {
-        when: { q: "sessions_missed_4wk", in: ["4_6"] },
-        weight: 3,
-        because: "But you missed or shortened {answer:sessions_missed_4wk} sessions in four weeks.",
-      },
-      {
-        when: { q: "sessions_missed_4wk", in: ["7_plus"] },
-        weight: 4,
-        because: "But you missed or shortened {answer:sessions_missed_4wk} sessions in four weeks.",
-      },
-      {
-        when: { q: "sessions_missed_4wk", in: ["dont_track"] },
+        when: all(ACTIVE, LOW_ENERGY),
         weight: 2,
-        because: "And asked to count, you said {answer:sessions_missed_4wk}.",
+        because: "Next to all that activity, you bring {answer:session_energy} energy to lifting sessions.",
       },
       {
-        when: { q: "stall_duration", in: ["2_4mo", "4_12mo", "over_1y"] },
+        when: all(ACTIVE, UNDER_EATS, NOT_DIETING),
         weight: 1,
-        because: "You've been stuck {answer:stall_duration}, and that adds up to a lot of training that never happened.",
+        because: "You end up eating less than planned at {answer:meal_skip} without meaning to diet, so the extra work is not being paid for.",
+      },
+      {
+        when: all(ACTIVE, POOR_WAKE, r("full_nights", 6, 10)),
+        weight: 1,
+        because: "You get full nights ({answer:full_nights}) yet wake up unrested ({answer:wake_rested}), and the extra work is the likeliest reason.",
+      },
+      { when: all(ACTIVE, HIGH_VOLUME), weight: 1, because: "It sits on top of more lifting than most people do ({answer:volume_feel})." },
+    ],
+  },
+  {
+    id: "alcohol_tax",
+    audience: "both",
+    category: "lifestyle",
+    threshold: 5,
+    triggers: [
+      { when: is("alcohol", "often"), weight: 3, because: "You described your drinking as {answer:alcohol}." },
+      { when: is("alcohol", "weekends"), weight: 2, because: "You described your drinking as {answer:alcohol}." },
+      {
+        when: all(DRINKS, POOR_WAKE),
+        weight: 1,
+        because: "You wake up at {answer:wake_rested} on the rested scale, and alcohol takes the deepest part of the night.",
+      },
+      {
+        when: all(DRINKS, r("full_nights", 1, 4)),
+        weight: 1,
+        because: "You rarely get a full night's sleep ({answer:full_nights}), and drinking nights are the shortest ones.",
+      },
+      { when: all(DRINKS, LOW_ENERGY), weight: 1, because: "You bring {answer:session_energy} energy to sessions, and the night before is a common reason." },
+      {
+        when: all(DRINKS, r("missed_sessions", 6, 10)),
+        weight: 1,
+        because: "You miss planned sessions at {answer:missed_sessions}; the day after is the usual casualty.",
       },
     ],
   },
+
+  /* ═════════════ consistency ═════════════ */
   {
     id: "missed_dose",
     audience: "both",
     category: "consistency",
-    threshold: 6,
-    suppressedBy: ["consistency_gap", "restart_not_stall"],
+    threshold: 4,
+    suppressedBy: ["restart_not_stall", "consistency_gap"],
+    triggers: [
+      { when: r("missed_sessions", 8, 10), weight: 3, because: "You rated how often you miss a planned session at {answer:missed_sessions}." },
+      { when: r("missed_sessions", 6, 7), weight: 2, because: "You miss planned sessions fairly often ({answer:missed_sessions})." },
+      { when: is("training_pattern", "on_off"), weight: 2, because: "You described your last few months of training as {answer:training_pattern}." },
+      {
+        when: FREQUENCY_VARIES,
+        weight: 1,
+        because: "Asked how often things get trained, you said it depends on the week, which is what a patchy routine looks like from inside.",
+      },
+      {
+        when: all(is("load_choice", "plan"), r("missed_sessions", 7, 10)),
+        weight: 1,
+        because: "Asked how you pick your weights, you said {answer:load_choice}; at the end you rated missed sessions at {answer:missed_sessions}. The plan is real; the attendance isn't.",
+      },
+      { when: HIGH_STRESS, weight: 1, because: "You rated your stress at {answer:stress}, and sessions are the first thing stress takes." },
+    ],
+  },
+  {
+    id: "consistency_gap",
+    audience: "both",
+    category: "consistency",
+    threshold: 5,
     triggers: [
       {
-        when: { q: "sessions_missed_4wk", in: ["4_6"] },
-        weight: 3,
-        because: "You skipped or cut short {answer:sessions_missed_4wk} sessions in four weeks — the program on paper and the one that happened are two different programs.",
-      },
-      {
-        when: { q: "sessions_missed_4wk", in: ["7_plus"] },
+        when: all(STEADY, r("missed_sessions", 6, 10)),
         weight: 4,
-        because: "You skipped or cut short {answer:sessions_missed_4wk} sessions in four weeks — the program isn't failing; it isn't being run.",
+        because: "Early on you described your last few months as {answer:training_pattern}; at the end you rated how often you miss a planned session at {answer:missed_sessions}.",
       },
+      { when: all(STEADY, r("missed_sessions", 8, 10)), weight: 1, because: "Missing that often is not steady, however it feels from the inside." },
       {
-        when: { q: "sessions_missed_4wk", in: ["2_3"] },
+        when: all(STEADY, FREQUENCY_VARIES),
         weight: 1,
-        because: "You skipped or cut short {answer:sessions_missed_4wk} sessions in four weeks — a 15% cut in the dose.",
+        because: "You also said how often things get trained depends on the week, and a steady routine doesn't.",
       },
       {
-        when: { q: "sessions_missed_4wk", in: ["dont_track"] },
-        weight: 2,
-        because: "You said {answer:sessions_missed_4wk}, so adherence can't even be measured.",
-      },
-      {
-        when: { q: "consistency_self_image", in: ["rough_patches"] },
+        when: all(STEADY, HIGH_STRESS),
         weight: 1,
-        because: "You described yourself as {answer:consistency_self_image} — rough patches are where progress resets.",
-      },
-      {
-        when: { q: "consistency_self_image", in: ["on_off", "honest_low"] },
-        weight: 2,
-        because: "You described yourself as {answer:consistency_self_image}.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["crisis"] },
-        weight: 1,
-        because: "You have something big going on outside the gym.",
+        because: "With stress at {answer:stress}, the sessions that vanish are the ones you don't remember losing.",
       },
     ],
   },
@@ -1399,322 +828,206 @@ export const FINDING_RULES: FindingRule[] = [
     id: "restart_not_stall",
     audience: "both",
     category: "consistency",
-    threshold: 6,
+    threshold: 5,
+    suppressedBy: ["missed_dose"],
     triggers: [
+      { when: COMEBACK, weight: 4, because: "Asked about your last few months of training, you said {answer:training_pattern}." },
       {
-        when: { q: "consistency_self_image", in: ["just_restarted"] },
-        weight: 4,
-        because: "You told us: {answer:consistency_self_image}. After a long break the first weeks feel like a wall because you're rebuilding, not because anything is wrong.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk", "4_8wk"] },
+        when: all(COMEBACK, PAST_YEAR_ONE),
         weight: 1,
-        because: "And your \"stall\" is {answer:stall_duration} old.",
+        because: "With {answer:training_age} behind you, what you built before the break comes back faster than it was built.",
       },
+      { when: all(COMEBACK, r("missed_sessions", 1, 4)), weight: 1, because: "You're showing up now: you rated missed sessions at {answer:missed_sessions}." },
       {
-        when: { all: [STRENGTH, { q: "lift_calibration_4wk", in: ["lower_now", "higher_now"] }] },
+        when: all(COMEBACK, SWITCHES),
         weight: 1,
-        because: "Your four-week comparison ({answer:lift_calibration_4wk}) is what a rebuild looks like.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "lift_progress_8wk", in: ["down", "up_barely"] }] },
-        weight: 1,
-        because: "Your 8-week lift comparison ({answer:lift_progress_8wk}) is what a rebuild looks like.",
+        because: "You start new programs often ({answer:program_switch}), and a comeback is when a new program is most tempting.",
       },
     ],
   },
 
-  /* ============================ expectations ============================ */
+  /* ═════════════ expectations ═════════════ */
   {
     id: "expecting_year_one_speed",
     audience: "both",
     category: "expectations",
-    threshold: 9,
-    triggers: [
-      {
-        when: { all: [PHYSIQUE, { q: "expected_body_change", in: ["transformation"] }] },
-        weight: 5,
-        because: "You'd be satisfied by: {answer:expected_body_change}. Your timeline is from a movie.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "expected_body_change", in: ["noticeable_others"] }] },
-        weight: 3,
-        because: "You want people who see you weekly to comment — that's a 3–5 kg change, not a 12-week one.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "expected_strength_rate", in: ["weekly_pr"] }] },
-        weight: 5,
-        because: "You'd feel unstuck with: {answer:expected_strength_rate}. At your training age that rate no longer exists for anyone.",
-      },
-      {
-        when: { all: [STRENGTH, { q: "expected_strength_rate", in: ["monthly_small"] }] },
-        weight: 2,
-        because: "You expect {answer:expected_strength_rate}.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "training_age", in: ["1_3y"] }] },
-        weight: 1,
-        because: "You're at {answer:training_age}, where that's the top of the possible range, not the baseline.",
-      },
-      {
-        when: { q: "training_age", in: ["3_6y"] },
-        weight: 2,
-        because: "You're at {answer:training_age}, where a good quarter adds roughly 1 kg of muscle or 2–3% on a lift.",
-      },
-      {
-        when: { q: "training_age", in: ["over_6y"] },
-        weight: 3,
-        because: "You're at {answer:training_age}, where a good year adds 1–2 kg of muscle or 5% on a main lift.",
-      },
-      {
-        when: { q: "stall_duration", in: ["under_4wk", "4_8wk"] },
-        weight: 2,
-        because: "And your \"stall\" is {answer:stall_duration} long.",
-      },
-      {
-        when: { q: "compare_to", in: ["first_year"] },
-        weight: 2,
-        because: "Your benchmark is your first year: {answer:compare_to}.",
-      },
-    ],
-  },
-  {
-    id: "borrowed_yardstick",
-    audience: "both",
-    category: "expectations",
     threshold: 6,
-    triggers: [
-      {
-        when: { q: "compare_to", in: ["lifters_online"] },
-        weight: 4,
-        because: "You compare against {answer:compare_to} — people whose starting point, chemistry or camera you can't see.",
-      },
-      {
-        when: { q: "compare_to", in: ["gym_peers"] },
-        weight: 3,
-        because: "You compare against people at your gym who started around when you did.",
-      },
-      {
-        when: { q: "stall_evidence", in: ["others"] },
-        weight: 2,
-        because: "Other people's comments are part of your evidence.",
-      },
-      {
-        when: { all: [PHYSIQUE, { q: "expected_body_change", in: ["transformation"] }] },
-        weight: 1,
-        because: "And the 12-week transformation photos are your reference.",
-      },
+    // "Slow is normal" is the verdict of last resort: any finding that outscores it wins the headline.
+    suppressedBy: [
+      "sets_end_too_early",
+      "failure_every_set",
+      "no_forcing_function",
+      "program_hopping",
+      "lagging_part_trained_last",
+      "never_heavy_enough",
+      "testing_instead_of_training",
+      "strength_without_muscle",
+      "main_lift_underpractised",
+      "target_muscle_underdosed",
+      "sticking_point_untrained",
+      "form_breaks_under_load",
+      "rom_shrinking",
+      "volume_outruns_recovery",
+      "sleep_under_dose",
+      "life_is_the_limiter",
+      "training_around_pain",
+      "deficit_while_expecting_muscle",
+      "no_surplus_no_growth",
+      "recomp_window_closed",
+      "gaining_too_fast",
+      "fat_loss_without_deficit",
+      "week_cancels_itself",
+      "protein_unknown",
+      "strength_leaking_bodyweight",
+      "cardio_eating_the_budget",
+      "alcohol_tax",
+      "missed_dose",
+      "consistency_gap",
+      "restart_not_stall",
     ],
-  },
-
-  /* ============================== lifestyle ============================== */
-  {
-    id: "alcohol_tax",
-    audience: "both",
-    category: "lifestyle",
-    threshold: 6,
     triggers: [
+      { when: all(is("training_age", "over_6y"), CLEAN), weight: 3, because: "You've trained for {answer:training_age}." },
+      { when: all(is("training_age", "3_6y"), CLEAN), weight: 2, because: "You've trained for {answer:training_age}." },
+      { when: r("effort_grind", 7, 10), weight: 1, because: "Your sets are genuinely hard: your last rep grinds at {answer:effort_grind}." },
+      { when: r("beat_last", 7, 10), weight: 1, because: "You rated how often you try to beat your last session at {answer:beat_last}." },
       {
-        when: { q: "lifestyle_load", in: ["drinks_8_plus"] },
-        weight: 4,
-        because:
-          "You told us: eight-plus drinks a week, or a heavy night most weekends. Each one suppresses muscle repair for about a day and wrecks deep sleep that night — that covers most of your week.",
-      },
-      {
-        when: { q: "readiness_signals", in: ["sleep_broken"] },
+        when: all(STEADY, r("missed_sessions", 1, 3)),
         weight: 1,
-        because: "Your sleep is broken, and broken sleep is the first thing alcohol costs.",
+        because: "Your training has been {answer:training_pattern} and you rarely miss a session ({answer:missed_sessions}).",
       },
-      {
-        when: SLEEP_SHORT,
-        weight: 1,
-        because: "You got 7 hours on {answer:sleep_7h_nights} last week.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["weekend_food_blowout"] },
-        weight: 1,
-        because: "Your weekends undo the week's eating on the same nights.",
-      },
-    ],
-  },
-  {
-    id: "cardio_eating_the_budget",
-    audience: "both",
-    category: "lifestyle",
-    threshold: 6,
-    triggers: [
-      {
-        when: {
-          all: [
-            { q: "lifestyle_load", in: ["cardio_3h_plus"] },
-            { any: [WEIGHT_DOWN, { q: "eating_setup", in: ["deficit_planned"] }] },
-          ],
-        },
-        weight: 4,
-        because:
-          "You do three-plus hours of cardio a week while your weight is going down — the endurance work is being recovered from first and fed first, and the lifting gets what's left.",
-      },
-      {
-        when: { q: "lifestyle_load", in: ["cardio_3h_plus"] },
-        weight: 1,
-        because: "You do 3+ hours a week of running, cycling, swimming or sport.",
-      },
-      {
-        when: PROTEIN_NOT_COVERED,
-        weight: 1,
-        because: "Your protein is {answer:protein_yesterday}, so muscle is the first thing borrowed from.",
-      },
-      {
-        when: { all: [PHYSIQUE, WANTS_MUSCLE] },
-        weight: 1,
-        because: "And your goal is {answer:physique_goal}.",
-      },
+      { when: r("full_nights", 7, 10), weight: 1, because: "You rated how often you get a full night's sleep at {answer:full_nights}." },
+      { when: r("program_switch", 1, 3), weight: 1, because: "You rarely start a new program ({answer:program_switch})." },
     ],
   },
 ];
 
-/* ─────────────────────────────── clearances ─────────────────────────────── */
-
+/* ═════════════ clearances ═════════════ */
 export const CLEARANCES: ClearanceRule[] = [
   {
     id: "effort_is_there",
     audience: "both",
-    when: {
-      all: [
-        { q: "rir_last_set", in: ["0_1", "2_3"] },
-        { q: "last_true_failure", in: ["this_week", "this_month"] },
-      ],
-    },
+    when: all(is("hard_set_habit", "push"), r("effort_grind", 6, 9)),
     title: "Effort isn't your problem",
-    text: "Your last set ended at {answer:rir_last_set}, and you've felt genuine failure {answer:last_true_failure}. Your effort scale is calibrated and the stimulus is real. The report won't ask you to try harder; it'll ask you to aim it better.",
+    text: "Your sets end just short of failure and your last reps genuinely slow down. The stimulus is real, so this report won't ask you to try harder, only to aim it better.",
+  },
+  {
+    id: "progression_in_place",
+    audience: "both",
+    when: any(all(is("load_choice", "plan"), r("beat_last", 7, 10)), r("beat_last", 8, 10)),
+    title: "Something already pushes your weights up",
+    text: "You try to beat your last session most of the time, or your program does the pushing for you. Progression pressure is there; the stall is coming from somewhere else.",
   },
   {
     id: "protein_covered",
     audience: "both",
-    when: { q: "protein_yesterday", in: ["know_high"] },
+    when: all(r("protein_meals", 8, 10), r("meal_skip", 1, 5)),
     title: "Protein is handled",
-    text: "You can state yesterday's number and it clears 1.6 g/kg. Protein is off the suspect list — don't let anyone sell you more of it.",
+    text: "Nearly every meal you eat is built around protein, and you rarely end up eating less than planned. That habit does the job; nobody needs to sell you more of it.",
   },
   {
     id: "sleep_covered",
     audience: "both",
-    when: {
-      all: [
-        { q: "sleep_7h_nights", in: ["6_7"] },
-        { q: "readiness_signals", notIn: ["sleep_broken"] },
-      ],
-    },
+    when: all(r("full_nights", 8, 10), r("wake_rested", 7, 10)),
     title: "Sleep is doing its job",
-    text: "Seven-plus hours on {answer:sleep_7h_nights} of the last seven nights, and none of it broken. Whatever is stalling you, it isn't recovery hours.",
+    text: "You sleep a full night most nights and wake up rested. Whatever is holding you back, it isn't recovery hours.",
   },
   {
-    id: "attendance_covered",
+    id: "you_show_up",
     audience: "both",
-    when: { q: "sessions_missed_4wk", in: ["0_1"] },
+    when: all(r("missed_sessions", 1, 3), STEADY),
     title: "You show up",
-    text: "{answer:sessions_missed_4wk} missed sessions in four weeks means the dose you planned is the dose you got. This is a stall in a consistent lifter, which narrows it a lot.",
+    text: "Your training has been steady and you rarely miss a session. Consistency is the hardest part of training and you already have it.",
   },
   {
-    id: "program_stable",
+    id: "plan_gets_time",
     audience: "both",
-    when: {
-      any: [
-        { q: "program_changes_6mo", in: ["0", "1"] },
-        {
-          all: [
-            { q: "program_changes_6mo", in: ["same_for_years"] },
-            { q: "progression_rule", in: ["log_rule", "percent_plan"] },
-          ],
-        },
-      ],
-    },
-    title: "You've given the plan a chance",
-    text: "{answer:program_changes_6mo} — that's long enough for adaptation to show. If it hasn't, the plan itself, not your patience, is what we look at.",
+    when: r("program_switch", 1, 3),
+    title: "You give a plan time to work",
+    text: "You stick with a program instead of starting over. That patience is uncommon, and it means the fix can be a change inside your plan, not a new plan.",
   },
   {
-    id: "tracking_covered",
+    id: "pain_free",
     audience: "both",
-    when: {
-      all: [
-        { q: "progress_record", in: ["every_set_logged"] },
-        {
-          any: [
-            { all: [PHYSIQUE, { q: "lift_progress_8wk", notIn: ["dont_know"] }] },
-            { all: [STRENGTH, { q: "lift_calibration_4wk", notIn: ["no_record", "comparing_pr"] }] },
-          ],
-        },
-      ],
-    },
-    title: "Your data is real",
-    text: "Every set is logged, and you answered the four-week question from it. When you say the numbers aren't moving, we believe you — and a stall you can measure is a stall you can fix.",
+    when: r("pain_limits", 1, 2),
+    title: "Pain isn't holding you back",
+    text: "Pain almost never changes how you train, so every lift in your program is available to you at full range and full load.",
   },
   {
-    id: "technique_watched",
+    id: "alcohol_not_a_factor",
     audience: "both",
-    when: { q: "technique_video", in: ["identical", "coach_checks"] },
-    title: "Technique drift isn't your problem",
-    text: "Your lift looks the same as it did three months ago, or someone qualified is checking it. The quietest fake-progress trap — load up, range down — is ruled out.",
+    when: is("alcohol", "none", "light"),
+    title: "Alcohol isn't a factor",
+    text: "You drink little or nothing. There is no recovery tax to pay here.",
   },
   {
-    id: "deload_covered",
+    id: "life_leaves_room",
     audience: "both",
-    when: { q: "deload_practice", in: ["planned_regular"] },
-    title: "Fatigue is being managed",
-    text: "Planned deloads every 4–8 weeks mean accumulated fatigue isn't hiding your progress. If you're stuck, it's a stimulus problem, not a fatigue one.",
+    when: all(r("stress", 1, 4), r("activity_load", 1, 5)),
+    title: "Life leaves room to recover",
+    text: "Your stress is low and you're not stacking hard physical work on top of lifting. Life outside the gym isn't what's draining your recovery.",
   },
   {
-    id: "lifestyle_clear",
+    id: "not_overreaching",
     audience: "both",
-    when: {
-      q: "lifestyle_load",
-      notIn: ["high_stress", "crisis", "physical_job", "cardio_3h_plus", "drinks_8_plus", "weekend_food_blowout"],
-    },
-    title: "Life isn't stealing your recovery",
-    text: "No crisis, no months of high stress, no heavy cardio or drinking, no 12-hour shifts, no weekend resets. Your life is leaving the recovery budget intact, so the answer is inside the gym or the kitchen.",
+    when: all(r("volume_feel", 4, 6), r("session_energy", 6, 10)),
+    title: "You're not doing too much",
+    text: "You train about as much as most lifters and arrive at sessions with energy. You are not piling on more work than you can recover from.",
   },
   {
-    id: "volume_in_range",
+    id: "eating_matches_goal",
     audience: "physique",
-    when: {
-      all: [
-        { q: "hard_sets_lagging", in: ["10_15", "16_22"] },
-        { q: "rir_last_set", in: ["0_1", "2_3"] },
-        { q: "lagging_priority", in: ["first_fresh", "own_day"] },
-      ],
-    },
-    title: "Your volume is in the effective range",
-    text: "{answer:hard_sets_lagging} hard sets a week on the muscle you care about, ending at {answer:rir_last_set}, trained {answer:lagging_priority}. That's a proper growth dose, delivered fresh — more sets is not the answer here.",
+    when: all(
+      WANTS_MUSCLE,
+      is("eating_phase", "gain"),
+      is("appetite", "normal"),
+      r("weekend_eating", 1, 5),
+      r("meal_skip", 1, 5),
+      r("protein_meals", 6, 10),
+      is("alcohol", "none", "light"),
+    ),
+    title: "Your eating points the right way",
+    text: "You want muscle, you're eating to gain, your meals are built around protein, and no weekend swing undoes it. The food side of growth is set up.",
   },
   {
-    id: "energy_balance_aligned",
+    id: "deficit_is_real",
     audience: "physique",
-    when: {
-      any: [
-        {
-          all: [WANTS_MUSCLE, { q: "bodyweight_trend_8wk", in: ["up_slightly"] }],
-        },
-        {
-          all: [
-            { q: "physique_goal", in: ["lose_fat_keep"] },
-            { q: "bodyweight_trend_8wk", in: ["down_slightly"] },
-          ],
-        },
-      ],
-    },
-    title: "Your weight trend matches your goal",
-    text: "Your eight-week trend ({answer:bodyweight_trend_8wk}) is moving the right way for {answer:physique_goal}, at a sensible rate. Nutrition direction isn't what's holding you.",
+    when: all(WANTS_LESS_FAT, DIETING, is("appetite", "small", "normal"), r("weekend_eating", 1, 5)),
+    title: "Your deficit is real",
+    text: "You want less fat, you're eating for it, your appetite isn't fighting you, and your weekends don't undo the week. The diet itself is set up to work.",
   },
   {
-    id: "lift_practice_covered",
+    id: "lagging_gets_priority",
+    audience: "physique",
+    when: all(SPECIFIC_LAG, is("lagging_priority", "first"), r("feel_target", 6, 10)),
+    title: "Your slowest area gets your best",
+    text: "You train your slowest area first, while you're fresh, and you can feel the target muscle doing the work. If it's still slow, the reason isn't where it sits in your session or how you execute it.",
+  },
+  {
+    id: "range_holds",
+    audience: "physique",
+    when: is("range_under_load", "full"),
+    title: "Your reps stay honest",
+    text: "Your range of motion holds as the weight climbs, so the numbers you add are real strength, not shorter reps.",
+  },
+  {
+    id: "heavy_is_practised",
     audience: "strength",
-    when: {
-      all: [
-        { q: "main_lift_frequency", in: ["2", "3", "4_plus"] },
-        { q: "main_lift_sets", in: ["10_15", "16_plus"] },
-        { q: "intensity_mix", in: ["mixed_planned"] },
-      ],
-    },
-    title: "Your lift is practised properly",
-    text: "You perform the lift {answer:main_lift_frequency} a week, {answer:main_lift_sets} heavy sets across it, cycling heavy, moderate and light work. That's the structure that builds strength; the report looks elsewhere for the stall.",
+    when: all(r("heavy_practice", 6, 7), is("max_testing", "never", "few_months"), r("form_breakdown", 1, 5)),
+    title: "You practise heavy without living there",
+    text: "You lift close to your max regularly but rarely test it. That's the balance strong lifters run: heavy enough to be familiar, not so often that it's all testing.",
+  },
+  {
+    id: "technique_holds",
+    audience: "strength",
+    when: all(r("form_breakdown", 1, 3), KNOWN_FAIL_POINT),
+    title: "Your technique holds under load",
+    text: "Your form barely changes on heavy reps and you know exactly where a heavy rep gets hard. The lift you practise is the lift you test.",
+  },
+  {
+    id: "fuel_is_there",
+    audience: "strength",
+    when: all(is("eating_phase", "gain", "maintain"), r("meal_skip", 1, 4), r("protein_meals", 6, 10)),
+    title: "Your lifts have fuel",
+    text: "You're not dieting, you rarely end up eating less than planned, and most meals are built around protein. The food side of strength is covered; the stall is coming from somewhere else.",
   },
 ];

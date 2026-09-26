@@ -16,8 +16,8 @@ function minutes(s: number | null | undefined) {
   return Math.max(1, Math.round(s / 60));
 }
 
-/** Questions whose "because" line is the most convincing proof that we read the answers. */
-const CALIBRATION_HINTS = ["4wk", "yesterday", "missed", "sleep", "bodyweight", "logbook", "last week", "weeks ago"];
+/** A "because" line that quotes the user's own answer (a “label” or an N/10) is the most convincing proof we read them. */
+const QUOTES_AN_ANSWER = /“|\b\d{1,2}\/10\b/;
 
 export default async function ResultPage(props: PageProps<"/diagnose/result/[id]">) {
   const { id } = await props.params;
@@ -45,9 +45,10 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
   const returnTo = `/diagnose/result/${id}`;
   const trackLabel = a.track === "strength" ? "Strength track" : "Physique track";
 
-  // One "what you told us" line for the teaser — prefer the one that quotes a hard number/date.
+  // One "what you told us" line for the teaser — the strongest trigger that quotes an answer back
+  // (triggers are stored strongest first).
   const teaserBecause =
-    primaryResult?.triggers.find((t) => CALIBRATION_HINTS.some((h) => t.because.toLowerCase().includes(h)))?.because ??
+    primaryResult?.triggers.find((t) => QUOTES_AN_ANSWER.test(t.because))?.because ??
     primaryResult?.triggers[0]?.because ??
     null;
   const moreBecause = primaryResult ? Math.max(0, primaryResult.triggers.length - 1) : 0;
@@ -233,12 +234,12 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
                 </h2>
                 <p className="mt-3 text-ink-2 leading-relaxed">
                   Your answers describe a programme that is already doing the things that drive progress. That usually
-                  means one of three things: the stall is younger than it feels, the measurement is too coarse to see
-                  the change, or something outside training is the limiter.
+                  means one of three things: the stall is younger than it feels, the change is too slow to notice week
+                  to week, or something outside training is the limiter.
                 </p>
                 <p className="mt-3 text-ink-2 leading-relaxed">
-                  Log four weeks of honest numbers, then run this again. With real before-and-after data the diagnosis
-                  gets much sharper — and if we find something then, that report is worth paying for.
+                  Give it four more weeks of honest training, then run this again. If something has surfaced by then,
+                  that report is worth paying for.
                 </p>
                 <Link href="/diagnose" className="btn btn-primary w-full mt-5">
                   Run it again in four weeks

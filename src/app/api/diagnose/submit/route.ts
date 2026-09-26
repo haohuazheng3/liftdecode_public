@@ -13,10 +13,21 @@ import { clientIp, rateLimit } from "@/lib/ratelimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const MAX_MEANINGFUL_DURATION_S = 60 * 60 * 2;
+
 const Body = z.object({
   track: z.string(),
   answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
-  durationSeconds: z.number().int().min(0).max(60 * 60 * 6).optional(),
+  // Informational only, so it must never block a submission: a resumed run (next day, a tab
+  // left open overnight) or a corrupt client clock just drops the value. Above 2 hours it no
+  // longer measures answering time and the result page would print a silly "about N minutes".
+  durationSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .catch(undefined)
+    .transform((n) => (n === undefined || n > MAX_MEANINGFUL_DURATION_S ? undefined : n)),
 });
 
 export async function POST(req: Request) {

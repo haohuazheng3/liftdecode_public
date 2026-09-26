@@ -74,5 +74,5 @@ export const FINDING: FindingContent = {
     strength:
       "A lift that fails by form collapse at the same point is often the body steering around the spot that hurts, so treat the collapse as information, not a technique flaw to grind through. Keep the competition lift in the week at the tolerated range and load, and let a variation that stops above the sore point carry the heavier work. Nothing above 85% on the affected lift until four straight weeks pass under the 3/10 rule; the strength is still there and comes back fast once you can express it.",
   },
-  relatedFindings: ["rom_shrinking", "fatigue_never_cleared", "sticking_point_untrained"],
+  relatedFindings: ["rom_shrinking", "volume_outruns_recovery", "form_breaks_under_load"],
 };

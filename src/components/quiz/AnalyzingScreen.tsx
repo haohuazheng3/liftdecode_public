@@ -13,12 +13,10 @@ const STEPS = [
 
 export function AnalyzingScreen({
   track,
-  count,
   error,
   onRetry,
 }: {
   track: Track | null;
-  count: number;
   error: string | null;
   onRetry: () => void;
 }) {
@@ -34,7 +32,7 @@ export function AnalyzingScreen({
     <div className="slab p-6 sm:p-10 animate-rise" aria-live="polite">
       <div className="eyebrow mb-3">{track === "strength" ? "Strength track" : "Physique track"}</div>
       <h2 className="display text-3xl sm:text-4xl">
-        Reading your <em>{count}</em> answers.
+        Decoding your <em>training</em>.
       </h2>
 
       {!error ? (

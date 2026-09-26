@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { SectionHeading } from "./SectionHeading";
+import { PlateFace } from "./graphics";
 
 const MEMBER_INCLUDES = [
   "This report, fully unlocked",
   "Unlimited re-diagnoses as your training changes",
-  "Plateau tracker for lifts and measurements",
+  "Plateau tracker for your lifts",
   "4-week plan with check-offs",
   "Compare reports to see what cleared",
   "The full fix library",
@@ -19,7 +20,7 @@ const REPORT_INCLUDES = [
 
 function Check() {
   return (
-    <span className="grid place-items-center w-5 h-5 shrink-0 rounded-full bg-clear/15 text-clear" aria-hidden="true">
+    <span className="grid place-items-center w-5 h-5 shrink-0 mt-0.5 rounded-full bg-clear/15 text-clear" aria-hidden="true">
       <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
         <path d="M1 4l2.6 2.6L9 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -27,80 +28,86 @@ function Check() {
   );
 }
 
+function Price({ amount, unit }: { amount: string; unit: string }) {
+  return (
+    <div className="text-right shrink-0">
+      <div className="display text-[3.4rem] sm:text-[4.2rem] leading-[0.85] font-black">{amount}</div>
+      <div className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink-3 mt-1.5">{unit}</div>
+    </div>
+  );
+}
+
 export function Pricing() {
   return (
-    <section id="pricing">
+    <section id="pricing" aria-labelledby="pricing-title">
       <SectionHeading
+        id="pricing-title"
         eyebrow="Two ways in"
         title={
           <>
             Both unlock the <em>full</em> report.
           </>
         }
-        intro="Answering is free. Pay only when you want to read the whole thing. Membership is for lifters who want to keep re-checking; the single report is for one clear answer."
+        intro="Answering is free. Pay only when you want to read the whole thing."
       />
 
       <div className="mt-8 grid gap-4 md:grid-cols-[1.1fr_0.9fr] md:items-stretch">
         {/* 1 — membership first */}
-        <article className="slab slab-hover p-6 sm:p-8 relative overflow-hidden border-signal/30 flex flex-col">
-          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-signal/10 blur-3xl" aria-hidden="true" />
-          <div className="relative flex items-start justify-between gap-4">
-            <div>
-              <span className="tag tag-signal mb-3">Most complete</span>
-              <h3 className="text-2xl font-semibold tracking-tight">LiftDecode Membership</h3>
-              <p className="mt-1.5 text-sm text-ink-2 leading-relaxed">
-                For lifters who want to keep the loop going: diagnose, fix, re-check.
-              </p>
+        <article className="slab slab-hover overflow-hidden relative border-signal/30 flex flex-col">
+          <div className="hazard h-2 w-full" aria-hidden="true" />
+          <PlateFace outline className="absolute -right-20 -bottom-20 w-72 h-72 text-signal/10 pointer-events-none" />
+          <div className="relative p-5 sm:p-8 flex flex-col flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <span className="tag tag-signal mb-3">Most complete</span>
+                <h3 className="display display-caps text-[2.1rem] sm:text-[2.6rem] leading-none">Membership</h3>
+                <p className="mt-2 text-sm text-ink-2 leading-relaxed">Diagnose, fix, re-check. Keep the loop going.</p>
+              </div>
+              <Price amount="$15" unit="per month" />
             </div>
-            <div className="text-right shrink-0">
-              <div className="display text-4xl sm:text-5xl">$15</div>
-              <div className="text-xs text-ink-3 mt-1">per month</div>
+            <ul className="mt-6 space-y-2.5 flex-1">
+              {MEMBER_INCLUDES.map((t) => (
+                <li key={t} className="flex gap-3 text-[0.95rem] text-ink-2 leading-relaxed">
+                  <Check />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7">
+              <Link href="/pricing" className="btn btn-primary w-full">
+                Become a member
+              </Link>
+              <p className="mt-2.5 text-[11px] text-ink-3 text-center">Cancel any time from your account. No lock-in.</p>
             </div>
-          </div>
-          <ul className="relative mt-6 space-y-2.5 flex-1">
-            {MEMBER_INCLUDES.map((t) => (
-              <li key={t} className="flex gap-3 text-[0.95rem] text-ink-2 leading-relaxed">
-                <Check />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="relative mt-7">
-            <Link href="/pricing" className="btn btn-primary w-full">
-              Become a member
-            </Link>
-            <p className="mt-2.5 text-[11px] text-ink-3 text-center">Cancel any time from your account. No lock-in.</p>
           </div>
         </article>
 
         {/* 2 — single report */}
-        <article className="slab slab-hover p-6 sm:p-8 flex flex-col">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="tag mb-3">One time</span>
-              <h3 className="text-2xl font-semibold tracking-tight">Just this report</h3>
-              <p className="mt-1.5 text-sm text-ink-2 leading-relaxed">
-                One set of answers, one full diagnosis. No subscription.
-              </p>
+        <article className="slab slab-hover overflow-hidden flex flex-col">
+          <div className="knurl h-2 w-full" aria-hidden="true" />
+          <div className="p-5 sm:p-8 flex flex-col flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <span className="tag mb-3">One time</span>
+                <h3 className="display display-caps text-[2.1rem] sm:text-[2.6rem] leading-none">Just this report</h3>
+                <p className="mt-2 text-sm text-ink-2 leading-relaxed">One diagnosis, fully unlocked. No subscription.</p>
+              </div>
+              <Price amount="$5" unit="one time" />
             </div>
-            <div className="text-right shrink-0">
-              <div className="display text-4xl sm:text-5xl">$5</div>
-              <div className="text-xs text-ink-3 mt-1">one time</div>
+            <ul className="mt-6 space-y-2.5 flex-1">
+              {REPORT_INCLUDES.map((t) => (
+                <li key={t} className="flex gap-3 text-[0.95rem] text-ink-2 leading-relaxed">
+                  <Check />
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7">
+              <Link href="/diagnose" className="btn btn-ghost w-full" prefetch>
+                Start the diagnosis
+              </Link>
+              <p className="mt-2.5 text-[11px] text-ink-3 text-center">Answer first. Pay only to unlock.</p>
             </div>
-          </div>
-          <ul className="mt-6 space-y-2.5 flex-1">
-            {REPORT_INCLUDES.map((t) => (
-              <li key={t} className="flex gap-3 text-[0.95rem] text-ink-2 leading-relaxed">
-                <Check />
-                <span>{t}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-7">
-            <Link href="/diagnose" className="btn btn-ghost w-full" prefetch>
-              Start the diagnosis
-            </Link>
-            <p className="mt-2.5 text-[11px] text-ink-3 text-center">Answer first. Pay only to unlock.</p>
           </div>
         </article>
       </div>

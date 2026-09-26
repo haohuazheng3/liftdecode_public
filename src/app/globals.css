@@ -25,7 +25,8 @@
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-display), Impact, "Arial Narrow", sans-serif;
+  --font-stencil: var(--font-stencil), var(--font-display), Impact, sans-serif;
 
   --radius-slab: 28px;
   --radius-slab-sm: 20px;
@@ -41,6 +42,7 @@
   --animate-rise: rise 0.5s var(--ease-out-quart) both;
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+
 
   @keyframes rise {
     from {
@@ -149,16 +151,28 @@ body {
     border-radius: 18px;
   }
 
+  /* athletic display type: condensed, heavy, tight. <em> is the amber accent word, never italic */
   .display {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 1.02;
+    font-weight: 800;
+    font-optical-sizing: auto;
+    letter-spacing: 0;
+    line-height: 0.98;
+    text-wrap: balance;
   }
   .display em,
   .display i {
-    font-style: italic;
-    color: var(--color-signal-2);
+    font-style: normal;
+    color: var(--color-signal);
+  }
+  /* short shouted headlines: gym-signage caps */
+  .display-caps {
+    font-weight: 900;
+    /* always the tightest optical cut: signage caps, not text */
+    font-variation-settings: "opsz" 72;
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    line-height: 0.88;
   }
   .eyebrow {
     font-family: var(--font-mono);
@@ -379,11 +393,12 @@ body {
   }
   .prose-ld h2 {
     font-family: var(--font-display);
-    font-size: 1.9rem;
-    line-height: 1.1;
+    font-weight: 800;
+    font-size: 2rem;
+    line-height: 1.02;
     color: var(--color-ink);
     margin: 2.2em 0 0.7em;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
   .prose-ld h3 {
     color: var(--color-ink);
@@ -415,6 +430,115 @@ body {
     background: linear-gradient(90deg, transparent, var(--color-line-2), transparent);
   }
 
+  /* ---------- gym textures: used INSIDE slabs only; the void stays empty ---------- */
+
+  /* knurling: the diamond crosshatch on a barbell grip */
+  .knurl {
+    background-color: rgba(255, 255, 255, 0.03);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.11) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.45) 0 1px, transparent 1px 5px);
+  }
+  /* hazard stripe: platform edge / gym signage */
+  .hazard {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-signal) 0 10px,
+      #14100a 10px 20px
+    );
+  }
+  /* chalk dust: sparse white specks drifting up from the bottom of a slab */
+  .chalk {
+    isolation: isolate;
+  }
+  .chalk::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 12 0 0 0 -7.6'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+    opacity: 0.1;
+    mask-image: radial-gradient(120% 70% at 50% 110%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(120% 70% at 50% 110%, #000 0%, transparent 70%);
+  }
+  .chalk > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 1–10 intensity scale (RPE style): big stencil numerals, one tap, instant fill */
+  .rpe-btn {
+    display: grid;
+    place-items: center;
+    min-height: 52px;
+    min-width: 44px;
+    border-radius: 14px;
+    border: 1px solid var(--color-line-2);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-ink-2);
+    font-family: var(--font-stencil);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 0.1s var(--ease-out-quart),
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .rpe-btn:hover {
+    border-color: rgba(245, 181, 68, 0.5);
+    color: var(--color-ink);
+  }
+  .rpe-btn:active {
+    transform: scale(0.92);
+  }
+  .rpe-btn[aria-pressed="true"] {
+    background: var(--color-signal);
+    border-color: var(--color-signal);
+    color: #14100a;
+    box-shadow: var(--shadow-signal);
+  }
+
+  /* marquee: two identical runs side by side, the track slides by exactly one run */
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+  }
+  /* paused by the ticker's own toggle (touch + keyboard), by keyboard focus inside, or by hover */
+  .marquee[data-paused="true"] .marquee-track,
+  .marquee:focus-within .marquee-track,
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* hero barbell load-in (SVG parts) */
+  .plate-in {
+    transform-box: fill-box;
+    animation: plate-in 0.75s var(--ease-out-quart) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .bar-in {
+    animation: bar-in 0.6s var(--ease-out-quart) both;
+  }
+  .chalk-puff {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: chalk-puff 1.6s ease-out both;
+    animation-delay: var(--d, 900ms);
+  }
+  .float-idle {
+    animation: float-idle 7s ease-in-out 1.6s infinite;
+  }
+
   /* locked report: blur the real thing behind the unlock slab */
   .locked-veil {
     position: relative;
@@ -429,14 +553,76 @@ body {
   }
 }
 
-/* reduce motion */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes plate-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--from, -90px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes bar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes chalk-puff {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  35% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0.14;
+    transform: translateY(-18px) scale(1.3);
+  }
+}
+@keyframes float-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* reduce motion: everything lands in its final state at once, nothing loops */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  .marquee-track,
+  .float-idle,
+  .skeleton::after,
+  .animate-pulse-soft {
+    animation: none !important;
+  }
+  .marquee {
+    overflow-x: auto;
   }
 }
 

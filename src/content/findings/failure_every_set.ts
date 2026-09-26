@@ -6,24 +6,24 @@ export const FINDING: FindingContent = {
   category: "effort",
   title: "Every set to failure is burning your progress",
   verdict:
-    "You're generating more fatigue than stimulus, and the fatigue is showing up as a stall.",
+    "Taking every set to failure costs more recovery than it buys in stimulus, so your sessions are hard but your progress is flat.",
   summary:
-    "You are not under-training. You take basically every set to the wall, often past the point where form holds, and you never plan a week to let that debt clear. The last grinding rep costs far more than it builds, and the bill arrives as heavy warm-ups, soreness that never leaves, and numbers that haven't moved in months. Left alone, this pattern doesn't plateau politely; it drifts backwards while you work harder than everyone around you.",
+    "You are not under-training. Most of your sets end at failure, and your last rep regularly slows to a grind, so nearly every set you do is a maximal effort. The last grinding rep costs far more recovery than it builds, and the bill arrives as flat energy in sessions, aches that start steering your training, and progress that stalls however hard you push. Left alone, this pattern doesn't plateau politely; it drifts backwards while you work harder than everyone around you.",
   mechanism: [
     "Failure is a tool, not a setting. The evidence is fairly consistent that most of the growth stimulus from a set lives in the last few reps before failure, roughly the 0–3 reps-in-reserve zone. But the studies that compared sets stopped a rep or two short with sets taken all the way to failure found the gains were similar, while the failure groups reported more soreness, bigger drops in performance the next session, and slower recovery. In other words, the final rep buys you almost nothing extra and charges you a lot. Do that on every set, every session, and the price compounds.",
-    "Fatigue and fitness are two separate accounts. A hard set deposits a small amount of adaptation and a larger amount of fatigue. Adaptation is slow to show and slow to fade; fatigue is fast to build and, if you let it, fast to clear. Progress is what you see when fatigue drops below fitness. If you never let fatigue drop, your logbook is measuring your tiredness, not your strength. That is why the same weights that felt solid three months ago now feel heavy in the warm-up, even though nothing about your muscle has actually shrunk.",
+    "Fatigue and fitness are two separate accounts. A hard set deposits a small amount of adaptation and a larger amount of fatigue. Adaptation is slow to show and slow to fade; fatigue is fast to build and, if you let it, fast to clear. Progress is what you see when fatigue drops below fitness. If you never let fatigue drop, what you can lift on any given day reflects your tiredness, not your strength. That is why weights that used to feel solid start to feel heavy in the warm-up, even though nothing about your muscle has actually shrunk.",
     "Going past failure with form breaking adds a second problem. Once the target muscle can no longer complete the rep, the load shifts to whatever can: the low back on a squat, the front delts and elbows on a bench, momentum on a row. The muscle you were trying to train stops receiving tension and your connective tissue starts absorbing it. Tendons and joints adapt far more slowly than muscle, so this is the kind of debt that shows up as achy warm-ups and lifts you quietly avoid. Meanwhile, the deep fatigue from those reps cuts reps from every set that follows.",
-    "Short rest makes the whole thing worse. When you rest 60–90 seconds and 'fail' on set three, most of that failure is the previous set's oxygen debt and acid, not a true limit of the muscle. You get the sensation of a maximal set, and the fatigue of one, while the actual mechanical work done at high tension is smaller than the same set would produce after three minutes. You end up training hard by feel and easy by physics, which is the worst possible trade.",
-    "Then there is the deload you never take. Fatigue does not clear on its own if you keep adding to it every week. Lifters who push every session without a planned easier week tend to end up in a shallow, permanent hole: never injured enough to stop, never fresh enough to progress. The first time you clear it properly, the numbers you 'lost' usually come straight back within a couple of weeks. That is not new strength. It was there the whole time, buried under fatigue you kept topping up.",
+    "The cost scales with everything else in your week. Failure on a handful of sets is affordable; failure on every set of a big training week, or stacked on top of frequent max attempts, multiplies the fatigue you have to clear before the next session. When the energy you bring to the gym is already low, you start each session in a hole, so the set feels maximal long before the muscle has done maximal work. You end up training hard by feel and easy by physics, which is the worst possible trade.",
+    "Fatigue does not clear on its own if you keep adding to it every week. Lifters who push every set of every session tend to end up in a shallow, permanent hole: never injured enough to stop, never fresh enough to progress. The first time you clear it properly, the strength you 'lost' usually comes straight back within a couple of weeks. That is not new strength. It was there the whole time, buried under fatigue you kept topping up.",
   ],
   howItShowsUp: [
-    "'Basically every set' goes to failure, and a set that stops early feels like a wasted set.",
-    "Your last rep often looks nothing like your first: hips shoot up, elbows flare, a spotter touches the bar, then you stop.",
-    "Warm-up weights feel heavy, and you sometimes know by the second set that the session isn't going anywhere.",
-    "Soreness never fully clears; you're training on top of last session's soreness more weeks than not.",
-    "You've never planned an easier week. You back off only when you feel wrecked or a joint complains, then push again the moment it eases.",
-    "Rest between sets is 60–90 seconds or less, so each set starts still breathing hard from the last one.",
-    "Your logbook shows the same weights or a slow slide over the last 8–12 weeks, despite effort that most people would call extreme.",
+    "Most of your sets end at failure, and a set that stops short feels like a wasted set.",
+    "Your last rep slows to a grind on almost every set: the bar crawls, and you keep pushing until it stops.",
+    "Your last rep often looks nothing like your first: hips shoot up, elbows flare, the bar drifts, then you stop.",
+    "You walk into sessions with less energy than the work demands, and some days you know by the second set that it isn't going anywhere.",
+    "Aches and pain start changing how you train: exercises you work around, lifts you quietly avoid.",
+    "You back off only when you feel wrecked or a joint complains, then push to failure again the moment it eases.",
+    "Your effort is higher than most people's around you, yet your progress has gone flat.",
   ],
   fix: [
     {
@@ -40,7 +40,7 @@ export const FINDING: FindingContent = {
         "Default every working set to 1–3 reps in reserve: the bar slows, it's clearly hard, and you stop while the next rep would still have looked like the last one.",
         "Allow true failure on at most the final set of one isolation or machine exercise per session, never on squats, deadlifts, or overhead presses, and never with form breaking.",
         "Adopt a hard rule: the moment a rep changes shape (hips rise, elbows drift, back rounds), the set is over. That rep counts as your failure signal, not as a rep you got.",
-        "Rest 2–3 minutes between working sets on compounds, and 3–5 minutes on your heaviest sets. Time it on your phone; 'feels like enough' is almost always 60–90 seconds.",
+        "Rest 2–3 minutes between working sets on compounds, and 3–5 minutes on your heaviest sets. Time it on your phone so each set starts fresh, not still breathing hard from the last one.",
         "Calibrate once every 3–4 weeks by taking one safe set (a machine or a dumbbell isolation) to genuine failure, so your 1–3 RIR estimate stays honest without paying the fatigue tax every day.",
       ],
     },
@@ -72,9 +72,9 @@ export const FINDING: FindingContent = {
   ],
   trackNotes: {
     physique:
-      "For muscle, the stimulus you want is high-tension reps near failure, not the collapse itself. Keep compounds at 2–3 RIR and reserve occasional true failure for the last set of a machine or cable exercise where form can't shift the load elsewhere. If you've been running 20+ sets per muscle to failure, halve the sets first; 12–16 honest sets at 1–3 RIR will likely out-grow 24 that fall apart.",
+      "For muscle, the stimulus you want is high-tension reps near failure, not the collapse itself. Keep compounds at 2–3 RIR and reserve occasional true failure for the last set of a machine or cable exercise where form can't shift the load elsewhere. If you already train more than most lifters, halve the sets first; 12–16 honest sets per muscle at 1–3 RIR will likely out-grow 24 that fall apart.",
     strength:
-      "Strength is skill under load, and grinding reps rehearse bad positions. On squat, bench, deadlift, and press, stop the moment bar speed visibly drops on a second rep in a row and treat that as your RIR signal. Keep top sets at 1–2 RIR, back-off sets at 3 RIR, and let true maxes be tested at the end of a block after a deload, not discovered accidentally on a Tuesday. Expect your first post-deload session to feel suspiciously light; that is the strength you actually had.",
+      "Strength is skill under load, and grinding reps rehearse bad positions. On squat, bench, deadlift, and press, stop the moment bar speed visibly drops on a second rep in a row and treat that as your RIR signal. Keep top sets at 1–2 RIR, back-off sets at 3 RIR, and let true maxes be tested at the end of a block after a deload, not every month and not discovered accidentally on a Tuesday. Expect your first post-deload session to feel suspiciously light; that is the strength you actually had.",
   },
-  relatedFindings: ["fatigue_never_cleared", "rest_too_short", "volume_outruns_recovery"],
+  relatedFindings: ["volume_outruns_recovery", "training_around_pain", "testing_instead_of_training", "form_breaks_under_load"],
 };

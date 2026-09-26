@@ -47,8 +47,8 @@ export default function AboutPage() {
           <div className="prose-ld">
             <p>
               LiftDecode is a web-based diagnostic for people who train with weights and have stopped making progress —
-              whether progress means a changing physique or a heavier bar. You answer twenty-odd honest questions about
-              how you actually train, eat, recover and measure yourself. A rule engine cross-references those answers
+              whether progress means a changing physique or a heavier bar. You answer quick, honest questions about how
+              you actually train, eat, sleep, recover and live — mostly one tap each. A rule engine cross-references those answers
               into a ranked list of bottlenecks, a list of things that are <strong>not</strong> your problem, and a
               4-week plan that turns the top findings into sessions.
             </p>
@@ -67,7 +67,7 @@ export default function AboutPage() {
             {[
               [
                 "Behaviour, not self-assessment",
-                "Every question asks what you did over the last weeks, in options concrete enough that you cannot pick the flattering one by accident.",
+                "Every question asks about your current state — training, effort, food, sleep, life load — with short answers and 1–10 scales. No numbers to look up, nothing to measure.",
               ],
               [
                 "Rules you can trace",

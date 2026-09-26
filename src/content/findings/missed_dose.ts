@@ -6,23 +6,24 @@ export const FINDING: FindingContent = {
   category: "consistency",
   title: "You've missed too much of the dose",
   verdict:
-    "The program on paper and the program that actually happened in the last four weeks are two different programs, and only the second one counts.",
+    "Your plan might work, but you aren't getting enough of it.",
   summary:
-    "You already know this one; you told us in the way you'd describe your consistency to a friend, and again when you counted the sessions you skipped, cut short or swapped for a quick something. The plan you're judging isn't the plan you ran: a quarter or more of the dose never arrived. Until that changes, every other variable you adjust is being tested on a program that doesn't exist, and you'll keep concluding that nothing works.",
+    "You probably know this one already. The plan you're judging isn't the plan you ran: a real share of the dose never arrived. Until that changes, every other variable you adjust is being tested on a program that doesn't exist, and you'll keep concluding that nothing works.",
   mechanism: [
-    "Training only works as a dose. A muscle or a lift adapts to a stimulus that arrives often enough, and hard enough, that the body has a reason to keep the adaptation instead of letting it fade. In the studies that compared training frequencies at matched weekly volume, frequency mattered less than whether the volume was actually done, and the research plans were completed. When you miss 4–6 of 16 planned sessions, you're not running a slightly reduced program; you're running roughly 60–75% of it, with the missing sets landing unevenly on whichever muscles or lifts were scheduled on the days life won.",
-    "Adaptation also decays. Strength and muscle aren't lost in a week, but the signal that builds them is time-sensitive: the muscle-building response to a session lasts roughly 24–48 hours in trained lifters, and the skill of a heavy lift fades faster than the tissue. A muscle trained on Monday and not again for ten days spends most of that window doing nothing. Studies of reduced training show you can maintain on around a third of the volume if effort stays high. But maintaining is exactly what your log shows. You've been running a maintenance dose and expecting a growth response.",
-    "Missed sessions also break progression, the mechanism that actually moves the numbers. Adding a rep, then adding load, only works if the next exposure comes before the last one has worn off. Skip a week's leg day and the next one is a re-test, not a progression: you're finding the weight rather than beating it. Over four weeks with 4–7 misses, most sessions are re-tests, and a re-test looks precisely like a stall in a logbook. The plateau isn't the body refusing to adapt; it's the record of a signal interrupted before it could compound.",
-    "The 'quick something' swaps do particular damage because they hide the miss. Twenty-five minutes of whatever was available feels like it preserved the streak, so the week gets logged as done. But the hard sets close to failure, the ones doing most of the work, are the first to go when time is short; what survives is the warm-up and the easy accessories. If you couldn't say how many sessions you missed, that's the same problem one step back: adherence you can't count is adherence you can't fix, and it reads as a mysterious non-response for as long as it stays uncounted.",
+    "Training only works as a dose. A muscle or a lift adapts to a stimulus that arrives often enough, and hard enough, that the body has a reason to keep the adaptation instead of letting it fade. In the studies that compared training frequencies at matched weekly volume, frequency mattered less than whether the volume was actually done, and the research plans were completed. When a quarter to a third of planned sessions don't happen, you're not running a slightly reduced program; you're running roughly 60–75% of it, with the missing sets landing unevenly on whichever muscles or lifts were scheduled on the days life won.",
+    "Adaptation also decays. Strength and muscle aren't lost in a week, but the signal that builds them is time-sensitive: the muscle-building response to a session lasts roughly 24–48 hours in trained lifters, and the skill of a heavy lift fades faster than the tissue. A muscle trained on Monday and not again for ten days spends most of that window doing nothing. Studies of reduced training show you can maintain on around a third of the volume if effort stays high. But maintaining is exactly what a patchy month delivers. You've been running a maintenance dose and expecting a growth response.",
+    "Missed sessions also break progression, the mechanism that actually moves the numbers. Adding a rep, then adding load, only works if the next exposure comes before the last one has worn off. Skip a week's leg day and the next one is a re-test, not a progression: you're finding the weight rather than beating it. Miss often enough and most sessions become re-tests, and a string of re-tests looks exactly like a stall. The plateau isn't the body refusing to adapt; it's the record of a signal interrupted before it could compound.",
+    "Short substitute sessions do particular damage because they hide the miss. Twenty-five minutes of whatever was available feels like it preserved the streak, so the week feels done. But the hard sets close to failure, the ones doing most of the work, are the first to go when time is short; what survives is the warm-up and the easy accessories. And if you don't count misses, you can't see them: adherence you can't see is adherence you can't fix, and it reads as a mysterious non-response for as long as it stays invisible.",
     "None of this is a character verdict. If something big is going on outside the gym, the sessions were lost for real reasons, and the plan was written for a calmer month than the one you had. The cost is the same either way, and it compounds: every week the dose falls short, the temptation grows to change the program, the split, the exercises, anything except the one variable that explains most of the picture. Fix the dose first. Everything else can only be evaluated once the program on paper is the one that's happening.",
   ],
   howItShowsUp: [
-    "You counted 4 or more sessions in the last four weeks that were skipped, cut to under half an hour, or turned into 'a quick something', or you genuinely couldn't put a number on it.",
-    "If a training partner described your consistency, they'd say 'mostly there with rough patches', 'on and off', or 'honestly, showing up is half the battle right now', and you'd agree.",
+    "Sessions get skipped or cut short often enough that a normal month has several of them.",
+    "Your training comes in stretches: a few good weeks, then a gap, then starting again.",
     "The same body part or lift keeps getting the missed day. Legs, or the deadlift, or whatever sits on Thursday, has been trained far less than the plan says.",
     "Your sessions feel like re-tests: you spend the first two working sets finding the weight you used last time instead of beating it.",
-    "Good weeks produce small PRs, then a gap erases them, and the same numbers show up in the log every few weeks like they're new.",
-    "Something big has been going on outside the gym in the last two months, and your stall started somewhere in that window.",
+    "Good weeks produce small PRs, then a gap erases them, and the same numbers keep coming back every few weeks like they're new.",
+    "Life has been heavy lately, and the sessions it takes are exactly the ones the plan depended on.",
+    "Your program is sound and sets your weights for you; the gap is between the sessions it plans and the ones that happen.",
   ],
   fix: [
     {
@@ -57,21 +58,21 @@ export const FINDING: FindingContent = {
   fourWeekPlan: [
     "Week 1: cut the plan to 2–3 sessions with a written minimum version, log planned versus completed, and put every session in your calendar on Sunday. Repeat last month's weights; don't chase.",
     "Week 2: hit every planned session, even if two of them are the 25-minute minimum version. Start each one with the most-missed lift or muscle. Record the first-set reps on the main movement.",
-    "Week 3: if adherence is 90% or better, add one hard set per muscle or 2.5% to the main lifts. If it isn't, hold the load, drop the day you keep losing, and hit 100% of what's left.",
-    "Week 4: same plan; compare first-set reps to week 1. Two clean weeks in a row and the numbers usually move; if they haven't, you now have a real stall to diagnose instead of a dose problem.",
+    "Week 3: hold the load either way; nothing gets added until four weeks are logged. If adherence is under 90%, drop the day you keep losing and hit 100% of what's left.",
+    "Week 4: same plan; compare first-set reps to week 1. If all four weeks were 90% or better, add one hard set per muscle or 2.5% to the main lifts from week 5. If the numbers still haven't moved at that adherence, you now have a real stall to diagnose instead of a dose problem.",
   ],
   timeline:
     "The first two weeks are about the attendance line in your log, not the lifting numbers; expect a session or two of re-tests. By weeks 3–4, once each lift has had consecutive exposures, most people see first-set reps climb and the 'stall' turns out to have been the gap. Measurable change in strength or shape needs 6–12 weeks of 90%+ adherence, so treat the first month as proof the dose is arriving, not the payoff.",
   mistakes: [
     "Changing the program, split or exercise selection, when the plan you were on was never run long enough to be judged.",
     "Planning five days again 'to make up for it', which produces the same misses at a higher rate and a worse self-image.",
-    "Counting a 20-minute 'quick something' as a full session, so the log says the week was done and the body says it wasn't.",
+    "Counting a 20-minute stand-in session as a full one, so the log says the week was done and the body says it wasn't.",
     "Doing a punishment session after a gap: extra volume, everything to failure, and then three days too sore to come back.",
     "Waiting for life to calm down before committing, instead of shrinking the plan to what fits the life you actually have this month.",
   ],
   trackNotes: {
     physique:
-      "A lagging body part that keeps landing on the missed day will stay lagging no matter what exercise you pick for it. Move the muscle you care about most to the first slot of the session you never miss, keep it at 6–10 hard sets a week, and accept that 8–12 completed sets beat 20 planned ones. The mirror lags adherence by months, so judge this block on the attendance line and first-set reps, not the photo.",
+      "A lagging body part that keeps landing on the missed day will stay lagging no matter what exercise you pick for it. Move the muscle you care about most to the first slot of the session you never miss, keep it at 6–10 hard sets a week, and accept that 8–12 completed sets beat 20 planned ones. Visible change lags adherence by months, so judge this block on the attendance line and first-set reps, not on how you look this month.",
     strength:
       "A heavy lift is a skill as well as a tissue, and skill decays faster than muscle; a squat practised once every ten days is relearned each time, which is why every session feels like a max-finding trip. Put the lift you've been missing first, keep 2–3 working sets at 75–85% every time it appears, and hold the load steady through any missed week. Frequency of exposure moves a stuck top set faster than any change of program.",
   },

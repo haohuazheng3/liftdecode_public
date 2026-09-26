@@ -16,8 +16,7 @@ export function DiagnoseCta({ categorySlug }: { categorySlug?: string }) {
         Stop guessing why you&rsquo;re <em>stuck</em>.
       </h2>
       <p className="mt-4 text-ink-2 text-lg leading-relaxed max-w-2xl">
-        {lead} Answer about twenty-five honest questions on how you train, eat, recover and measure progress, and get a
-        ranked diagnosis of what is holding you back, what is not, and a four-week plan to fix it.
+        {lead} Answer quick, honest questions on how you train, eat, sleep and recover, and get a ranked diagnosis of what is holding you back, what is not, and a four-week plan to fix it.
       </p>
       <div className="mt-6 flex flex-col sm:flex-row gap-3">
         <Link href="/diagnose" className="btn btn-primary btn-lg">
@@ -27,7 +26,7 @@ export function DiagnoseCta({ categorySlug }: { categorySlug?: string }) {
           How it works
         </Link>
       </div>
-      <p className="mt-4 text-xs text-ink-3">Takes about eight minutes. Your answers stay on this device until you decide.</p>
+      <p className="mt-4 text-xs text-ink-3">Mostly one tap per question. Your answers stay on this device until you decide.</p>
     </section>
   );
 }

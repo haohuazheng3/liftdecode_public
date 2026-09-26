@@ -2,28 +2,28 @@ import type { FindingContent } from "../types";
 
 export const FINDING: FindingContent = {
   id: "week_cancels_itself",
-  audience: "both",
+  audience: "physique",
   category: "nutrition",
   title: "Your week averages to a diet you never chose",
   verdict:
-    "Your weekdays are set up for the goal and your weekends — or your on-off dieting — undo them, so the eight-week average lands nowhere in particular.",
+    "Your weekends undo your weekdays, so your real intake is neither what you planned nor what your goal needs.",
   summary:
-    "Monday to Friday you eat like someone with a plan. Then the weekend arrives, or the diet ends 'for a bit', and the other half of the week gives back everything the first half earned. You experience this as discipline with occasional slips; your body experiences it as maintenance with noise on top. That's why the scale hasn't moved, why the lifts aren't moving with it, and why every fresh start feels like starting from the same place — because you are.",
+    "Monday to Friday you eat like someone with a plan. Then the weekend arrives — the meals out, the drinks, the 'I'll sort it Monday' — and two days give back everything the other five earned. You experience this as discipline with occasional slips; your body experiences it as maintenance with noise on top. That's why the physique holds where it is, why the weekday effort never seems to add up to anything, and why every Monday feels like starting from the same place — because it is.",
   mechanism: [
     "Muscle and strength are built by an energy balance that points one direction for weeks, not days. The body doesn't reset at midnight on Sunday; it integrates. Five days at a 300 kcal deficit is about 1,500 kcal in the bank. Two loose days — a dinner out, a few drinks, the late order, Sunday brunch — can easily run 1,000 kcal over each. The week nets to roughly zero. You did the hard part for five days and bought a maintenance diet you never picked.",
     "The same arithmetic runs the other way if you're trying to gain. A modest weekday surplus of a couple of hundred calories is small enough that a weekend of skipped meals, a hangover day, or a 'clean up after the blowout' Monday erases it. Realistic muscle gain past year one is a few hundred grams a month at best, and it needs a surplus that's actually there when the body lays tissue down. A surplus that exists on Tuesday and is gone by Saturday isn't a surplus.",
-    "Cycling between dieting and not every few weeks is the same pattern stretched out. Three weeks of a real deficit, two weeks of 'normal', three weeks of dieting again. In the research on repeated short diets, people generally lose and regain roughly the same tissue, and the regain tends to come back slightly more as fat and slightly less as muscle than what was lost — especially when protein and training aren't held steady across the swing. You end each cycle where you started, having spent the willpower of someone who should have made progress.",
+    "Restriction makes the rebound bigger. Weekdays where you end up eating less than you meant to — a skipped lunch, a small dinner because you were busy or trying to be good — don't bank as progress; they bank as hunger, and Saturday collects it. The same pattern stretched out is dieting on and off: three weeks of a real deficit, two weeks of 'normal', three weeks of dieting again. In the research on repeated short diets, people generally lose and regain roughly the same tissue, and the regain tends to come back slightly more as fat and slightly less as muscle than what was lost — especially when protein and training aren't held steady across the swing. You end each cycle where you started, having spent the willpower of someone who should have made progress.",
     "Alcohol on the same nights widens the swing. Eight or more drinks a week, or five in a sitting, isn't just the ethanol calories. It's the food that arrives with it, the protein you skip the next morning because you're not hungry, and the sleep that night — shorter, lighter, and less restorative, in the window when most of the week's repair happens. The same two days that cancel the food also tax the recovery, so the weekday training you did carefully has less to show for it.",
-    "A flat eight-week weight trend is the fingerprint. Not the goal, not the plan, not how careful you feel — the trend. If you're cutting and it's flat, you're not cutting. If you're bulking and it's flat, you're not bulking. And if you don't weigh, the cancellation has been invisible: the weekday you and the weekend you each feel like the real story, and no number ever forced them into the same sentence. Eight weeks of an average that goes nowhere produces exactly what you're seeing — a physique that holds and lifts that hold with it.",
+    "Stress feeds the same loop. A hard week at work is held together by structure — set meals, no time to think about food — and the weekend is where the pressure comes off and gets eaten. It feels like a reward, not a pattern. The result is that the weekday you and the weekend you each feel like the real story, and neither is: the body only ever sees the average, and an average that goes nowhere produces exactly what you're seeing — a physique that holds, week after week, however hard the weekdays are.",
   ],
   howItShowsUp: [
     "Weekday eating is tidy and predictable; from Friday night to Sunday it's restaurants, takeaways, drinks and 'I'll sort it Monday'.",
-    "You've been 'on a diet' for months in total, but never for more than three or four weeks without a break in the middle.",
-    "Monday morning weight is noticeably up from Friday's, and you've stopped weighing on Mondays because of it.",
-    "Your weekly-average weight has sat within half a kilo for eight weeks, whatever you thought you were doing — or you don't weigh at all and describe your intake by how careful you feel.",
+    "You're 'on a diet' Monday to Friday and off it Saturday and Sunday, and it has felt that way for months.",
+    "Weekday meals get skipped or shrunk when the day gets busy, and by Saturday you're hungrier than any plan accounts for.",
+    "The more stressful the week, the looser the weekend — the food feels earned, not chosen.",
     "Most of your drinking lands on the same two nights the food goes loose, and the Sunday after is a write-off for eating well and training.",
     "You feel like you're always dieting and never getting leaner, or always 'eating big' and never getting bigger.",
-    "Every restart has the same first two weeks: same starting weight, same enthusiasm, same point where it gives.",
+    "Every Monday is a fresh start with the same enthusiasm, and every Friday night is the same point where it gives.",
   ],
   fix: [
     {
@@ -37,7 +37,7 @@ export const FINDING: FindingContent = {
     {
       title: "Make the weekend fit the same budget",
       steps: [
-        "Pre-eat the weekend: before any meal out, have 30–40 g of protein and a big plate of vegetables at home. You'll stop eating about 800 kcal sooner.",
+        "Pre-eat the weekend: before any meal out, have 30–40 g of protein and a big plate of vegetables at home. Arriving already fed usually cuts how much you eat out by a meaningful amount, often a few hundred kcal.",
         "Choose the weekend's one big meal in advance — one, not four. Everything else on Saturday and Sunday is a normal weekday meal.",
         "Cap drinks at a number you set on Thursday and count what comes with them: four drinks is roughly 500–700 kcal before the food that follows. Write that into Saturday's total.",
         "If a day goes over, don't fast or 'punish' Monday. Go back to the normal daily target; a fixed deficit the next day just sets up the next swing.",
@@ -70,9 +70,7 @@ export const FINDING: FindingContent = {
   ],
   trackNotes: {
     physique:
-      "Your goal depends entirely on the direction holding: fat loss needs eight weeks of a real deficit to reveal the muscle, and muscle gain needs eight weeks of a real surplus to add any. Flat weight and an unchanged mirror isn't a plateau, it's the absence of a stimulus. Pick the direction that matches what you see right now — usually a slow cut if the waist is the problem, a slow gain if the frame is — and run it in full before judging your training.",
-    strength:
-      "Strength cares less about the exact direction than physique does, but it's very sensitive to the swings. Heavy sessions after a weekend of poor food, drink and short sleep are the ones where the top set feels 10% heavier than the log says. Hold weight steady or in a slow gain, keep protein constant across all seven days, and put your heaviest session midweek rather than Monday until the weekends are under control. Expect the lifts to feel consistent before they go up.",
+      "Your goal depends entirely on the direction holding: fat loss needs eight weeks of a real deficit to reveal the muscle, and muscle gain needs eight weeks of a real surplus to add any. A physique that won't change on a week that averages to maintenance isn't a plateau, it's the absence of a stimulus. Pick the direction that matches your goal — usually a slow cut if the waist is the problem, a slow gain if the frame is — make the weekend part of it, and run it in full before judging your training.",
   },
-  relatedFindings: ["alcohol_tax", "no_numbers_no_stall", "restart_not_stall"],
+  relatedFindings: ["alcohol_tax", "fat_loss_without_deficit", "gaining_too_fast", "deficit_while_expecting_muscle"],
 };

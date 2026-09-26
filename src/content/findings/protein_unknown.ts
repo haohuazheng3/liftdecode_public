@@ -1,77 +1,76 @@
 import type { FindingContent } from "../types";
 
+// Rewritten for the v2 rules around meal structure, not recall. The id stays "protein_unknown" so
+// reports already stored under it keep this section; it is internal and never shown.
 export const FINDING: FindingContent = {
   id: "protein_unknown",
   audience: "both",
   category: "nutrition",
-  title: "You can't hit a target you can't state",
-  verdict:
-    "You don't know yesterday's protein, and people who can't state it are almost never at the dose that supports growth or strength.",
+  title: "Protein isn't built into your meals",
+  verdict: "Few of your meals are built around protein, so whether you get enough is left to luck.",
   summary:
-    "Asked what you ate yesterday, you reached for a feeling instead of a number, and that is the most reliable tell we have for protein sitting well under what your training is asking for. You do the hard part in the gym and then leave the cheapest, most predictable variable in the system to chance. Every week that stays true, the sets you grind through build less than they should, and if your weight is drifting down, some of what they built is quietly being spent.",
+    "Most of your meals start with something other than protein, and the protein that does turn up arrives by accident: some at dinner, less at lunch, almost none when the day gets busy. You do the hard part in the gym and then leave the cheapest, most predictable variable in the whole system to chance. Every week that stays true, the sets you work for build less than they could.",
   mechanism: [
-    "The session is only the signal. What turns it into tissue happens over the next 24–48 hours, and only if the building blocks are there. The research here is unusually consistent: across the trials that pooled resistance-trained people at different intakes, gains in muscle and strength kept improving up to roughly 1.6 g of protein per kilogram of body weight per day, then flattened, with little extra benefit past about 2.2 g/kg. Under that range the same sets produce less. Not zero, just reliably less, which is exactly what a slow stall looks like.",
-    "We asked about yesterday rather than your intention for a reason. Nobody sets out to under-eat protein, and almost everyone who trains believes they eat plenty. But when people who say that log a normal day, the count lands around 0.9–1.2 g/kg far more often than not: eggs at breakfast, a sandwich at lunch, a decent dinner, and a total an 80 kg lifter would need to nearly double. People who can state a number usually built the day around it. People who can't are guessing, and the guess is almost always high.",
-    "Protein also does not average well across days, which is why 'some days plenty, some days a sandwich' is not the same as 'enough on average'. The synthesis response to a meal peaks and fades within hours, and the body has no useful way to bank Tuesday's surplus against Thursday's shortfall. A week of 200 g days and 60 g days delivers fewer days of full signal than a week of steady 140 g days on a lower total. Yesterday is a sample; if it was a coffee-and-sandwich day, so were several others this month.",
-    "The cost climbs if your body weight is trending down. In a deficit, protein is the main thing deciding whether the loss comes from fat or from muscle. In the studies that put people in a deficit at higher versus lower protein, the higher-protein groups kept more lean mass and more strength on the same calories. Lose weight at 1 g/kg and you can hold your lifts for a while on stubbornness, but the tissue underneath is being drawn down.",
-    "With no eating plan, nothing in your week corrects a low day. Appetite is a poor guide to protein specifically: it is the most filling macronutrient and the easiest to skip when you are busy, tired or eating out. So the default drifts low, the drift is invisible because nothing is counted, and training keeps taking the blame for a stall that food is causing. It is the one nutrition variable that costs nothing to measure.",
+    "The session is only the signal. What turns it into muscle happens over the next day or two, and only if the building blocks are there. The research here is unusually consistent: across trials that compared trained people at different intakes, gains in muscle and strength kept improving as protein rose to a clear daily range (the numbers are in the fix below), then flattened, with little extra benefit beyond it. Under that range the same sets produce less. Not nothing, just reliably less, which is exactly what a slow stall looks like.",
+    "Whether you reach that range is decided at the level of the plate, not the day. Almost everyone who trains believes they eat plenty of protein, and when protein is a side dish the day usually lands far lower than it feels: eggs at breakfast, a sandwich at lunch, a decent dinner, and a total most lifters would need to nearly double. When each meal starts with the protein and everything else is built around it, the day adds up without anyone counting. When each meal starts with whatever is convenient, it doesn't.",
+    "Protein also doesn't average well across days, which is why 'some days plenty, some days a sandwich' is not the same as 'enough on average'. The muscle-building response to a meal peaks and fades within hours, and the body has no useful way to bank Tuesday's surplus against Thursday's shortfall. Three or four meals with a real portion each deliver more full signals than one big dinner and two light meals with the same total.",
+    "The meals that shrink take their protein with them. When a day gets busy or you end up eating less than planned, the part of the meal that disappears is usually the part that needed cooking, and that is usually the protein. On a diet this matters even more: in studies that put people in a deficit at higher versus lower protein, the higher-protein groups kept more muscle and more strength on the same calories.",
+    "Without a structure, nothing in your week corrects a low day. Appetite is a poor guide to protein specifically: it is the most filling part of a meal and the easiest to skip when you are busy, tired or eating out. So the default drifts low, the drift is invisible, and training keeps taking the blame for a stall that food is causing.",
   ],
   howItShowsUp: [
-    "Asked about yesterday, your honest answer is 'no idea', 'a fair amount' or 'depends on the day', not a number.",
-    "Most of your protein arrives at dinner; breakfast and lunch are carbs with a bit of something on the side.",
+    "Breakfast and lunch are mostly carbohydrate with a bit of something on the side; protein turns up properly at dinner.",
     "Some days are steak and eggs, others are coffee, a sandwich and whatever is around after training.",
-    "You have no eating plan as such; you eat 'clean-ish', to appetite, and assume it sorts itself out.",
-    "Your morning weight has drifted down over the last two months without you deciding it should.",
-    "When training stalls you tweak the program, never the food, because the food 'seems fine'.",
+    "On busy days the first thing to go is the meal that took effort to prepare, and that is usually the one with the protein.",
+    "Snacks are bars, fruit or crisps rather than yoghurt, milk or leftovers.",
+    "When training stalls you change the program, never the plate, because the food 'seems fine'.",
+    "There is no real plan behind what you eat, so nothing notices when a whole day goes by with protein only at dinner.",
   ],
   fix: [
     {
-      title: "Get the number this week, then stop needing it",
+      title: "Build every meal around a protein anchor",
       steps: [
-        "Set your daily target now: 1.6–2.2 g per kg of body weight. At 70 kg that is 110–155 g; at 80 kg, 130–175 g; at 90 kg, 145–200 g. Write it where you will see it at breakfast.",
-        "For 7 days, log every meal in any tracking app, protein only. Ignore calories and everything else; this is a measurement, not a diet.",
-        "On day 3, check the running average. If it is under 1.2 g/kg, as it will be for most people who could not state the number, that gap is the size of the lever you have been leaving unpulled.",
+        "Before anything else goes on the plate, pick the protein: a palm-sized piece of meat or fish, eggs with yoghurt, a tub of cottage cheese or Greek yoghurt, tofu or tempeh, or a shake. Everything else is built around it.",
+        "Aim for three or four anchored meals a day. For most people each anchor is 30–45 g of protein, which lands the day in the range that supports growth: roughly 1.6–2.2 g per kg of body weight.",
+        "Fix breakfast first, because that is where most low days start. Add 25–30 g to whatever you already eat: eggs plus yoghurt, a shake with the coffee, or last night's leftovers.",
       ],
     },
     {
-      title: "Anchor four meals to a portion you can see",
+      title: "Protect the meals that shrink",
       steps: [
-        "Split the target across 3–4 meals at roughly 0.4–0.55 g/kg each, about 30–45 g for most people. Two big protein meals and two empty ones do not deliver the same signal as four decent ones.",
-        "Learn three portions by heart: a palm-sized piece of chicken, fish or lean meat is about 25–35 g; 200 g of Greek yoghurt or cottage cheese is 18–24 g; one scoop of whey is 20–25 g. Build each meal around one of them before anything else goes on the plate.",
-        "Fix breakfast first, because that is where most low days start. Add 25–30 g to whatever you already eat: eggs plus yoghurt, a shake with the coffee, or last night's leftovers. This alone closes a third of the gap for most people.",
-        "Keep one rescue meal you can hit in five minutes without cooking: a shake, a tin of fish, cottage cheese, pre-cooked chicken. On the day that would have been a sandwich day, this keeps the count up.",
+        "Keep one rescue option you can have in five minutes without cooking, at home and at work: a shake, a tin of fish, cottage cheese or pre-cooked chicken.",
+        "When a meal has to be small, keep the protein and cut something else.",
+        "Buy the week's anchors in one shop, so the protein is already in the fridge on the day you have no time.",
       ],
     },
     {
-      title: "Make low days visible so nothing drifts",
+      title: "Check it once, then stop needing to",
       steps: [
-        "Each night, note protein as one of three words: hit, close, low. No app needed once the first week is done. Three 'low' days in a week means the structure slipped, not your willpower.",
-        "Weigh yourself 3–4 mornings a week and keep a weekly average. If it is falling and you have not chosen to diet, add 300–500 kcal a day, mostly carbohydrate, and keep protein where it is.",
-        "If you are deliberately dieting, hold the top of the range, 2.0–2.2 g/kg, and cap the loss at about 0.5 percent of body weight per week.",
-        "Run this for 4 weeks before touching the program. If protein was the problem, sets that used to stall will move without a single training change, and that is your proof.",
+        "On three ordinary days, name the protein anchor of each meal. Any meal without an answer is the gap to fix first.",
+        "If you are deliberately dieting, lean towards the top of the range, around 2.0–2.2 g/kg; that is what protects muscle while the weight comes down.",
+        "Once every meal has had an anchor for two weeks running, stop checking. The structure does the counting.",
       ],
     },
   ],
   fourWeekPlan: [
-    "Week 1: Set the target in grams for your body weight, log protein only for all 7 days, and fix breakfast with an extra 25–30 g. Change nothing in training.",
-    "Week 2: Stop logging and move to hit/close/low each night. Every meal starts with a palm, a tub or a scoop; the rescue meal is stocked. Start the weekly weight average.",
-    "Week 3: Check the weight trend against your intention. If it is falling without a plan, add 300–500 kcal, mostly carbohydrate, and keep protein steady. Aim for no more than one 'low' day.",
-    "Week 4: Log again for 3 days as a spot-check; you should land within 15 g of target without trying. Compare working-set reps and top sets to week 1.",
+    "Week 1: give every meal a protein anchor, starting with breakfast, and stock one rescue option at home and one at work. Change nothing in training.",
+    "Week 2: on three ordinary days, name the anchor of each meal. Any meal without one gets fixed before anything else.",
+    "Week 3: when a meal has to shrink, keep the protein and cut something else. Aim for no day with fewer than three anchored meals.",
+    "Week 4: compare working-set reps and how you recover between sessions with week 1. Keep the structure; stop checking once every meal has had an anchor for two weeks.",
   ],
   timeline:
-    "The first change is invisible: in weeks 1–2 the main difference is that body weight stops drifting and sessions recover a little better. In a small surplus, reps at the same weights usually start climbing in weeks 3–6, and the physique difference takes 8–12 weeks to be obvious in photos. If you are dieting, the win is what you keep: strength holding while weight falls shows up as the absence of a decline rather than a gain.",
+    "The first change is felt rather than seen: within one to two weeks, sessions recover a little better and hunger is steadier. Reps at the same weights usually start climbing in weeks three to six, and the difference in the mirror takes eight to twelve weeks. On a diet, the win is what you keep: strength that holds while the weight comes down.",
   mistakes: [
-    "Buying a protein powder and changing nothing else. One scoop is 20–25 g; the gap for most people who can't state the number is 50–80 g.",
-    "Going straight to full macro tracking, drowning by day four, and quitting the whole thing. Count one number, protein, for one week.",
-    "Loading everything into dinner. A 90 g dinner and two near-zero meals looks fine on paper and works poorly in practice.",
-    "Cutting carbohydrate to 'make room' for protein. Protein goes on top of the fuel you train on, not in place of it; if you are losing weight you did not plan, you need more food, not a cleaner plate.",
-    "Chasing 3 g/kg and up because more must be better. Past about 2.2 g/kg the evidence shows no extra muscle, and the extra food crowds out carbohydrate.",
+    "Buying a protein powder and changing nothing else. One scoop covers part of one meal; the gap is usually a whole meal's worth or more.",
+    "Loading everything into dinner. One huge protein meal and two empty ones works poorly next to three or four decent ones.",
+    "Cutting carbohydrate to make room for protein. Protein goes on top of the fuel you train on, not in place of it.",
+    "Chasing very high intakes because more must be better. Past the top of the range the evidence shows no extra muscle, and the extra food crowds out the carbohydrate you train on.",
+    "Going straight to tracking every macro, drowning by day four and quitting the whole thing. Anchor the meals first; count only if you need to.",
   ],
   trackNotes: {
     physique:
-      "Protein is the ceiling on what each hard set can build, so hold the upper half of the range, 1.8–2.2 g/kg, especially if you are lean or trying to recomp. If your weight has been falling while you hoped to grow, the falling weight is the bigger problem and protein only limits the damage; you will need calories back as well. Judge the fix by working-set reps at the same weight over 6–8 weeks, then by photos, not by the scale.",
+      "Protein sets the ceiling on what each hard set can build, so lean towards the upper half of the range in the fix, especially if you are lean, dieting, or trying to lose fat and build muscle at once. Expect the first sign to be better recovery between sessions, then reps at the same weights that keep climbing over six to eight weeks.",
     strength:
-      "You can hold a heavy lift on low protein longer than a physique trainee can hold a look, which is why this hides as a plateau instead of a decline. The tell is the pattern: numbers stuck for months, body weight drifting down, no idea of intake. Hold 1.6–2.0 g/kg, keep body weight flat or rising slightly while you chase the numbers, and expect the first proof to be better recovery between heavy sessions in 2–3 weeks, then a top set that finally moves.",
+      "A heavy lift survives low protein longer than a physique does, which is why this hides as a plateau instead of a decline. Hold the lower-to-middle part of the range in the fix, eat enough that you aren't slowly shrinking, and expect the first proof to be better recovery between heavy sessions within a few weeks, then a top set that finally moves.",
   },
-  relatedFindings: ["deficit_while_expecting_muscle", "no_surplus_no_growth", "strength_leaking_bodyweight"],
+  relatedFindings: ["no_surplus_no_growth", "fat_loss_without_deficit", "strength_leaking_bodyweight"],
 };

@@ -6,31 +6,31 @@ export const FINDING: FindingContent = {
   category: "effort",
   title: "Your sets stop before the stimulus starts",
   verdict:
-    "You're ending sets four or more reps short of failure, which turns most of your working sets into extended warm-ups.",
+    "Your sets end while the muscle still has several reps left, so most of your work never reaches the reps that make it grow or get stronger.",
   summary:
-    "You show up, you do the sets, the log fills in — and the body or the bar refuses to move. The problem isn't the plan; it's that the reps that actually force adaptation are the ones you never reach, because you stop when the set count says stop, not when the muscle does. Until that changes, you're paying full price in time and fatigue for a fraction of the stimulus.",
+    "You show up, you do the sets, and the body or the bar refuses to move. Your last rep only rarely, or only sometimes, slows to a grind — which means most of your sets end while there is still something left in the tank, when the count says stop rather than when the muscle does. The reps that actually force adaptation are the ones you never reach. If you also seldom set out to beat last time, or reach for the weight you usually use, nothing in the session pulls a set past comfortable. Until that changes, you're paying full price in time and fatigue for a fraction of the stimulus.",
   mechanism: [
-    "Muscle doesn't grow and strength doesn't rise because a set happened; they change because the last few reps of a set were hard enough to recruit the biggest, highest-threshold motor units and make them work slowly under load. In the studies that compared sets stopped four or more reps short of failure with sets taken close to it, the close-to-failure sets produced more growth per set, and the gap widened as sets got easier. Most of the useful stimulus in a set lives in roughly the last zero to three reps before failure. Stop at rep six of a possible twelve and you've done the easy half.",
+    "Muscle doesn't grow because a set happened; it grows because the last few reps of a set were hard enough to recruit the biggest, highest-threshold motor units and make them work slowly under load. In the studies that compared sets stopped four or more reps short of failure with sets taken close to it, the close-to-failure sets produced more growth per set, and the gap widened as sets got easier. For muscle, most of the useful stimulus in a set lives in roughly the last zero to three reps before failure. Stop at rep six of a possible twelve and you've done the easy half. Strength works differently: it rises mainly from regular contact with weights close to your limit, because a heavy bar recruits the big motor units from the first rep, and how close each set gets to failure matters far less. So for a strength lifter the problem isn't avoiding failure — it's a week in which nothing is both heavy and hard.",
     "The reason is recruitment. Early in a set the small, fatigue-resistant fibres do the job. As they tire, the nervous system is forced to bring in the larger fibres — the ones with the most room to grow and the most to contribute to a heavy single. If you leave with six reps in the tank, those fibres were barely asked. You still feel the set — the burn, the breathing — which is why it's convincing. But the sensation of work and the recruitment that drives change are not the same thing.",
-    "This is where 'no idea' becomes a real answer rather than a shrug. Nobody can estimate reps in reserve accurately without having felt failure recently, and the research on how well lifters guess their RIR is consistent: people who rarely reach failure overestimate how close they are, often by three to five reps, and the error is worst far from failure and on lower-effort sets. If you've never intentionally taken a set to the point where a rep doesn't happen — or it's been months — then 'hard' is calibrated against nothing. Your honest 2–3 is somebody else's 6.",
-    "Loading by feel makes it worse, because feel is conservative by design. On a day you feel good you pick the weight that lets the set go smoothly; on a day you feel flat you pick the one that lets you get through. Both choices protect you from the grind, and the grind is the signal. Add a plan that never asks the bar to fail and you get a lift that 'never fails' — not because it's strong, but because it's never been tested. In your first year, that alone can flatten progress.",
-    "The uncomfortable arithmetic for the high-volume version: sixteen or more sets a week at six reps in reserve still costs joints, sleep and appetite something. Fatigue accrues by the tonne lifted; stimulus accrues by the hard reps done. Run that ratio for months and you end up beaten up and unchanged, which most people read as 'I need more volume' — and the ratio gets worse.",
+    "This is why a set can feel 'just short of failure' and still be nowhere near it. Nobody can judge how close they are to failure without having felt it recently. In the research on how well lifters guess, the average miss is about one rep — but the error grows noticeably on sets that stop further from failure, on higher-rep sets, and in people who rarely go there. If the last rep almost never slows down, the set never got close — however hard it felt. If you've never intentionally taken a set to the point where a rep doesn't happen, or it's been months, then 'hard' is calibrated against nothing.",
+    "Reaching for the usual weight makes it worse, because habit is conservative by design. The weight you always use is the one that lets the set go smoothly; it protects you from the grind, and the grind is the signal. Add a session where you never set out to beat last time and you get a lift that 'never fails' — not because it's strong, but because it's never been tested. Early in your lifting, that alone can flatten progress.",
+    "The uncomfortable arithmetic for the high-volume version: a lot of sets a week that all stop far from failure still costs joints, sleep and appetite something. Fatigue accrues by the tonne lifted; stimulus accrues by the hard reps done. Run that ratio for months and you end up beaten up and unchanged, which most people read as 'I need more volume' — and the ratio gets worse.",
   ],
   howItShowsUp: [
-    "Your last set of the week ended with 4–5, or 6+, reps you could have done — and you stopped because the set count was complete.",
-    "Asked how many reps you had left, your honest answer was that you don't know, and you haven't taken a set to real failure in months, or ever on purpose.",
-    "Most weeks already feel easy; a deload wouldn't change much because you never build up anything to deload from.",
-    "You decide the weight by memory and how you feel today, and the number that gets picked is reliably one you can handle comfortably.",
-    "The bar slows on maybe one rep a month. Your main lift has never actually stalled mid-rep or missed — you back off before it grinds.",
+    "Most of your sets end with plenty left, and you stop because the set count is complete, not because the next rep was in doubt.",
+    "Your last rep rarely slows to a grind — every rep of the set moves at about the same speed as the first.",
+    "When you do call a set 'just short of failure', the bar still hasn't slowed. It feels hard; it isn't close.",
+    "You load the bar with the weight you usually use, so every set sits inside a load you already own.",
+    "You rarely walk into a session trying to beat what you did last time, so nothing pulls a set past comfortable.",
     "You finish sessions fresh enough to repeat them, and soreness is rare even on the muscle you say is lagging.",
-    "The log shows the same weights for weeks with clean reps on every set — no missed reps, no ugly ones, and no gains.",
+    "The same weights keep showing up week after week, lifted cleanly every time — no ugly reps, no missed reps, and no change.",
   ],
   fix: [
     {
       title: "Calibrate: find out what your reps in reserve actually mean",
       steps: [
         "This week, on the last set of one safe exercise per session (leg press, machine row, dumbbell press, cable curl — not squats or deadlifts), take the set to the point where the next rep does not go up. Note the rep count.",
-        "Before you start that set, write down how many reps you think you'll get. Compare afterwards. The gap between your guess and reality is your personal RIR error; most people who trigger this finding find it's 3–5 reps.",
+        "Before you start that set, write down how many reps you think you'll get. Compare afterwards. The gap between your guess and reality is your personal RIR error. If it's two reps or more, treat your old reps-in-reserve estimates as unreliable and set loads from this test instead.",
         "Do this on 4–6 exercises across the week, once each — enough to reset your sense of 'hard' without wrecking recovery.",
         "From now on, 'I think I had 2 left' means the bar visibly slowed on the last rep. If it didn't slow, you had more than 3, whatever it felt like.",
       ],
@@ -61,7 +61,7 @@ export const FINDING: FindingContent = {
     "Week 4: keep progressing, then compare week 1 and week 4 video on the same lift — the last reps should now be visibly slower. Plan a lighter week 5 if warm-ups start feeling heavy; you've earned a deload for the first time.",
   ],
   timeline:
-    "Expect the first two weeks to feel harder and a little demoralising: the weights you thought were working sets get revealed as warm-ups. The log starts moving within two to three weeks, because much of the early rise is simply using strength you already had. Visible physique change lags behind — allow six to ten weeks of properly hard sets before you judge photos, and treat month one as the month you learned what effort is.",
+    "Expect the first two weeks to feel harder and a little demoralising: the weights you thought were working sets get revealed as warm-ups. The weights start moving within two to three weeks, because much of the early rise is simply using strength you already had. Visible physique change lags behind — allow six to ten weeks of properly hard sets before you judge the mirror, and treat month one as the month you learned what effort is.",
   mistakes: [
     "Adding sets instead of effort: another three easy sets is more fatigue with the same missing stimulus.",
     "Taking every set to failure from tomorrow — that trades one uncalibrated pattern for another, and recovery collapses within a fortnight.",
@@ -74,7 +74,7 @@ export const FINDING: FindingContent = {
     physique:
       "Growth is driven almost entirely by hard reps, so this finding matters more for you than any exercise-selection tweak. Isolation and machine work can end at 0–1 RIR most sets; the risk is low and the recruitment is what you're paying for. If you're doing 16+ sets on the lagging muscle, halve them this month and make every remaining set count.",
     strength:
-      "A main lift that never fails has never been tested, and testing is part of training. Keep compound working sets at 1–3 RIR most of the time, but you need to know where 0 is: use a rep-out on a back-off set (say 75–80% for as many clean reps as possible) every 2–3 weeks to find it. When the log has shown the same weight for three weeks with clean bar speed, the fix is a heavier bar, not a new template.",
+      "Leaving one to three reps in the tank on heavy compounds while regularly lifting close to your max is correct strength training — that is not what this finding is about. It's about a week where nothing is genuinely hard: the last rep never grinds and you rarely handle anything near your max. Keep compound working sets at 1–3 RIR, but put real effort back into the week: at least one heavy top set per main lift where the bar visibly slows, and a rep-out on a back-off set (say 75–80% for as many clean reps as possible) every 2–3 weeks so you know where failure actually is. When the same weight has moved cleanly for three weeks, the fix is a heavier bar, not a new template.",
   },
-  relatedFindings: ["no_forcing_function", "never_heavy_enough", "sticking_point_untrained"],
+  relatedFindings: ["no_forcing_function", "never_heavy_enough", "failure_every_set"],
 };
