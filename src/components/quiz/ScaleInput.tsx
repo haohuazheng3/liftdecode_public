@@ -17,9 +17,11 @@ function fill(n: number): string {
 }
 
 /**
- * A 1–10 intensity pick: two rows of five on phones (each target stays ~60px wide at
- * 390px), one row of ten from `sm` up (~46px at 640px). Reading order stays 1→10. Tapping a number selects it instantly; the
- * numbers below it light up like a loading meter so the choice reads at a glance.
+ * A 1–10 intensity pick, always ONE row so it reads as a continuous scale from weak to
+ * strong (the owner's reference is the 16Personalities scale; two rows of five read like a
+ * keypad). At 390px each target is ~30×52px — above the WCAG 2.2 24px minimum, the same
+ * trade-off phone NPS 0–10 widgets make. Tapping a number selects it instantly; the numbers
+ * below it light up like a loading meter so the choice reads at a glance.
  */
 export function ScaleInput({
   labelledBy,
@@ -43,7 +45,7 @@ export function ScaleInput({
         role="radiogroup"
         aria-labelledby={labelledBy}
         onKeyDown={onKeyDown}
-        className="grid w-full grid-cols-5 gap-2 sm:grid-cols-10"
+        className="grid w-full grid-cols-10 gap-1 sm:gap-2"
       >
         {STEPS.map((n, i) => {
           const selected = picked === n;
@@ -66,9 +68,9 @@ export function ScaleInput({
               style={style}
               data-selected={selected ? "true" : "false"}
               className={[
-                "relative min-w-11 h-14 sm:h-16 rounded-[12px] sm:rounded-2xl border",
+                "relative min-w-0 h-[52px] sm:h-16 rounded-[10px] sm:rounded-2xl border",
                 "grid place-items-center select-none cursor-pointer",
-                "font-display font-extrabold text-xl sm:text-2xl tabular-nums leading-none",
+                "font-display font-extrabold text-lg sm:text-2xl tabular-nums leading-none",
                 "transition-[scale,translate,background-color,border-color,color,box-shadow] duration-100 ease-out",
                 "active:scale-[0.92] [-webkit-tap-highlight-color:transparent]",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal",
