@@ -4,12 +4,24 @@ import { CATEGORIES, getAllPosts } from "@/lib/blog";
 import { CategoryCard } from "@/components/blog/CategoryCard";
 import { PostCard } from "@/components/blog/PostCard";
 import { JsonLd } from "@/components/blog/JsonLd";
+import { RelatedLinks } from "@/components/content/RelatedLinks";
+import { GLOSSARY_HUB, TOOLS_HUB, lookup } from "@/lib/site-index";
 import { APP_URL, BRAND } from "@/lib/env";
+
+/** Start-here picks: the pages that answer the questions stalled lifters ask most. */
+const FEATURED = [
+  "/blog/plateaus/why-am-i-not-gaining-muscle",
+  "/blog/programming/progressive-overload",
+  "/blog/programming/how-many-sets-per-muscle-group-per-week",
+  "/blog/recovery/deload-week",
+  "/blog/strength/bench-press-standards",
+  "/tools/1rm-calculator",
+];
 
 export const metadata: Metadata = {
   title: "Blog — Why lifts stall and how to fix it",
   description:
-    "Coach-grade articles on plateaus, programming, nutrition, recovery, strength and physique. Direct, specific and free of hype.",
+    "Coach-grade articles on plateaus, training, programs, exercise form, strength standards, nutrition, recovery and building muscle. Direct, specific, sourced.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: `Blog · ${BRAND}`,
@@ -21,6 +33,7 @@ export const metadata: Metadata = {
 export default function BlogIndex() {
   const posts = getAllPosts();
   const latest = posts.slice(0, 6);
+  const featured = lookup(FEATURED);
   const counts = new Map<string, number>();
   for (const p of posts) counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
 
@@ -59,6 +72,25 @@ export default function BlogIndex() {
               <CategoryCard key={c.slug} category={c} count={counts.get(c.slug) ?? 0} index={i} />
             ))}
           </div>
+        </section>
+
+        {featured.length > 0 && (
+          <div className="mt-6">
+            <RelatedLinks entries={featured} title="Start here" />
+          </div>
+        )}
+
+        <section className="mt-10 grid gap-4 sm:grid-cols-2" aria-label="Tools and glossary">
+          <Link href={TOOLS_HUB.url} className="slab slab-hover block p-5 sm:p-6 group">
+            <span className="eyebrow">Calculators</span>
+            <h2 className="mt-2 display text-2xl text-ink group-hover:text-signal-2 transition-colors">{TOOLS_HUB.h1}</h2>
+            <p className="mt-2 text-sm text-ink-2 leading-relaxed">{TOOLS_HUB.description}</p>
+          </Link>
+          <Link href={GLOSSARY_HUB.url} className="slab slab-hover block p-5 sm:p-6 group">
+            <span className="eyebrow">Glossary</span>
+            <h2 className="mt-2 display text-2xl text-ink group-hover:text-signal-2 transition-colors">{GLOSSARY_HUB.h1}</h2>
+            <p className="mt-2 text-sm text-ink-2 leading-relaxed">{GLOSSARY_HUB.description}</p>
+          </Link>
         </section>
 
         <section className="mt-12" aria-labelledby="latest">

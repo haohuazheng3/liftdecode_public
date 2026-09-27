@@ -14,10 +14,12 @@ const COLS = [
     ],
   },
   {
-    title: "Company",
+    title: "Learn",
     links: [
-      { href: "/about", label: "About" },
       { href: "/blog", label: "Blog" },
+      { href: "/tools", label: "Calculators" },
+      { href: "/glossary", label: "Glossary" },
+      { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
     ],
   },

@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { CATEGORIES, getAllPosts, type Post } from "@/lib/blog";
+import { getAllTerms } from "@/lib/glossary";
+import { getAllToolPages } from "@/lib/tool-pages";
 import { LAUNCH_DATE, STATIC_ROUTES, absoluteUrl, isPrivatePath } from "@/lib/seo";
 
 type Entry = MetadataRoute.Sitemap[number];
@@ -55,8 +57,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ];
   });
 
+  const newest = (dates: string[]): Date =>
+    dates.reduce<Date>((acc, iso) => {
+      const d = toDate(iso, LAUNCH_DATE);
+      return d > acc ? d : acc;
+    }, LAUNCH_DATE);
+
+  const terms = getAllTerms().filter((t) => !t.draft);
+  const termEntries: Entry[] = terms.length
+    ? [
+        { url: absoluteUrl("/glossary"), lastModified: newest(terms.map((t) => t.updatedAt)), changeFrequency: "weekly", priority: 0.5 },
+        ...terms.map((t) => ({
+          url: absoluteUrl(`/glossary/${t.slug}`),
+          lastModified: toDate(t.updatedAt, LAUNCH_DATE),
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
+        })),
+      ]
+    : [];
+
+  const tools = getAllToolPages().filter((t) => !t.draft);
+  const toolEntries: Entry[] = tools.length
+    ? [
+        { url: absoluteUrl("/tools"), lastModified: newest(tools.map((t) => t.updatedAt)), changeFrequency: "weekly", priority: 0.7 },
+        ...tools.map((t) => ({
+          url: absoluteUrl(`/tools/${t.slug}`),
+          lastModified: toDate(t.updatedAt, LAUNCH_DATE),
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        })),
+      ]
+    : [];
+
   const seen = new Set<string>();
-  return [...staticEntries, ...categoryEntries, ...postEntries].filter((e) => {
+  return [...staticEntries, ...categoryEntries, ...postEntries, ...toolEntries, ...termEntries].filter((e) => {
     const path = e.url.replace(/^https?:\/\/[^/]+/i, "") || "/";
     if (isPrivatePath(path) || seen.has(e.url)) return false;
     seen.add(e.url);

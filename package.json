@@ -24,6 +24,7 @@
     "next-mdx-remote": "^6.0.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "remark-gfm": "^4.0.1",
     "stripe": "^22.6.2",
     "svix": "^2.5.0",
     "zod": "^4.6.5"

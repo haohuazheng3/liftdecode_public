@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "img.clerk.com" }],
   },
+  async redirects() {
+    return [
+      // Retired v1 post; the plateau hub covers the same question and links every cause.
+      { source: "/blog/plateaus/why-your-lifts-stall", destination: "/blog/plateaus", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

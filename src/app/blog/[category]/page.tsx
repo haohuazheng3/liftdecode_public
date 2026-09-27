@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CATEGORIES, getCategory, getPostsByCategory } from "@/lib/blog";
 import { CategoryHub } from "@/components/blog/CategoryHub";
 import { pageHref } from "@/components/blog/Pagination";
-import { APP_URL, BRAND } from "@/lib/env";
+import { APP_URL } from "@/lib/env";
 
 export const dynamicParams = false;
 
@@ -17,12 +17,12 @@ export async function generateMetadata(props: PageProps<"/blog/[category]">): Pr
   if (!category) return {};
   const { totalPages } = getPostsByCategory(slug, 1);
   return {
-    title: `${category.title} — Blog`,
+    title: category.h1,
     description: category.description,
     alternates: { canonical: `/blog/${slug}` },
     pagination: totalPages > 1 ? { next: pageHref(slug, 2) } : undefined,
     openGraph: {
-      title: `${category.title} · ${BRAND} Blog`,
+      title: category.h1,
       description: category.description,
       url: `${APP_URL}/blog/${slug}`,
     },

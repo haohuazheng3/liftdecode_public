@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { toImage, toStringArray as toList, type ContentImage } from "@/lib/content";
 
 /**
  * Blog content layer.
@@ -16,8 +17,13 @@ import matter from "gray-matter";
 
 export type Category = {
   slug: string;
+  /** Short label for navigation, cards and breadcrumbs. */
   title: string;
+  /** The hub's H1 and <title>: carries the hub's own validated keyword. */
+  h1: string;
+  keyword: string;
   description: string;
+  /** One-paragraph summary shown on paginated pages and cards; page 1 renders content/hubs/<slug>.md. */
   intro: string;
 };
 
@@ -30,6 +36,9 @@ export type Post = {
   updatedAt: string;
   draft: boolean;
   tags: string[];
+  keyword: string;
+  image: ContentImage | null;
+  related: string[];
   content: string;
 };
 
@@ -44,51 +53,83 @@ export type PostPage = {
 export const CATEGORIES: Category[] = [
   {
     slug: "plateaus",
-    title: "Breaking plateaus",
+    title: "Plateaus",
+    h1: "Workout Plateau: Why Progress Stops and What to Fix First",
+    keyword: "workout plateau",
     description:
-      "Why lifts stall, how to tell a real plateau from a bad month, and the specific levers that get the bar moving again.",
+      "Why a workout plateau happens, how to tell a real stall from a bad month, and which variable to change first so the bar and the mirror start moving again.",
     intro:
-      "A plateau is information, not a verdict. Almost every stall traces back to one or two things that stopped scaling — load, volume, recovery, food, or the way you measure progress — and the fix is rarely the thing you tried first. These articles show you how to read a stall the way a good coach would, so you change the right variable instead of all of them.",
+      "A plateau is information, not a verdict. Almost every stall traces back to one or two things that stopped scaling, and the fix is rarely the thing you tried first.",
   },
   {
     slug: "programming",
-    title: "Programming",
+    title: "Training",
+    h1: "Hypertrophy Training: Sets, Reps, Rest and Progression",
+    keyword: "hypertrophy training",
     description:
-      "Sets, reps, frequency, progression and deloads — how to structure training so it keeps producing results month after month.",
+      "Hypertrophy training explained with numbers: weekly sets, rep ranges, rest periods, effort and progression, plus the training myths that quietly stall muscle growth.",
     intro:
-      "Most people do not need a new programme. They need to understand why the one they have stopped working, and which dial to turn next. This section covers progression schemes, volume landmarks, exercise selection and deloads in plain language, with the trade-offs spelled out so you can make the call for your own training.",
+      "Most people do not need a new programme. They need to know which training variable stopped working and how far to turn it.",
+  },
+  {
+    slug: "programs",
+    title: "Programs & splits",
+    h1: "Workout Splits and Programs: Which One, and When It Stalls",
+    keyword: "workout splits",
+    description:
+      "Workout splits and classic programs compared: how PPL, upper/lower, bro splits, 5x5, 5/3/1 and GZCLP are built, who each suits, and exactly where each one stalls.",
+    intro:
+      "Every program works until it doesn't. What matters is knowing how yours progresses, where it runs out, and what to run next.",
+  },
+  {
+    slug: "form",
+    title: "Exercise form",
+    h1: "Exercise Form: Technique Fixes for the Big Lifts",
+    keyword: "exercise form",
+    description:
+      "Exercise form guides for the lifts that matter: setup, step-by-step technique and the specific form mistakes that cap your squat, bench, deadlift, press and rows.",
+    intro:
+      "Technique is a strength limiter long before it is a safety issue. These guides show what good form looks like and which mistakes stall each lift.",
+  },
+  {
+    slug: "strength",
+    title: "Strength standards",
+    h1: "Strength Standards: How Strong Are You, Really?",
+    keyword: "strength standards",
+    description:
+      "Strength standards and averages for the bench press, squat, deadlift and pull-ups, with the data behind every number, plus how to get stronger when your lifts stall.",
+    intro:
+      "Numbers are only useful if you know who they describe. Every standard here says where it comes from, and what to do if you are stuck below it.",
   },
   {
     slug: "nutrition",
     title: "Nutrition",
+    h1: "Diet for Muscle Gain: Calories, Protein and What Matters",
+    keyword: "diet for muscle gain",
     description:
-      "Calories, protein, timing and the boring consistency that decides whether your training turns into muscle or strength.",
+      "A diet for muscle gain that holds up to the evidence: calorie surplus, protein targets, bulking without getting fat, and the eating mistakes that stall lifters.",
     intro:
-      "Training creates the demand; food decides whether your body can pay for it. The nutrition articles here are about the fundamentals that actually move results — energy balance, protein, carbohydrate around training, and eating in a way you can sustain for a year rather than a fortnight. No supplement hype, no miracle protocols, just the parts that hold up.",
+      "Training creates the demand; food decides whether your body can pay for it. These articles cover the fundamentals that actually move results.",
   },
   {
     slug: "recovery",
     title: "Recovery",
+    h1: "Muscle Recovery: How Long It Takes and When It Limits Growth",
+    keyword: "how long does muscle recovery take",
     description:
-      "Sleep, stress, fatigue management and the difference between being tired and being under-recovered.",
+      "How long muscle recovery takes, how many rest days you need, when to deload, and how to tell normal soreness and fatigue from real under-recovery.",
     intro:
-      "You do not get stronger in the gym; you get stronger recovering from it. When progress stalls, recovery is the lever people check last and should check first — sleep, stress load, how often you train close to failure, and whether a deload is overdue. These articles explain how to spot under-recovery early and what to change before it costs you weeks.",
-  },
-  {
-    slug: "strength",
-    title: "Strength",
-    description:
-      "Getting the squat, bench, deadlift and press moving again — technique, load management and peaking for lifters who chase numbers.",
-    intro:
-      "Strength is a skill, and stalls on the big lifts usually come from one of three places: technique that breaks under load, progression that outran your recovery, or too much time spent grinding near your max. The strength section covers how to diagnose which one it is and how to rebuild momentum without losing the base you have already built.",
+      "You do not grow in the gym; you grow recovering from it. Recovery is the lever people check last and should check first.",
   },
   {
     slug: "physique",
-    title: "Physique",
+    title: "Building muscle",
+    h1: "How to Gain Muscle When It's Stopped Coming Easy",
+    keyword: "how to gain muscle",
     description:
-      "Building muscle and changing how you look — hypertrophy training, body recomposition and measuring the changes you cannot see in the mirror.",
+      "How to gain muscle after the easy first year: realistic rates of gain, lagging body parts, skinny-fat and hardgainer fixes, and training after 40 and 50.",
     intro:
-      "Physique goals move slowly and are easy to misjudge, which is why so many people abandon a plan that was working. These articles cover the training and eating that reliably build muscle, how to run a cut or a gaining phase without wasting it, and how to measure progress so a slow week does not look like a failed month.",
+      "Muscle comes quickly at first and slowly after that. These guides are for the slow part: what still works, and what to fix when it stops.",
   },
 ];
 
@@ -122,7 +163,7 @@ function toStringArray(v: unknown): string[] {
 }
 
 function parsePost(category: string, file: string): Post | null {
-  const slug = file.replace(/\.mdx$/, "");
+  const slug = file.replace(/\.mdx?$/, "");
   if (!SLUG_RE.test(slug) || RESERVED_SLUGS.has(slug)) return null;
   const raw = fs.readFileSync(path.join(CONTENT_DIR, category, file), "utf8");
   const { data, content } = matter(raw);
@@ -140,6 +181,9 @@ function parsePost(category: string, file: string): Post | null {
     updatedAt: updatedAt < publishedAt ? publishedAt : updatedAt,
     draft: data.draft === true,
     tags: toStringArray(data.tags),
+    keyword: typeof data.keyword === "string" ? data.keyword.trim() : "",
+    image: toImage(data.image),
+    related: toList(data.related).filter((u) => u.startsWith("/")),
     content,
   };
 }
@@ -154,7 +198,7 @@ function loadAll(): Post[] {
       const dir = path.join(CONTENT_DIR, category);
       if (!fs.existsSync(dir)) continue;
       for (const file of fs.readdirSync(dir)) {
-        if (!file.endsWith(".mdx")) continue;
+        if (!file.endsWith(".mdx") && !file.endsWith(".md")) continue;
         const post = parsePost(category, file);
         if (post) posts.push(post);
       }
