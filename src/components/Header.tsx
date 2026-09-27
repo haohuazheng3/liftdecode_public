@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Show, UserButton } from "@clerk/nextjs";
+import { Show, UserButton, useAuth } from "@clerk/nextjs";
 import { LogoLink } from "./Logo";
 
 const NAV = [
@@ -16,6 +16,7 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { isSignedIn } = useAuth();
   const pathname = usePathname();
   const inQuiz = pathname?.startsWith("/diagnose") && !pathname.includes("/result");
 
@@ -69,11 +70,13 @@ export function Header() {
                 <>
                   {/* Below `sm` the row cannot hold the full label next to the avatar and the menu button:
                       signed-out visitors get a short CTA; signed-in users have it in the menu and on the dashboard. */}
-                  <Show when="signed-out">
+                  {/* Rendered on the server (not behind <Show>) so it paints with the page instead of
+                      after the auth script loads; hidden once Clerk confirms a signed-in user. */}
+                  {isSignedIn !== true && (
                     <Link href="/diagnose" className="sm:hidden btn btn-primary btn-sm !px-3.5" prefetch>
-                      Start
+                      Diagnose
                     </Link>
-                  </Show>
+                  )}
                   <Link href="/diagnose" className="hidden sm:inline-flex btn btn-primary btn-sm" prefetch>
                     Start diagnosis
                   </Link>
