@@ -58,8 +58,8 @@ function PlateShape({ p, side, i }: { p: Plate; side: "l" | "r"; i: number }) {
       {/* the moulded rim lip, top and bottom */}
       <rect x={x + 1} y={y + 12} width={p.w - 2} height={2.5} fill="#000" opacity={0.2} />
       <rect x={x + 1} y={y + h - 14.5} width={p.w - 2} height={2.5} fill="#000" opacity={0.2} />
-      {/* steel hub insert */}
-      <rect x={x + 2} y={CENTER_Y - 14} width={p.w - 4} height={28} rx={2} fill="url(#ld-steel)" opacity={0.7} />
+      {/* No hub insert: seen from the side a plate hides the sleeve completely. The old
+          semi-transparent steel band across the middle read as the bar passing through the plate. */}
     </g>
   );
 }
