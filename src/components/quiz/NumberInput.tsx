@@ -110,7 +110,7 @@ export function NumberInput({
   };
 
   // the example in the placeholder follows the unit ("e.g. 178" → "e.g. 5" and "10", or "e.g. 181")
-  const exampleBase = Number((spec.placeholder ?? "").replace(/[^\d.]/g, ""));
+  const exampleBase = Number((spec.placeholder ?? "").match(/\d+(?:\.\d+)?/)?.[0] ?? NaN);
   const example = Number.isFinite(exampleBase) && exampleBase > 0 ? display(exampleBase, unit) : { text: "", second: "" };
   const placeholderFor = (first: boolean) => {
     if (!spec.placeholder) return "";
