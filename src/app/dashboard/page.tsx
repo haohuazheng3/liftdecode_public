@@ -191,8 +191,8 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           <div className="slab p-6 sm:p-8">
             <div className="eyebrow mb-2">Start here</div>
             <p className="text-ink-2 leading-relaxed max-w-xl">
-              Answer quick, honest questions about how you train, eat, sleep and recover — mostly one tap each. Your
-              answers are saved as you go.
+              Answer quick, honest questions about your build, your week and how you train, eat, sleep and recover —
+              mostly one tap each. Your answers are saved as you go.
             </p>
             <Link href="/diagnose" className="btn btn-primary mt-5">
               Start the diagnosis

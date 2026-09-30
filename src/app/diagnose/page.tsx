@@ -4,7 +4,7 @@ import { Quiz } from "@/components/quiz/Quiz";
 export const metadata: Metadata = {
   title: "Start your diagnosis",
   description:
-    "Tap through how you train, eat, sleep and recover. LiftDecode finds the bottleneck that stalled your progress and what to do about it.",
+    "Your build, your week, how you train, eat, sleep and recover. LiftDecode finds the bottleneck that stalled your progress and what to do about it.",
 };
 
 export default function DiagnosePage() {

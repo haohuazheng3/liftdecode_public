@@ -4,6 +4,8 @@ import { FINDINGS } from "@/content/findings";
 import type { Assessment } from "@/lib/assessments";
 import type { FindingResult } from "@/lib/engine/types";
 import { CATEGORY_LABEL, TRACK_LABEL } from "@/lib/report/labels";
+import { buildProfile } from "@/lib/report/profile";
+import { ProfileCard } from "./ProfileCard";
 import { PlanChecklist, type PlanWeek } from "./PlanChecklist";
 import { PrintButton } from "./ReportTools";
 import { FindingBody } from "./FindingBody";
@@ -90,6 +92,7 @@ export function Report({
   const primaryContent = primary ? FINDINGS[primary.id] : null;
   const maxScore = primary?.score ?? 1;
   const plan = buildPlan(ranked);
+  const profile = buildProfile(assessment.answers);
   // A report with ten 1,500-word findings is unreadable. The strongest six get full
   // sections; the rest stay on the page but folded away.
   const FULL_SECTIONS = 6;
@@ -150,6 +153,8 @@ export function Report({
           )}
         </p>
       </div>
+
+      <ProfileCard stats={profile} />
 
       {/* ranking */}
       {ranked.length > 0 && (

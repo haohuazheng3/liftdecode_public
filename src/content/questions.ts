@@ -1,24 +1,78 @@
 /**
- * LiftDecode question bank (v2). Every question asks about a habit, a feeling
- * or an intensity, never a number or how progress is measured. QUESTIONS is the
- * display order; each track sees 28 (20 shared + 8 of its own). Sections only
- * group questions for ordering and are never shown.
+ * LiftDecode question bank (v3, 2026-09-30). The intake now takes the numbers the report
+ * needs (build, weekly dose per muscle group, grams, hours) and keeps the habit and
+ * intensity questions from v2. QUESTIONS is the display order; questions that share a
+ * `screen` id render together (see SCREENS). Sections only group questions for ordering
+ * and are never shown. Nothing here states how many questions there are.
  *
- * Answers that check each other sit far apart: training_pattern ↔ missed_sessions,
+ * Answers that check each other sit far apart: training_pattern ↔ loop_score,
  * hard_set_habit ↔ effort_grind, load_choice ↔ beat_last, physique_aim ↔ eating_phase.
  * Answers that build on each other sit together: lagging_area → lagging_priority →
  * feel_target, and fail_point → weak_point_work.
  */
-import type { Question, Section } from "./types";
+import type { Question, Screen, Section, UnitSpec } from "./types";
 
 const scale = (low: string, high: string) => ({ min: 1 as const, max: 10 as const, low, high });
 
+/* ───────────── units ───────────── */
+const CM: UnitSpec = { key: "cm", label: "cm", toBase: (v) => v, fromBase: (v) => v, decimals: 0 };
+const FT_IN: UnitSpec = {
+  key: "ft",
+  label: "ft / in",
+  toBase: (v) => v * 2.54, // v arrives as total inches
+  fromBase: (v) => v / 2.54,
+  decimals: 0,
+  compound: { label: "ft", perUnit: 12, secondLabel: "in" },
+};
+const KG: UnitSpec = { key: "kg", label: "kg", toBase: (v) => v, fromBase: (v) => v, decimals: 1 };
+const LB: UnitSpec = { key: "lb", label: "lb", toBase: (v) => v * 0.45359237, fromBase: (v) => v / 0.45359237, decimals: 0 };
+const YEARS: UnitSpec = { key: "y", label: "years", toBase: (v) => v, fromBase: (v) => v, decimals: 0 };
+
+/* ───────────── per-muscle-group screens ───────────── */
+const SESSIONS = [
+  { value: "0", label: "0" },
+  { value: "1", label: "1" },
+  { value: "2", label: "2" },
+  { value: "3", label: "3" },
+  { value: "4plus", label: "4+" },
+];
+const HOURS = [
+  { value: "u1", label: "<1" },
+  { value: "1_2", label: "1–2" },
+  { value: "2_3", label: "2–3" },
+  { value: "3_4", label: "3–4" },
+  { value: "4plus", label: "4+" },
+];
+const group = (id: string, screen: string): Question[] => [
+  { id: `${id}_sessions`, audience: "both", section: "week", screen, type: "pills", prompt: "Sessions a week", options: SESSIONS },
+  {
+    id: `${id}_hours`,
+    audience: "both",
+    section: "week",
+    screen,
+    type: "pills",
+    prompt: "Hours a week, all sets included",
+    options: HOURS,
+  },
+];
+
 export const SECTIONS: Section[] = [
   { id: "you", title: "You" },
+  { id: "week", title: "Your week" },
   { id: "training", title: "Training" },
   { id: "food", title: "Food" },
   { id: "recovery", title: "Sleep and recovery" },
   { id: "life", title: "Life" },
+];
+
+export const SCREENS: Screen[] = [
+  { id: "about", title: "First, the basics.", lead: "The report reads every number against your build." },
+  { id: "chest", title: "Chest, in a normal week.", lead: "Count every session that trains it, even as a second muscle." },
+  { id: "back", title: "Back, in a normal week." },
+  { id: "arms", title: "Arms, in a normal week.", lead: "Biceps, triceps and shoulders." },
+  { id: "legs", title: "Legs, in a normal week.", lead: "Quads, hamstrings, glutes and calves." },
+  { id: "intake", title: "On a normal day, you eat…", lead: "Pick “Not sure” if you don't track it. The report works either way." },
+  { id: "sleep", title: "Sleep, on a normal week." },
 ];
 
 export const QUESTIONS: Question[] = [
@@ -32,31 +86,6 @@ export const QUESTIONS: Question[] = [
     options: [
       { value: "physique", label: "A better physique" },
       { value: "strength", label: "More strength" },
-    ],
-  },
-  {
-    id: "training_age",
-    audience: "both",
-    section: "you",
-    type: "single",
-    prompt: "How long have you trained seriously?",
-    options: [
-      { value: "under_1y", label: "Under a year" },
-      { value: "1_3y", label: "1–3 years" },
-      { value: "3_6y", label: "3–6 years" },
-      { value: "over_6y", label: "Over 6 years" },
-    ],
-  },
-  {
-    id: "training_pattern",
-    audience: "both",
-    section: "you",
-    type: "single",
-    prompt: "Your last few months of training have been…",
-    options: [
-      { value: "steady", label: "Steady" },
-      { value: "on_off", label: "On and off" },
-      { value: "comeback", label: "Back after a break" },
     ],
   },
   {
@@ -84,6 +113,124 @@ export const QUESTIONS: Question[] = [
       { value: "press", label: "Overhead press" },
     ],
   },
+  {
+    id: "sex",
+    audience: "both",
+    section: "you",
+    screen: "about",
+    type: "pills",
+    prompt: "Sex",
+    options: [
+      { value: "male", label: "Male" },
+      { value: "female", label: "Female" },
+      { value: "other", label: "Other" },
+    ],
+  },
+  {
+    id: "age",
+    audience: "both",
+    section: "you",
+    screen: "about",
+    type: "number",
+    prompt: "Age",
+    options: [],
+    number: { min: 14, max: 90, step: 1, units: [YEARS], placeholder: "e.g. 29" },
+  },
+  {
+    id: "height_cm",
+    audience: "both",
+    section: "you",
+    screen: "about",
+    type: "number",
+    prompt: "Height",
+    options: [],
+    number: { min: 120, max: 230, step: 1, units: [CM, FT_IN], placeholder: "e.g. 178" },
+  },
+  {
+    id: "weight_kg",
+    audience: "both",
+    section: "you",
+    screen: "about",
+    type: "number",
+    prompt: "Weight",
+    options: [],
+    number: { min: 35, max: 250, step: 0.5, units: [KG, LB], placeholder: "e.g. 82" },
+  },
+  {
+    id: "body_type",
+    audience: "both",
+    section: "you",
+    type: "image",
+    prompt: "Which build is closest to yours?",
+    help: "Go by the frame you had before training, not by where you are today.",
+    options: [
+      {
+        value: "ecto",
+        label: "Ectomorph",
+        caption: "Slim frame, long limbs, gains slowly",
+        images: { male: "/body-types/male-ecto.webp", female: "/body-types/female-ecto.webp" },
+      },
+      {
+        value: "meso",
+        label: "Mesomorph",
+        caption: "Naturally athletic, builds muscle easily",
+        images: { male: "/body-types/male-meso.webp", female: "/body-types/female-meso.webp" },
+      },
+      {
+        value: "endo",
+        label: "Endomorph",
+        caption: "Wider frame, stores fat easily",
+        images: { male: "/body-types/male-endo.webp", female: "/body-types/female-endo.webp" },
+      },
+    ],
+  },
+  {
+    id: "training_age",
+    audience: "both",
+    section: "you",
+    type: "single",
+    prompt: "How long have you trained seriously?",
+    options: [
+      { value: "under_1y", label: "Under a year" },
+      { value: "1_3y", label: "1–3 years" },
+      { value: "3_6y", label: "3–6 years" },
+      { value: "over_6y", label: "Over 6 years" },
+    ],
+  },
+  {
+    id: "training_pattern",
+    audience: "both",
+    section: "you",
+    type: "single",
+    prompt: "Your last few months of training have been…",
+    options: [
+      { value: "steady", label: "Steady" },
+      { value: "on_off", label: "On and off" },
+      { value: "comeback", label: "Back after a break" },
+    ],
+  },
+
+  /* ─────────────── your week ─────────────── */
+  {
+    id: "sessions_week",
+    audience: "both",
+    section: "week",
+    type: "pills",
+    prompt: "How many sessions a week do you lift?",
+    options: [
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" },
+      { value: "4", label: "4" },
+      { value: "5", label: "5" },
+      { value: "6", label: "6" },
+      { value: "7plus", label: "7+" },
+    ],
+  },
+  ...group("chest", "chest"),
+  ...group("back", "back"),
+  ...group("arms", "arms"),
+  ...group("legs", "legs"),
 
   /* ─────────────── training ─────────────── */
   {
@@ -96,27 +243,6 @@ export const QUESTIONS: Question[] = [
       { value: "stop", label: "With plenty left" },
       { value: "push", label: "Just short of failure" },
       { value: "failure", label: "At failure" },
-    ],
-  },
-  {
-    id: "volume_feel",
-    audience: "both",
-    section: "training",
-    type: "scale",
-    prompt: "Compared with most lifters, how much do you train?",
-    options: [],
-    scale: scale("Far less", "Far more"),
-  },
-  {
-    id: "load_choice",
-    audience: "both",
-    section: "training",
-    type: "single",
-    prompt: "How do you pick your weights?",
-    options: [
-      { value: "usual", label: "Same as usual" },
-      { value: "feel", label: "By feel" },
-      { value: "plan", label: "My program sets them" },
     ],
   },
   {
@@ -179,9 +305,12 @@ export const QUESTIONS: Question[] = [
     type: "single",
     prompt: "Which area is slowest to grow?",
     options: [
-      { value: "chest_back", label: "Chest & back" },
-      { value: "shoulders_arms", label: "Shoulders & arms" },
-      { value: "legs", label: "Legs & glutes" },
+      { value: "chest", label: "Chest" },
+      { value: "back", label: "Back" },
+      { value: "shoulders", label: "Shoulders" },
+      { value: "arms", label: "Arms" },
+      { value: "legs", label: "Legs" },
+      { value: "glutes", label: "Glutes" },
       { value: "everything", label: "No one area" },
     ],
   },
@@ -208,19 +337,6 @@ export const QUESTIONS: Question[] = [
     scale: scale("Can't feel it", "Every rep"),
   },
   {
-    id: "muscle_frequency",
-    audience: "physique",
-    section: "training",
-    type: "single",
-    prompt: "How often does each muscle get trained?",
-    options: [
-      { value: "once", label: "Once a week" },
-      { value: "twice", label: "Twice a week" },
-      { value: "three", label: "Three+ times" },
-      { value: "varies", label: "Depends on the week" },
-    ],
-  },
-  {
     id: "effort_grind",
     audience: "both",
     section: "training",
@@ -239,15 +355,15 @@ export const QUESTIONS: Question[] = [
     scale: scale("Never", "Every session"),
   },
   {
-    id: "range_under_load",
-    audience: "physique",
+    id: "load_choice",
+    audience: "both",
     section: "training",
     type: "single",
-    prompt: "As the weight goes up, your range of motion…",
+    prompt: "How do you pick your weights?",
     options: [
-      { value: "full", label: "Stays full" },
-      { value: "shorter", label: "Gets shorter" },
-      { value: "unsure", label: "Not sure" },
+      { value: "usual", label: "Same as usual" },
+      { value: "feel", label: "By feel" },
+      { value: "plan", label: "My program sets them" },
     ],
   },
   {
@@ -282,6 +398,24 @@ export const QUESTIONS: Question[] = [
     scale: scale("None", "Loads"),
   },
   {
+    id: "rom_focus",
+    audience: "both",
+    section: "training",
+    type: "scale",
+    prompt: "How much do you prioritise a full range of motion on every rep?",
+    options: [],
+    scale: scale("Not a priority", "Every rep, always"),
+  },
+  {
+    id: "drive",
+    audience: "both",
+    section: "training",
+    type: "scale",
+    prompt: "How strong is your urge to train and chase records right now?",
+    options: [],
+    scale: scale("Gone", "Burning"),
+  },
+  {
     id: "pain_limits",
     audience: "both",
     section: "training",
@@ -289,6 +423,45 @@ export const QUESTIONS: Question[] = [
     prompt: "How often does pain change how you train?",
     options: [],
     scale: scale("Never", "Every session"),
+  },
+  {
+    id: "brain_fog",
+    audience: "both",
+    section: "training",
+    type: "single",
+    prompt: "During training, do you get brain fog or sudden weakness?",
+    help: "Brain fog: a buzzing, heavy or swollen feeling in your head. Weakness: strength that drains out mid-session.",
+    options: [
+      { value: "never", label: "Never" },
+      { value: "sometimes", label: "Now and then" },
+      { value: "often", label: "Most sessions" },
+    ],
+  },
+  {
+    id: "training_signs",
+    audience: "both",
+    section: "training",
+    type: "multi",
+    prompt: "During or after training, do you get any of these?",
+    maxSelect: 5,
+    options: [
+      { value: "cramps", label: "Cramps" },
+      { value: "twitches", label: "Muscle twitches" },
+      { value: "floaty", label: "Legs go soft or floaty" },
+      { value: "dizzy", label: "Dizziness or a racing heart" },
+      { value: "water_worse", label: "Weaker the more water I drink" },
+      { value: "none", label: "None of these", exclusive: true },
+    ],
+  },
+  {
+    id: "loop_score",
+    audience: "both",
+    section: "training",
+    type: "scale",
+    prompt: "How consistent is your training loop?",
+    help: "A good loop: you arrive in decent shape, train well, recover well, and the next session starts from there.",
+    options: [],
+    scale: scale("Always broken", "Runs itself"),
   },
 
   /* ─────────────── food ─────────────── */
@@ -318,6 +491,49 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "protein_g",
+    audience: "both",
+    section: "food",
+    screen: "intake",
+    type: "pills",
+    prompt: "Protein, grams a day",
+    options: [
+      { value: "unknown", label: "Not sure" },
+      { value: "u100", label: "<100" },
+      { value: "100_140", label: "100–140" },
+      { value: "140_180", label: "140–180" },
+      { value: "180_220", label: "180–220" },
+      { value: "o220", label: "220+" },
+    ],
+  },
+  {
+    id: "carbs_g",
+    audience: "both",
+    section: "food",
+    screen: "intake",
+    type: "pills",
+    prompt: "Carbs, grams a day",
+    options: [
+      { value: "unknown", label: "Not sure" },
+      { value: "u150", label: "<150" },
+      { value: "150_250", label: "150–250" },
+      { value: "250_350", label: "250–350" },
+      { value: "350_450", label: "350–450" },
+      { value: "o450", label: "450+" },
+    ],
+  },
+  {
+    id: "diet_clean",
+    audience: "both",
+    section: "food",
+    type: "scale",
+    prompt: "How clean is your diet?",
+    help:
+      "Clean means mostly whole food you cook or recognise: lean protein, rice, potatoes, fruit, vegetables. Greasy, fried and ultra-processed food keeps low-grade inflammation up, which works against recovery and growth.",
+    options: [],
+    scale: scale("Mostly processed", "Mostly whole food"),
+  },
+  {
     id: "meal_skip",
     audience: "both",
     section: "food",
@@ -325,15 +541,6 @@ export const QUESTIONS: Question[] = [
     prompt: "How often do you end up eating less than planned?",
     options: [],
     scale: scale("Never", "Every day"),
-  },
-  {
-    id: "protein_meals",
-    audience: "both",
-    section: "food",
-    type: "scale",
-    prompt: "How often is a meal built around protein?",
-    options: [],
-    scale: scale("Hardly ever", "Every meal"),
   },
   {
     id: "weekend_eating",
@@ -346,6 +553,35 @@ export const QUESTIONS: Question[] = [
   },
 
   /* ─────────────── recovery ─────────────── */
+  {
+    id: "sleep_hours",
+    audience: "both",
+    section: "recovery",
+    screen: "sleep",
+    type: "pills",
+    prompt: "Hours a night, most nights",
+    options: [
+      { value: "u5", label: "<5" },
+      { value: "5_6", label: "5–6" },
+      { value: "6_7", label: "6–7" },
+      { value: "7_8", label: "7–8" },
+      { value: "8_9", label: "8–9" },
+      { value: "o9", label: "9+" },
+    ],
+  },
+  {
+    id: "sleep_regular",
+    audience: "both",
+    section: "recovery",
+    screen: "sleep",
+    type: "single",
+    prompt: "Bed and wake times are…",
+    options: [
+      { value: "same", label: "About the same every day" },
+      { value: "shifts", label: "Shift by an hour or two" },
+      { value: "all_over", label: "All over the place" },
+    ],
+  },
   {
     id: "full_nights",
     audience: "both",
@@ -378,13 +614,19 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "session_energy",
+    id: "coffee",
     audience: "both",
     section: "recovery",
-    type: "scale",
-    prompt: "How much energy do you bring to your sessions?",
-    options: [],
-    scale: scale("Running on empty", "Fully charged"),
+    type: "pills",
+    prompt: "Cups of coffee a day?",
+    help: "Count energy drinks and pre-workout as a cup each.",
+    options: [
+      { value: "0", label: "None" },
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" },
+      { value: "4plus", label: "4+" },
+    ],
   },
 
   /* ─────────────── life ─────────────── */
@@ -402,17 +644,9 @@ export const QUESTIONS: Question[] = [
     audience: "both",
     section: "life",
     type: "scale",
-    prompt: "How much cardio, sport or physical work do you do?",
+    prompt: "How hard is your cardio and day-to-day activity?",
+    help: "Running, sport, a job on your feet, long walks — everything outside the lifting itself.",
     options: [],
-    scale: scale("None", "A lot"),
-  },
-  {
-    id: "missed_sessions",
-    audience: "both",
-    section: "life",
-    type: "scale",
-    prompt: "How often do you miss a planned session?",
-    options: [],
-    scale: scale("Never", "All the time"),
+    scale: scale("Barely any", "Very heavy"),
   },
 ];

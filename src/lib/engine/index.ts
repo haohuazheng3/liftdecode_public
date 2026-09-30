@@ -1,8 +1,9 @@
 import type { Track } from "@/content/types";
-import { QUESTIONS, SECTIONS } from "@/content/questions";
+import { QUESTIONS, SCREENS, SECTIONS } from "@/content/questions";
 import { FINDING_RULES, CLEARANCES } from "@/content/rules";
 import type { Answers } from "@/lib/db/schema";
-import { diagnose, questionsForTrack } from "./diagnose";
+import { diagnose, questionsForTrack, screensForTrack } from "./diagnose";
+import { validateAnswer } from "./validate";
 import type { DiagnosisResult } from "./types";
 
 export { ENGINE_VERSION } from "./diagnose";
@@ -16,6 +17,10 @@ export function visibleQuestions(track: Track) {
   return questionsForTrack(QUESTIONS, track);
 }
 
+export function visibleScreens(track: Track) {
+  return screensForTrack(QUESTIONS, SCREENS, track);
+}
+
 export function isTrack(v: unknown): v is Track {
   return v === "physique" || v === "strength";
 }
@@ -26,26 +31,11 @@ export function sanitizeAnswers(track: Track, raw: unknown): { answers: Answers;
   const missing: string[] = [];
   const obj = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   for (const q of questionsForTrack(QUESTIONS, track)) {
-    const v = obj[q.id];
-    if (q.type === "scale") {
-      const min = q.scale?.min ?? 1;
-      const max = q.scale?.max ?? 10;
-      const n = typeof v === "string" || typeof v === "number" ? Number(v) : NaN;
-      if (Number.isInteger(n) && n >= min && n <= max) answers[q.id] = String(n);
-      else missing.push(q.id);
-      continue;
-    }
-    const valid = new Set(q.options.map((o) => o.value));
-    if (q.type === "single") {
-      if (typeof v === "string" && valid.has(v)) answers[q.id] = v;
-      else missing.push(q.id);
-    } else {
-      const arr = Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && valid.has(x)) : [];
-      if (arr.length > 0) answers[q.id] = q.maxSelect ? arr.slice(0, q.maxSelect) : arr;
-      else missing.push(q.id);
-    }
+    const v = validateAnswer(q, obj[q.id]);
+    if (v === undefined) missing.push(q.id);
+    else answers[q.id] = v;
   }
   return { answers, missing };
 }
 
-export { SECTIONS, QUESTIONS };
+export { SECTIONS, QUESTIONS, SCREENS, validateAnswer };

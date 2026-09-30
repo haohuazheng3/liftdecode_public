@@ -7,6 +7,8 @@ import { getAssessment, resolveOwnership } from "@/lib/assessments";
 import { canViewReport } from "@/lib/entitlements";
 import { Paywall } from "@/components/paywall/Paywall";
 import { CATEGORY_LABEL } from "@/lib/report/labels";
+import { buildProfile } from "@/lib/report/profile";
+import { ProfileCard } from "@/components/report/ProfileCard";
 
 export const metadata: Metadata = { title: "Your diagnosis is ready", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -52,6 +54,7 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
     primaryResult?.triggers[0]?.because ??
     null;
   const moreBecause = primaryResult ? Math.max(0, primaryResult.triggers.length - 1) : 0;
+  const profile = buildProfile(a.answers);
 
   return (
     <div className="px-3 sm:px-5 py-6 sm:py-10">
@@ -76,7 +79,7 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
           </h1>
           <p className="mt-4 text-ink-2 text-lg max-w-2xl leading-relaxed">
             You answered {r.answeredCount} questions{mins ? ` in about ${mins} minute${mins === 1 ? "" : "s"}` : ""}. We
-            cross-referenced them into {ranked.length} bottleneck{ranked.length === 1 ? "" : "s"} and{" "}
+            read every one against your build and your week, and cross-referenced them into {ranked.length} bottleneck{ranked.length === 1 ? "" : "s"} and{" "}
             {r.clearances.length} thing{r.clearances.length === 1 ? "" : "s"} you can stop worrying about.
             {ranked.length > 0 && " The one below matters most."}
           </p>
@@ -89,6 +92,9 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
 
         <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
           <div className="space-y-4">
+            {/* the intake read back — the report is about this body, not a template */}
+            <ProfileCard stats={profile} compact />
+
             {/* primary finding (visible teaser) */}
             {primary && primaryResult && (
               <div className="slab p-6 sm:p-8 animate-rise" style={{ animationDelay: "60ms" }}>

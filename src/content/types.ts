@@ -1,8 +1,9 @@
 /**
- * LiftDecode content model.
+ * LiftDecode content model (v3, 2026-09-30).
  *
  * Everything the diagnostic engine consumes is declared with these types:
- *   - questions.ts   → the question bank (shared intake + per-track questions)
+ *   - questions.ts   → the question bank (shared intake + per-track questions) and screens
+ *   - derived.ts     → answers computed from other answers (BMI band, weekly hours, g/kg …)
  *   - rules.ts       → finding rules (answer patterns → findings) and clearances
  *   - findings/*.ts  → the long-form report content for each finding
  *
@@ -13,19 +14,28 @@ export type Track = "physique" | "strength";
 export type Audience = Track | "both";
 
 /**
- * Question formats. The quiz must never feel like work:
- *   - "scale"  — a 1–10 intensity tap with two short anchors (most questions)
- *   - "single" — 2–4 very short options (a few words each)
- * "multi" exists only so answers stored before v2 still type-check; new
- * content must not use it (scripts/rules-sim.ts fails if it does).
+ * Question formats (v3). Answering should still feel quick, but the intake now takes real
+ * numbers where the report needs them (the owner's 2026-09-30 decision):
+ *   - "scale"  — a 1–10 intensity tap with two short anchors
+ *   - "single" — 2–7 short options, one tap
+ *   - "pills"  — one row of very short options (counts, bands), one tap
+ *   - "number" — a typed number with an optional unit toggle (height, weight, age)
+ *   - "image"  — one of a few photo cards (body type), photos can differ by sex
+ *   - "multi"  — pick any of a short list of signs, with an exclusive "none" option
  */
-export type QuestionType = "single" | "scale" | "multi";
+export type QuestionType = "single" | "scale" | "pills" | "number" | "image" | "multi";
 
 export interface AnswerOption {
   /** stable snake_case id, unique within the question */
   value: string;
   /** shown to the user: a few words, no explanation */
   label: string;
+  /** image questions: a one-line description under the photo */
+  caption?: string;
+  /** image questions: photo per sex answer ("male" | "female"); any other sex shows both */
+  images?: Record<string, string>;
+  /** multi questions: selecting this clears the others (e.g. "None of these") */
+  exclusive?: boolean;
 }
 
 /** 1–10 intensity scale. Answers are stored as the strings "1" … "10". */
@@ -38,6 +48,30 @@ export interface ScaleSpec {
   high: string;
 }
 
+/** One selectable unit for a number question; `toBase` converts a typed value to the stored unit. */
+export interface UnitSpec {
+  key: string;
+  label: string;
+  /** typed value in this unit → stored (base) value */
+  toBase: (v: number) => number;
+  /** stored (base) value → shown value in this unit */
+  fromBase: (v: number) => number;
+  /** decimals to show when displaying in this unit */
+  decimals?: number;
+  /** ft/in style: a second field for the remainder */
+  compound?: { label: string; perUnit: number; secondLabel: string };
+}
+
+/** A typed number. Answers are stored as the string of the base-unit value (e.g. "178" cm, "82" kg). */
+export interface NumberSpec {
+  min: number;
+  max: number;
+  step: number;
+  /** first unit is the base (stored) unit */
+  units: UnitSpec[];
+  placeholder?: string;
+}
+
 export interface Question {
   /** snake_case, globally unique, e.g. "sleep_quality" */
   id: string;
@@ -45,14 +79,20 @@ export interface Question {
   audience: Audience;
   /** id of the group it belongs to (ordering only — never shown to the user) */
   section: string;
+  /** questions sharing a screen id render together; see SCREENS for the screen's title */
+  screen?: string;
   type: QuestionType;
-  /** the question itself — short, plain, no explanation under it */
+  /** the question itself — short and plain; on a shared screen it is the field label */
   prompt: string;
-  /** single: 2–4 short options; scale: leave empty */
+  /** one or two plain sentences under the prompt when the owner asked for a definition */
+  help?: string;
+  /** single / pills / image / multi: the options; scale / number: empty */
   options: AnswerOption[];
   /** required when type === "scale" */
   scale?: ScaleSpec;
-  /** legacy multi only */
+  /** required when type === "number" */
+  number?: NumberSpec;
+  /** multi: how many may be selected */
   maxSelect?: number;
 }
 
@@ -60,6 +100,30 @@ export interface Question {
 export interface Section {
   id: string;
   title: string;
+}
+
+/** A screen that holds several questions (the "About you" and per-muscle screens). */
+export interface Screen {
+  id: string;
+  /** the headline of the screen (the questions' prompts become field labels) */
+  title: string;
+  /** optional line under the headline */
+  lead?: string;
+}
+
+/**
+ * An answer computed from other answers (never shown to the user). Rules reference derived
+ * ids exactly like question ids; the value is one of `options`, or undefined when the inputs
+ * are missing. `from` lists the questions it reads — the gate counts them as used.
+ */
+export interface DerivedQuestion {
+  id: string;
+  audience: Audience;
+  /** the label used when a because-line quotes {answer:id} */
+  prompt: string;
+  from: string[];
+  options: AnswerOption[];
+  compute: (answers: Record<string, string | string[] | undefined>) => string | undefined;
 }
 
 export type FindingCategory =
@@ -76,12 +140,12 @@ export type FindingCategory =
   | "lifestyle"; // cardio interference, steps, alcohol, etc.
 
 /**
- * Conditions are evaluated against the user's answers.
- * For single-choice questions the answer is a string; for scale questions it
- * is "1" … "10"; legacy multi answers are string[].
+ * Conditions are evaluated against the user's answers (raw + derived).
+ * For single / pills / image questions the answer is a string; for scale and number
+ * questions it is a numeric string; multi answers are string[].
  * `in` matches when the answer (or any selected value) is in the list.
  * `notIn` matches when the question was answered and none of the values are in the list.
- * `range` matches a scale answer inside [low, high], both inclusive.
+ * `range` matches a scale or number answer inside [low, high], both inclusive.
  */
 export type Condition =
   | { q: string; in: string[] }
@@ -98,7 +162,7 @@ export interface Trigger {
   /**
    * Shown in the report under "What you told us".
    * Second person, one sentence, may quote the answer with {answer:question_id}
-   * which renders as the label the user selected, or as "7/10" for a scale.
+   * which renders as the label the user selected, "7/10" for a scale, "82 kg" for a number.
    */
   because: string;
 }
@@ -168,8 +232,8 @@ export interface FindingContent {
 export interface Persona {
   name: string;
   track: Track;
-  /** every question of the track except "goal"; scale answers as "1" … "10" */
-  answers: Record<string, string>;
+  /** every question of the track except "goal"; scale answers as "1" … "10", numbers as strings */
+  answers: Record<string, string | string[]>;
   expect: {
     min: number;
     max: number;

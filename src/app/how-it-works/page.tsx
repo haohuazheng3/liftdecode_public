@@ -21,7 +21,7 @@ const jsonLd = {
     {
       "@type": "HowToStep",
       name: "Answer the questions",
-      text: "Pick your track (physique or strength), then answer quick questions about your training, effort, recovery, food, sleep, consistency and life load. Most are one tap on a 1-10 scale or a short choice. Answer what you actually do, not what you plan to do.",
+      text: "Pick your track (physique or strength), then answer quick questions about your build, your training week, effort, recovery, food, sleep, consistency and life load. Most are one tap on a 1-10 scale or a short choice; a few take a real number, such as your weight or grams of protein. Answer what you actually do, not what you plan to do.",
       url: "https://liftdecode.com/how-it-works#answer",
     },
     {
@@ -120,15 +120,16 @@ export default function HowItWorksPage() {
             <p>
               The first question picks your track — <strong>physique</strong> (you want to look different) or{" "}
               <strong>strength</strong> (you want the bar to move) — and the questions adapt. From there they cover
-              the things that actually decide progress: how you train and progress, how hard your sets really end, how
-              much you do, how your programme is built, how you sleep and recover, how you eat, and how much the rest
-              of your life is asking of you.
+              the things that actually decide progress: your build and your training week (sessions and hours per
+              muscle group), how you train and progress, how hard your sets really end, how your programme is built,
+              how you sleep and recover, what you eat, and how much the rest of your life is asking of you.
             </p>
             <p>
               Answering is meant to feel light: mostly one tap per question, either a point on a 1–10 scale or one of
-              a few short choices. No weighing, no counting, no numbers to look up. We do not need your data — we need
-              to see where the problem is. Answer for a normal recent week, not the version of yourself you would like
-              to be; a diagnosis of that lifter is a diagnosis of nobody.
+              a few short choices. The handful of real numbers — height, weight, age, grams of protein and carbs — are
+              there because the report reads everything else against them; if you don&rsquo;t track your food, &ldquo;not
+              sure&rdquo; is an honest answer and the report works with it. Answer for a normal recent week, not the
+              version of yourself you would like to be; a diagnosis of that lifter is a diagnosis of nobody.
             </p>
             <p>
               No question is a trap and none is filler. Each one exists because at least one finding rule depends on
