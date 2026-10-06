@@ -33,8 +33,8 @@ interface Saved {
   updatedAt: number;
 }
 
-const KEY = "ld_quiz_v3";
-const LEGACY_KEYS = ["ld_quiz_v1", "ld_quiz_v2"];
+const KEY = "ld_quiz_v4";
+const LEGACY_KEYS = ["ld_quiz_v1", "ld_quiz_v2", "ld_quiz_v3"];
 const GOAL_ID = "goal";
 const ADVANCE_MS = 220;
 const PROMPT_ID = "q-prompt";

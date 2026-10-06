@@ -4,20 +4,20 @@ export const FINDING: FindingContent = {
   id: "strength_leaking_bodyweight",
   audience: "strength",
   category: "nutrition",
-  title: "You're dieting and asking for strength",
+  title: "You're losing weight and asking for strength",
   verdict:
-    "You're eating to lose weight while asking your lifts to go up, and your strength is paying for the diet.",
+    "Your bodyweight is coming down while you ask your lifts to go up, and your strength is paying for the weight loss.",
   summary:
     "You're running a diet and a strength block at the same time, and only one of them can be the priority. Right now the diet is winning by default: the food that would fund your training and recovery is the food you're cutting, and if meals also get skipped or shrink, the real deficit is bigger than the planned one. The stalled bar isn't a program failure, it's the bill for a goal you didn't pick on purpose.",
   mechanism: [
     "A diet works by leaving a gap between what you eat and what you burn. Your body fills that gap from storage, and it doesn't only draw on fat. Muscle glycogen runs low, recovery between sessions slows, and the signal to build or even keep contractile tissue gets weaker. None of that shows up as one dramatic bad day. It shows up as a lift that stops moving while everything else about your training looks the same.",
-    "A single heavy triple runs mostly on fast, short-term energy that a diet barely touches. What carbohydrate pays for is everything around it: the back-off sets, the accessory work, the later sets of a long session. Trim starch and that volume gets harder to complete, so the total work that drives strength shrinks. The bigger cost to your heavy sets is slower: recovery between sessions is underfunded and the drive to adapt is weaker, so the top set stops climbing, warm-ups feel sticky and the bar slows sooner. You're not weaker in any permanent sense; you're recovering less than you're asking for.",
+    "A single heavy triple runs mostly on fast, short-term energy that a diet barely touches. What carbohydrate pays for is everything around it: the back-off sets, the accessory work, the later sets of a long session. Trim starch and that volume can get harder to complete, so the total work that drives strength shrinks. The bigger cost to your heavy sets is slower: recovery between sessions is underfunded and the drive to adapt is weaker, so the top set stops climbing, warm-ups feel sticky and the bar slows sooner. You're not weaker in any permanent sense; you're recovering less than you're asking for.",
     "Strength is also a skill that improves through repeated high-quality exposures to heavy loads. Adaptation happens between sessions, and it is resourced by food and sleep. In a deficit, the stimulus still arrives, but the repair is underfunded. More sets and harder top sets pour extra stimulus into a system that can't pay for what it already has. That's why pushing harder during a diet usually turns a plateau into a slide.",
     "Two things make this worse. If meals get skipped or shrink without planning to, the diet on paper is milder than the diet you actually run. And if you also do a lot of cardio, sport or physical work, every one of those hours widens the gap without you choosing to. Two lifters on the same meal plan can be in very different deficits depending on how much they move and how often meals get skipped.",
     "None of this means you can't lose weight as a strength athlete. Weight-class lifters do it constantly. They do it by making the cut slow, keeping protein high and carbohydrate around training, and lowering their expectations for the block: hold strength, don't chase it. The problem isn't that you're dieting. It's that you're dieting while still judging your training as if you weren't.",
   ],
   howItShowsUp: [
-    "You're eating to lose weight right now and still expect your main lifts to go up week to week.",
+    "Your weight has been coming down and you still expect your main lifts to go up week to week.",
     "Meals get skipped or shrink without planning to, so some days end far lighter than the diet you set out to run.",
     "Light and medium sessions feel fine, but heavy top sets end a rep early or slow down sooner than they used to.",
     "You walk into sessions with less energy than you'd like, and warm-ups feel heavier than they should.",

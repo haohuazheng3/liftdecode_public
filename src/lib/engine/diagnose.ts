@@ -3,7 +3,7 @@ import { computeDerived, DERIVED } from "@/content/derived";
 import type { Answers } from "@/lib/db/schema";
 import type { ClearanceResult, DiagnosisResult, FindingResult } from "./types";
 
-export const ENGINE_VERSION = "3.0.0";
+export const ENGINE_VERSION = "4.0.0";
 
 /** what a because-line can quote: a real question or a derived answer */
 type Quotable = { type: Question["type"] | "derived"; prompt: string; options: { value: string; label: string }[]; scaleMax?: number; unit?: string };
@@ -151,7 +151,12 @@ export function diagnose(input: EngineInput): DiagnosisResult {
     return !hidden;
   });
 
-  kept.sort((a, b) => b.score - a.score || b.confidence - a.confidence || a.id.localeCompare(b.id));
+  // "Slow is normal" (the expectations finding) never takes the headline from an actionable
+  // problem: the report names what to fix first and keeps the reassurance for last.
+  const lastResort = (f: FindingResult) => (f.category === "expectations" ? 1 : 0);
+  kept.sort(
+    (a, b) => lastResort(a) - lastResort(b) || b.score - a.score || b.confidence - a.confidence || a.id.localeCompare(b.id),
+  );
 
   const clear: ClearanceResult[] = [];
   for (const c of clearances) {

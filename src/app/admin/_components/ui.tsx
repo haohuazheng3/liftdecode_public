@@ -109,6 +109,9 @@ const TONE: Record<string, string> = {
   pending: "tag-signal",
   past_due: "tag-signal",
   unlocked: "tag-clear",
+  done: "tag-clear",
+  running: "tag-signal",
+  stuck: "tag-alert",
 };
 
 export function StatusTag({ status, label }: { status: string; label?: string }) {

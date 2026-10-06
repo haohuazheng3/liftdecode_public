@@ -8,7 +8,7 @@ export const FINDING: FindingContent = {
   verdict:
     "Your sleep hours may be adequate, but shifting bed and wake times keep your body from settling into a steady rhythm.",
   summary:
-    "You can get seven or eight hours and still wake at 3/10 rested when those hours land at a different time each night. Your body relies on a fairly regular rhythm to line up sleep stages, morning alertness, appetite and training readiness. Late weekends, stress and afternoon caffeine can move the clock while the total hours look acceptable. That mismatch makes recovery less predictable: you may feel ready one day and flat the next, then blame the training plan even though the same session is being run at a different biological time.",
+    "You can get seven or eight hours and still wake at 3/10 rested when those hours land at a different time each night. Your body relies on a fairly regular rhythm to line up sleep stages, morning alertness, appetite and training readiness. Late weekends, stress and afternoon caffeine can move the clock while the total hours look acceptable. That mismatch can make recovery less predictable: you may feel ready one day and flat the next, then blame the training plan even though the same session is being run at a different biological time.",
   mechanism: [
     "Eight hours at different times each night do not behave like eight regular hours. Your circadian clock coordinates daily patterns in alertness, body temperature, appetite and hormone signals, including the timing of cortisol and reproductive hormones. Sleep stages also shift across the night, so moving bedtime and wake time can place those stages at less favorable points relative to your internal clock. You may still be in bed for the same duration, yet feel that sleep is lighter or more fragmented. This is why the total hours alone can miss the issue: the body is trying to run a stable daily program while the schedule keeps changing its start time.",
     "The clearest way to understand a large weekend shift is social jet lag. Moving your sleep window by two or more hours can feel like crossing a couple of time zones, then doing it again when Monday arrives. Late nights, drinking and sleeping in make the weekend feel like a reset, but they push the internal clock later and reduce morning light exposure. The first workday then demands an early wake before your body is ready. That shortens sleep even if the previous two nights were long. The repeated swing can leave you carrying a small jet lag into training each week, with alertness and appetite arriving at different times from one session to the next.",
@@ -38,7 +38,7 @@ export const FINDING: FindingContent = {
       title: "Make evenings predictable",
       steps: [
         "Set a 30-minute wind-down with the same three quiet activities each night, such as shower, prepare tomorrow's clothes and read away from bright screens.",
-        "Move caffeine earlier and stop it 8 hours before your intended bedtime; if sleep still feels delayed, extend the cutoff to 9 hours.",
+        "Move caffeine earlier and stop it 9 hours before your intended bedtime; if sleep still feels delayed, extend the cutoff further.",
         "Keep alcohol away from nights when you need reliable sleep, especially late weekend nights that already shift your schedule.",
         "Do not go to bed hours before you feel sleepy. Keep the wake anchor and let evening sleepiness move earlier over several days.",
       ],
@@ -55,7 +55,7 @@ export const FINDING: FindingContent = {
   ],
   fourWeekPlan: [
     "Week 1: pick a sustainable wake time and keep it within 30 minutes every day. Get light soon after waking and write down bed, wake and caffeine times.",
-    "Week 2: keep the morning anchor and add a repeatable 30-minute wind-down. Hold weekends within an hour and move the last caffeine at least 8 hours before bed.",
+    "Week 2: keep the morning anchor and add a repeatable 30-minute wind-down. Hold weekends within an hour and move the last caffeine at least 9 hours before bed.",
     "Week 3: keep training times reasonably consistent and compare restedness and session quality with week 1. If bedtime has not moved earlier yet, keep the wake time steady instead of forcing an early night.",
     "Week 4: review the pattern across weekdays and weekends. Keep the smallest routine that holds wake time steady; shift workers should judge consistency against their own anchor window.",
   ],

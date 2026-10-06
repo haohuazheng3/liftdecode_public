@@ -54,9 +54,12 @@ export function buildProfile(answers: Answers): ProfileStat[] {
   const total = weeklyHours(answers);
   if (total !== undefined) {
     const parts = GROUPS.map((g) => {
+      const sessions = label(`${g}_sessions`, answers[`${g}_sessions`]);
+      const per = label(`${g}_time`, answers[`${g}_time`]);
+      if (sessions && per) return sessions === "0" ? `${g} none` : `${g} ${sessions}× ${per}`;
+      // assessments stored before v4 carry weekly hours per group instead of time per session
       const hrs = groupHours(answers, g);
-      const s = groupSessions(answers, g);
-      return `${g} ${hrs?.toFixed(1) ?? "?"} h / ${s ?? "?"}×`;
+      return `${g} ${hrs?.toFixed(1) ?? "?"} h / ${groupSessions(answers, g) ?? "?"}×`;
     });
     const sessions = label("sessions_week", answers.sessions_week);
     out.push({
@@ -85,12 +88,25 @@ export function buildProfile(answers: Answers): ProfileStat[] {
     });
   }
 
+  const trend = label("weight_trend", answers.weight_trend);
+  if (trend) out.push({ label: "Bodyweight, last 2 months", value: trend });
+
   const sl = label("sleep_hours", answers.sleep_hours);
   const reg = label("sleep_regular", answers.sleep_regular);
   if (sl) out.push({ label: "Sleep", value: `${sl} h a night`, note: reg ? `Bed and wake times: ${reg.toLowerCase()}` : undefined });
 
   const coffee = label("coffee", answers.coffee);
   if (coffee) out.push({ label: "Caffeine", value: coffee === "None" ? "None" : `${coffee} cup${coffee === "1" ? "" : "s"} a day` });
+
+  const cardio = label("cardio_sessions", answers.cardio_sessions);
+  const sweat = label("sweat_level", answers.sweat_level);
+  if (cardio) {
+    out.push({
+      label: "Cardio",
+      value: `${cardio} session${cardio === "1" ? "" : "s"} a week`,
+      note: sweat ? `Sweat: ${sweat.toLowerCase()}` : undefined,
+    });
+  }
 
   return out;
 }

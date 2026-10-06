@@ -6,7 +6,7 @@ export const FINDING: FindingContent = {
   category: "nutrition",
   title: "You want fat loss without a real deficit",
   verdict:
-    "You want less fat, but your eating either isn't aimed at a deficit or lets it leak away, so the fat has no reason to leave.",
+    "You want less fat, but your weight isn't coming down: the deficit was never set up or it leaks away, so the fat has no reason to leave.",
   summary:
     "You're training for a leaner body, but your food isn't set up to deliver one: either it isn't aimed at a deficit at all, or the deficit you planned leaks out through appetite, weekends and drinks before it can add up. No amount of effort in the gym closes that gap, so month after month you do the work and the mirror barely changes.",
   mechanism: [
@@ -17,7 +17,7 @@ export const FINDING: FindingContent = {
     "Your training age changes the rules. In the first year, many lifters build muscle and lose some fat at the same time while eating around maintenance, because the training stimulus is so new. After that, the window narrows sharply. Past the beginner stage, fat rarely comes off without a deliberate, sustained deficit, and waiting for maintenance eating plus hard training to do it usually means waiting a very long time.",
   ],
   howItShowsUp: [
-    "You want less fat, yet your eating is set to gain, to stay the same, or to nothing in particular.",
+    "You want less fat, yet your weight has stayed the same, crept up, or goes unweighed.",
     "Your shape has barely changed in months even though the sessions have been consistent and hard.",
     "Hunger is loud, especially late in the day, and dinner or the evening quietly makes up for a careful morning.",
     "Weekdays feel disciplined; the weekend feels like a reward, and Monday starts from the same place as last Monday.",

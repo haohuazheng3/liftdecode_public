@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "What LiftDecode collects (your answers, reports, sign-in email, payment status, analytics), where it lives, who processes it, how long it is kept, and how to see or delete it.",
 };
 
-const LAST_UPDATED = "2026-09-25";
+const LAST_UPDATED = "2026-10-06";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -37,7 +37,10 @@ const SECTIONS: LegalSection[] = [
         <h3>Your diagnosis answers and reports</h3>
         <p>
           The answers you give in the diagnostic, the track you chose, how long you took, and the result the engine
-          produced (findings, clearances, the 4-week plan and your check-offs). This is the product: without it there
+          produced (findings, clearances, the 4-week plan and your check-offs). The answers include your sex, age,
+          height and weight, how you train, eat and sleep, and signs you get in training such as cramps or dizziness;
+          some of that can count as health-related information, and we use it only to produce your report. If you
+          unlock a report, the written analysis is stored with it. This is the product: without it there
           is no report. We also keep the engine version so an old report is never silently recomputed.
         </p>
         <h3>An anonymous owner token</h3>
@@ -49,7 +52,8 @@ const SECTIONS: LegalSection[] = [
         <h3>Your account</h3>
         <p>
           Your email address, a Clerk user id, and timestamps (created, last seen). Sign-in is email plus a 6-digit
-          code — we never hold a password for you. We do not ask for your name, age, weight or any health history.
+          code — we never hold a password for you. We do not ask for your name. Your age, height, weight and the other
+          numbers you enter belong to your diagnosis answers above, not to your account.
         </p>
         <h3>Payment status</h3>
         <p>
@@ -136,6 +140,12 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>FlowGlance</strong> — analytics, only with your consent, as described above.
+          </li>
+          <li>
+            <strong>Anthropic</strong> — writes your paid report. Only after you pay, your diagnosis answers and the
+            engine&rsquo;s findings are sent to Anthropic&rsquo;s API, where the Claude model writes the analysis. Your
+            email, name and payment details are never sent. Anthropic&rsquo;s commercial terms do not allow it to train
+            its models on this data.
           </li>
           <li>
             <strong>Vercel</strong> — hosts the site and its server code; sees request logs (IP address, URL,
@@ -310,6 +320,7 @@ export default function PrivacyPage() {
       summary={[
         "Your diagnosis answers and reports are stored in a Postgres database (Neon, US East) for as long as your account exists; nightly backups in Cloudflare R2 are deleted after 30 days.",
         "Sign-in is by email code through Clerk. No password. Payments are by Stripe; we never see card numbers.",
+        "Your paid report is written by Anthropic's Claude from your answers, only after you pay. Your email, name and payment details are never sent to it.",
         <>
           Analytics is FlowGlance, only if you accept it. With deep capture on, it records what you type into forms,
           images you upload, and your signed-in email — not just page views.

@@ -13,7 +13,7 @@ export const FINDING: FindingContent = {
     "Strength has two sources. The first is the nervous system: learning the groove, recruiting more of the muscle you already have, firing it in the right order and trusting yourself under the bar. That source pays out quickly and then flattens, usually somewhere in the first year or two of serious lifting. The second source is the size of the muscles doing the work. It pays out slowly, but it keeps paying for many years. Once the skill gains are banked, almost every new kilo on the bar has to come from the second source.",
     "Training that lives almost entirely on the main lifts is superb for the first source and weak for the second. The most common version is working up to heavy singles, doubles and triples: each set is short, so the muscle spends only a few seconds under meaningful tension, and the total amount of hard work per muscle across a week stays small. The effort feels enormous because the load is enormous, but much of that effort is your nervous system bracing, not your muscle fibres accumulating the kind of work that makes them grow. The other common version is a few moderate sets of the competition lift and little else, which spreads the week's hard work thinly and never pushes the prime movers close to their limit. Most growth comes from sets taken within roughly 0 to 3 reps of failure, repeated often enough across the week.",
     "So a program built almost entirely on the main lifts turns into a loop: you rehearse expressing a fixed amount of muscle, very well, again and again. Your technique gets sharper, but the engine it is steering stays the same size. That is why the top set can feel smooth, practised and honest and still refuse to move. Technique cannot express muscle you have not built.",
-    "Dieting makes this worse. Building new muscle needs a small energy surplus, or at least no deficit, plus enough protein to supply the raw material. Eat to lose weight while running almost no muscle-building work and you remove both the signal and the material at the same time. The heavy work might hold your strength steady, which feels like a plateau, but it has very little to grow from.",
+    "Dieting makes this worse. Building new muscle goes best with a small energy surplus, or at least no deficit, plus enough protein to supply the raw material. Eat to lose weight while running almost no muscle-building work and you remove both the signal and the material at the same time. The heavy work might hold your strength steady, which feels like a plateau, but it has very little to grow from.",
     "The fix is not to abandon heavy lifting. Your main-lift practice is what keeps the skill sharp, and you need that skill to express new muscle once it arrives. The fix is to add a second job to your week: dedicated, moderate-rep, close-to-failure work aimed at the muscles that drive your stuck lift. Stronger lifters are, almost without exception, bigger in the muscles that matter for their lifts. That is not a coincidence you can train around.",
   ],
   howItShowsUp: [
@@ -23,7 +23,7 @@ export const FINDING: FindingContent = {
     "The main lift feels like the only work that counts, and for some lifters that means working up to something near max most sessions.",
     "You look much the same as you did a year or two ago, even though you've trained hard the whole time.",
     "Sets of eight to twelve feel like something bodybuilders do, not something that belongs in your program.",
-    "You've been eating to lose weight or to hold it steady while hoping the lift would keep climbing anyway.",
+    "Your weight has been coming down or holding steady while you hoped the lift would keep climbing anyway.",
   ],
   fix: [
     {
@@ -49,7 +49,7 @@ export const FINDING: FindingContent = {
       steps: [
         "Stop eating to lose weight while you run this block. Eat at maintenance or a small surplus, roughly 200 to 300 kcal above maintenance if you are comfortable gaining a little.",
         "Eat about 1.6 to 2.2 g of protein per kg of bodyweight per day, split across 3 to 5 meals of 25 to 50 g each.",
-        "Sleep 7 to 9 hours a night. The extra work only turns into muscle during recovery, and short nights blunt it.",
+        "Sleep 7 to 9 hours a night. The extra work only turns into muscle during recovery, and short nights can blunt it.",
       ],
     },
   ],
@@ -63,7 +63,7 @@ export const FINDING: FindingContent = {
     "Your accessory lifts will climb within the first 2 to 3 weeks, mostly from learning the movements. Real muscle growth takes 8 to 12 weeks of consistent work to become noticeable, and your main lift usually starts moving again a little after that, once the new muscle has had time to settle into your groove. Expect a slow start and a steady finish, not a quick jump.",
   mistakes: [
     "Dropping the heavy work to make room for bodybuilding. You need both: the heavy practice keeps the skill, the accessory work builds the engine.",
-    "Treating accessories as a cool-down and stopping them 4 or 5 reps short of failure, where they add fatigue but almost no growth.",
+    "Treating accessories as a cool-down and stopping them 4 or 5 reps short of failure, where they add fatigue but much less growth.",
     "Rotating accessory exercises every week, so none of them is ever progressed long enough to build anything.",
     "Trying to build muscle while eating in a deficit, then concluding that accessory work does not work.",
     "Piling on 25 or 30 accessory sets in the first week, getting too sore to train the main lift well, and quitting the block.",

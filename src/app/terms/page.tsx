@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "The agreement between you and LiftDecode: what the diagnosis is and is not, who can use it, how paying and cancelling work, what you own, and what we are responsible for.",
 };
 
-const LAST_UPDATED = "2026-09-25";
+const LAST_UPDATED = "2026-10-06";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -36,8 +36,9 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           LiftDecode is a <strong>training and nutrition education</strong> product. You answer questions about how
-          you train, eat, sleep, recover and live between sessions; a rule-based engine turns those answers into a written report:
-          ranked bottlenecks, things that are not your problem, and a 4-week plan. Members also get tools to track
+          you train, eat, sleep, recover and live between sessions; a rule-based engine scores those answers, and once
+          you pay, an AI model (Anthropic&rsquo;s Claude) writes your report from them: ranked bottlenecks explained
+          for your case, things that are not your problem, and a 4-week plan. Members also get tools to track
           numbers and compare reports over time.
         </p>
         <p>
@@ -49,8 +50,9 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           <strong>It is not coaching.</strong> No one reviews your individual answers, watches you train, or monitors
-          your progress. The report is generated from your answers by rules written by LiftDecode, and it is only as
-          accurate as those answers.
+          your progress. The report is generated from your answers by rules written by LiftDecode and written by an AI
+          model; no person reviews it before you read it, AI-written text can contain mistakes, and it is only as
+          accurate as your answers.
         </p>
       </>
     ),
@@ -175,8 +177,8 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          The service is provided <strong>&ldquo;as is&rdquo;</strong>. A report reflects rules applied to your own
-          answers; it may be wrong for you, and following it is your decision. To the fullest extent the law allows,
+          The service is provided <strong>&ldquo;as is&rdquo;</strong>. A report reflects rules and an AI model applied
+          to your own answers; it may be wrong for you, and following it is your decision. To the fullest extent the law allows,
           LiftDecode is not liable for injury, illness, lost gains, lost data or any indirect or consequential loss
           arising from your use of the site or reliance on a report, and our total liability to you for any claim is
           limited to the amount you paid us in the 12 months before the claim arose. Nothing here limits liability that

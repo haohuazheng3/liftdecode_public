@@ -12,6 +12,7 @@ import {
   numeric,
 } from "drizzle-orm/pg-core";
 import type { DiagnosisResult } from "../engine/types";
+import type { AiReport } from "../ai/schema";
 
 export type Answers = Record<string, string | string[]>;
 
@@ -116,6 +117,40 @@ export const stripeEvents = pgTable("stripe_events", {
   processedAt: timestamp("processed_at", { withTimezone: true }),
   error: text("error"),
 });
+
+/**
+ * The paid analysis (written by the model after payment, never before). One row per assessment:
+ * the row is the job's lock (inserted or re-armed atomically by whoever starts it), its progress
+ * for the waiting screen, and the finished report. Never regenerated once done.
+ */
+export const aiReports = pgTable(
+  "ai_reports",
+  {
+    assessmentId: text("assessment_id")
+      .primaryKey()
+      .references(() => assessments.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    status: text("status").notNull(), // running | done | failed
+    /** 0–100, for the waiting screen */
+    progress: integer("progress").default(0).notNull(),
+    /** index of the stage the writer has reached (see src/lib/ai/stages.ts) */
+    stage: integer("stage").default(0).notNull(),
+    attempts: integer("attempts").default(0).notNull(),
+    model: text("model"),
+    promptVersion: text("prompt_version").notNull(),
+    output: jsonb("output").$type<AiReport>(),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    /** what the call cost, in millionths of a dollar */
+    costMicros: integer("cost_micros"),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("ai_reports_user_idx").on(t.userId, t.createdAt)],
+);
 
 /** Check-offs on the 4-week action plan. */
 export const planProgress = pgTable(

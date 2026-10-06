@@ -604,6 +604,29 @@ body {
   }
 }
 
+/* the analysis waiting screen: plates slide on one pair per stage, the bar lifts when done */
+.lw-plate {
+  animation: plate-in 0.62s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+.lw-chalk {
+  animation: chalk-puff 1.1s ease-out 0.45s both;
+}
+.lw-bar {
+  transition: transform 0.9s var(--ease-out-quart), opacity 0.3s;
+}
+.lw-bar.is-lifted {
+  transform: translateY(-46px);
+}
+.lw-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.9s var(--ease-out-quart), opacity 0.9s;
+}
+.lw-shadow.is-lifted {
+  opacity: 0.45;
+  transform: scale(0.82);
+}
+
 /* reduce motion: everything lands in its final state at once, nothing loops */
 @media (prefers-reduced-motion: reduce) {
   *,

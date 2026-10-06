@@ -29,19 +29,19 @@ const GROUPS: { id: string; title: string; items: Faq[] }[] = [
       },
       {
         q: "What is answering like, and do I need to sign in first?",
-        a: "Quick and light: most questions are one tap on a 1–10 scale or one of a few short answers, with nothing to look up or measure. You do not need an account to take it: your result is tied to your browser with a cookie, and you only sign in (email plus a 6-digit code, no password) when you want to unlock the full report.",
+        a: "Quick and light: most questions are one tap on a 1–10 scale or one of a few short answers, plus a handful of real numbers like your height and weight. Nothing needs looking up: where we ask for grams, \"Not sure\" is an answer. You do not need an account to take it: your result is tied to your browser with a cookie, and you only sign in (email plus a 6-digit code, no password) when you want to unlock the full report.",
       },
       {
-        q: "Why no weights, macros or measurements?",
-        a: "Because the numbers are not where a stall hides. The questions read your current training, effort, food, sleep, recovery and life load — the factors that actually decide progress — so the engine can see where the problem is. Answer for a normal recent week, not the week you would like to have had; that honesty is what makes the findings trustworthy.",
+        q: "Why do you ask for my weight and a few numbers?",
+        a: "Because the report reads everything against your build: protein and carbs per kilo, sessions and time per muscle group, sleep hours. The rest of the questions read how you train, eat, sleep, recover and live right now. Answer for a normal recent week, not the week you would like to have had; that honesty is what makes the findings trustworthy.",
       },
       {
         q: "Is this an AI guessing at my answers?",
-        a: "No. The engine is a set of deterministic rules written and revised by LiftDecode. Each finding is triggered by specific answers, weighted and ranked, and the report quotes those answers back to you. The same answers always produce the same result.",
+        a: "No. The findings come from deterministic rules written and revised by LiftDecode: each one is triggered by specific answers, weighted and ranked, and the same answers always produce the same findings. After you pay, an AI model (Anthropic's Claude) writes your report from those findings and your answers, citing only an evidence base we checked entry by entry. It explains and connects what the rules found; it does not replace them, and no model runs before you pay.",
       },
       {
         q: "What if my result does not describe me?",
-        a: "Your primary bottleneck is shown in full, with the answers behind it, before you pay anything. If it is wrong, do not pay — email us instead and tell us what you answered and what you expected. That is exactly the feedback the rules are improved with.",
+        a: "Your problems are named before you pay anything, each with the answers behind it. If they do not describe you, do not pay — email us instead and tell us what you answered and what you expected. That is exactly the feedback the rules are improved with.",
       },
     ],
   },
@@ -207,7 +207,7 @@ export default function FaqPage() {
         <div className="slab p-6 sm:p-8 mt-6 text-center">
           <h2 className="display text-3xl sm:text-4xl">Still <em>wondering</em>?</h2>
           <p className="mt-3 text-ink-2 leading-relaxed">
-            The fastest way to find out whether it fits you is to see your primary bottleneck — it is free.
+            The fastest way to find out whether it fits you is to see which problems it names — that part is free.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
             <Link href="/diagnose" className="btn btn-primary">

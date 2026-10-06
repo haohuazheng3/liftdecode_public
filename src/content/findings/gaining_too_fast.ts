@@ -6,18 +6,18 @@ export const FINDING: FindingContent = {
   category: "nutrition",
   title: "You're gaining, but not much of it is muscle",
   verdict:
-    "You're eating to gain with an appetite that overshoots the plan, so the surplus is bigger than your training can use and much of it ends up as fat.",
+    "Your weight is climbing faster than muscle can be built, so the surplus is bigger than your training can use and much of it ends up as fat.",
   summary:
-    "You're eating to build muscle, and you're doing it with an appetite that doesn't stop where the plan does. Muscle can only use a small, fixed slice of that surplus, and anything that arrives outside the plan, like looser weekends or drinks, makes it bigger still. The rest settles around your waist and blurs the shape you're training for, and every extra month makes the eventual cut longer.",
+    "You're eating to build muscle, and the scale is climbing faster than muscle ever can. Muscle can only use a small, fixed slice of that surplus, and anything that arrives outside the plan, like looser weekends or drinks, makes it bigger still. The rest settles around your waist and blurs the shape you're training for, and every extra month makes the eventual cut longer.",
   mechanism: [
     "Muscle is built at a rate, not on demand. Your training sends the signal, and the tissue answers it at a pace set by your training age, your sleep and your genetics. Food supports that pace but cannot speed it up. Once you're eating enough to cover the building work, usually a modest surplus of a few hundred calories a day, every calorie on top has somewhere to go, and it isn't muscle. A bigger surplus doesn't buy more growth; it buys the same growth with more fat around it.",
     "An appetite that's hard to keep in check turns a sensible plan into a much bigger one. When you're lifting hard and eating to gain, hunger rises to meet the work, and you almost never end up eating less than you meant to. That sounds like a good problem, and in a gaining phase it can feel like permission. But an appetite doesn't know what the surplus is for. It asks for what feels satisfying, not for what muscle can use, so the gap between intended and actual intake widens a little every day.",
     "If your weekends run looser, that is where the gap becomes a gulf. Five controlled weekdays followed by two days where meals get bigger, later and more social can add as much surplus as the rest of the week combined. Restaurant portions, grazing through a long afternoon and a second dessert are not a disaster on their own, but they arrive on top of a plan that was already a surplus. The result is a weekly average far above what you'd choose if you wrote it down on Monday.",
-    "If drinks are part of your week, alcohol widens it further. A few drinks carry real calories that supply no building material, they lower the brakes on what you eat that evening and the next day, and they take a bite out of the sleep your recovery depends on. So drinking raises the surplus and blunts the muscle-building side of it at the same time, which is exactly the wrong direction for the ratio you care about.",
+    "If drinks are part of your week, alcohol widens it further. A few drinks carry real calories that supply no building material, they lower the brakes on what you eat that evening and the next day, and they take a bite out of the sleep your recovery depends on. So drinking raises the surplus and, in larger amounts, can blunt the muscle-building side of it at the same time, which is exactly the wrong direction for the ratio you care about.",
     "The cost lands on the goal you actually have. You want more muscle, and a fast gain feels like progress because the scale and some lifts move. But fat gained now has to come off later, and a longer diet costs you training quality and some of the muscle you built. Keep the surplus small and steady and you build roughly the same muscle, stay lean enough to see it, and need a far shorter cut afterwards.",
   ],
   howItShowsUp: [
-    "You're in a gaining phase and treat it as a green light: when you're hungry, you eat, and nobody decided how big the surplus should be.",
+    "Your weight has been going up fast and you treat that as a green light: when you're hungry, you eat, and nobody decided how big the surplus should be.",
     "You almost never end up eating less than you planned, so every planned meal lands, and the unplanned ones land on top.",
     "The extras that arrive outside the plan, such as a looser weekend, a few drinks or an afternoon of grazing, don't count in your head, yet they land on top of a surplus that was already there.",
     "Your clothes feel tighter at the waist before they feel tighter across the shoulders or arms.",
@@ -55,7 +55,7 @@ export const FINDING: FindingContent = {
       title: "Steer by the trend, lightly",
       steps: [
         "Step on the scale 3–4 mornings a week and look only at the weekly average. Single readings swing with water and salt; the average is the only one that matters.",
-        "Aim for a slow climb: if you've trained under two years, about 0.5–1 kg a month; beyond that, about 0.25–0.5 kg a month.",
+        "Aim for a slow climb: about 0.25–0.5% of body weight a week, roughly 1–1.5 kg a month at 80 kg, and slower than that once you are an advanced lifter.",
         "If the average rises faster than that for two weeks running, remove another 150–200 kcal. If it's flat for three weeks, add 100–150 kcal back. Change one thing at a time.",
       ],
     },

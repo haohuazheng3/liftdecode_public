@@ -132,7 +132,7 @@ export default function PricingPage() {
               Two ways to get the <em>answer</em>. No tiers, no upsells inside.
             </>
           }
-          lede="The diagnostic itself is free to take and shows you your primary bottleneck before you pay anything. Paying unlocks the full report: every finding, what is not your problem, and the 4-week plan. Membership adds the tools for the months after."
+          lede="The diagnostic itself is free to take and names your problems before you pay anything. Paying unlocks the written analysis: why each problem is happening in your case, the fixes in your numbers, what is not your problem, and the 4-week plan. Membership adds the tools for the months after."
         >
           <Suspense fallback={null}>
             <CheckoutNotice />

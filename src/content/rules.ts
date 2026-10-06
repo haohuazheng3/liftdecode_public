@@ -1,5 +1,5 @@
 /**
- * LiftDecode rules (v3): 38 findings, 26 clearances.
+ * LiftDecode rules (v4): 39 findings, 27 clearances.
  *
  * score = sum of matched trigger weights; a finding shows when score ≥ threshold.
  * Every threshold is above the largest single weight, so no finding is named from
@@ -10,9 +10,14 @@
  * and a big week is never called too much work unless something says recovery is failing.
  *
  * v3 reads measured answers through derived bands (src/content/derived.ts): weekly_hours,
- * lagging_dose, lift_muscle_dose, protein_band, carbs_band, sleep_band, bmi_band, age_band,
- * signs_count. because-lines read naturally whether {answer:x} renders a quoted label,
- * "7/10" or "82 kg"; clearance text uses no {answer:} tokens.
+ * lagging_dose, lift_muscle_dose, legs_dose, protein_band, carbs_band, sleep_band, bmi_band,
+ * age_band, signs_count. because-lines read naturally whether {answer:x} renders a quoted
+ * label, "7/10" or "82 kg"; clearance text uses no {answer:} tokens.
+ *
+ * v4 (2026-10-06): the food findings read the measured bodyweight trend (weight_trend)
+ * instead of the stated eating plan, appetite is a 1–10 scale, cardio is a weekly count,
+ * and sweat, pump, set-to-set recovery and the pre-training meal gap feed the fuel,
+ * mineral and conditioning findings.
  */
 import type { ClearanceRule, Condition, FindingRule } from "./types";
 
@@ -40,8 +45,10 @@ const FEW_SESSIONS = is("sessions_week", "1", "2");
 const HIGH_STRESS = r("stress", 8, 10);
 const STRESSED = r("stress", 6, 10);
 const IN_PAIN = r("pain_limits", 6, 10);
-const ACTIVE = r("activity_load", 6, 10);
-const VERY_ACTIVE = r("activity_load", 8, 10);
+/** four or more cardio sessions a week on top of lifting */
+const MUCH_CARDIO = is("cardio_sessions", "4", "5plus");
+const VERY_MUCH_CARDIO = is("cardio_sessions", "5plus");
+const NO_CARDIO = is("cardio_sessions", "0");
 /** a symptom that recovery is failing, required before a big week is blamed */
 const NOT_RECOVERING = any(LOOP_BROKEN, IN_PAIN, POOR_WAKE);
 const PAST_YEAR_ONE = not("training_age", "under_1y");
@@ -49,8 +56,14 @@ const TRAINED_3Y = is("training_age", "3_6y", "over_6y");
 const TO_FAILURE = is("hard_set_habit", "failure");
 /** says "At failure" and the reps agree: the last rep really grinds */
 const FAILS = all(TO_FAILURE, r("effort_grind", 5, 10));
-const DIETING = is("eating_phase", "lose");
-const NOT_DIETING = not("eating_phase", "lose");
+/** the measured bodyweight trend over the last two months */
+const LOSING = is("weight_trend", "down", "down_fast");
+const LOSING_FAST = is("weight_trend", "down_fast");
+const NOT_LOSING = is("weight_trend", "same", "up", "up_fast");
+const STABLE_WEIGHT = is("weight_trend", "same");
+const GAINING = is("weight_trend", "up", "up_fast");
+const GAINING_FAST = is("weight_trend", "up_fast");
+const TREND_UNKNOWN = is("weight_trend", "unknown");
 const DRINKS = is("alcohol", "weekends", "often");
 const STEADY = is("training_pattern", "steady");
 const ON_OFF = is("training_pattern", "on_off");
@@ -62,7 +75,8 @@ const FREQUENCY_VARIES = is("lift_frequency", "varies");
 const SHORT_ROM = r("rom_focus", 1, 4);
 const SWITCHES = r("program_switch", 7, 10);
 const TESTS_OFTEN = is("max_testing", "monthly", "weekly");
-const BIG_APPETITE = is("appetite", "big");
+const BIG_APPETITE = r("appetite", 8, 10);
+const SMALL_APPETITE = r("appetite", 1, 3);
 const WANTS_LESS_FAT = is("physique_aim", "leaner");
 const LEAN_AIM = is("physique_aim", "leaner", "both");
 const WANTS_MUSCLE = is("physique_aim", "muscle", "both");
@@ -71,11 +85,23 @@ const PROTEIN_MID = is("protein_band", "mid");
 const PROTEIN_UNKNOWN = is("protein_band", "unknown");
 const PROTEIN_OK = is("protein_band", "mid", "high");
 const CARBS_LOW = is("carbs_band", "low");
+const CARBS_UNKNOWN = is("carbs_band", "unknown");
+const CARBS_LOW_OR_UNKNOWN = is("carbs_band", "low", "unknown");
 const CARBS_HIGH = is("carbs_band", "high");
+/** muscles feel flat in training: little pump */
+const FLAT = r("pump", 1, 3);
+/** trains four or more hours after the last meal, or fasted */
+const LONG_GAP = is("pre_meal", "o4", "fasted");
+const HEAVY_SWEAT = is("sweat_level", "heavy", "salty");
+const SALTY = is("sweat_level", "salty");
+/** breathing takes two minutes or more to settle after a hard set of ten */
+const SLOW_SET_RECOVERY = is("set_recovery", "2_3", "o3");
 const SHORT_SLEEP = is("sleep_band", "short");
 const SLEEP_OK = is("sleep_band", "ok", "long");
 const IRREGULAR = is("sleep_regular", "all_over");
+const OFTEN_OFF = is("sleep_regular", "often_off");
 const SHIFTS = is("sleep_regular", "shifts");
+const CLOCK_MOVES = is("sleep_regular", "shifts", "often_off", "all_over");
 const FOG_OFTEN = is("brain_fog", "often");
 const FOG_ANY = is("brain_fog", "sometimes", "often");
 const SIGNS_SEVERAL = is("signs_count", "several");
@@ -92,14 +118,14 @@ const ENDO = is("body_type", "endo");
 const BMI_UNDER = is("bmi_band", "under");
 const BMI_OVER = is("bmi_band", "over", "obese");
 
-/** food points the way the goal does (strength: not dieting; physique: plan matches aim, no leak) */
+/** the scale moves the way the goal needs (strength: not losing; physique: trend matches aim, no leak) */
 const DIET_ALIGNED = any(
-  all(STRENGTH, NOT_DIETING),
+  all(STRENGTH, not("weight_trend", "down", "down_fast")),
   all(
     PHYSIQUE,
-    not("appetite", "big"),
+    r("appetite", 1, 7),
     r("weekend_eating", 1, 6),
-    any(all(WANTS_MUSCLE, is("eating_phase", "gain")), all(WANTS_LESS_FAT, DIETING)),
+    any(all(WANTS_MUSCLE, is("weight_trend", "up")), all(WANTS_LESS_FAT, is("weight_trend", "down"))),
   ),
 );
 /**
@@ -146,7 +172,7 @@ export const FINDING_RULES: FindingRule[] = [
         weight: 1,
         because: "Your sets end {answer:hard_set_habit}, yet your last rep rarely slows down ({answer:effort_grind}): the sets feel hard without getting there.",
       },
-      { when: r("beat_last", 1, 4), weight: 1, because: "You rarely try to beat your last session ({answer:beat_last}), so nothing pulls a set past comfortable." },
+      { when: r("beat_last", 1, 4), weight: 1, because: "You rarely try to beat what you did last time ({answer:beat_last}), so nothing pulls a set past comfortable." },
       { when: is("load_choice", "usual"), weight: 1, because: "You pick your weights {answer:load_choice}, which keeps every set inside a load you already own." },
     ],
   },
@@ -178,8 +204,8 @@ export const FINDING_RULES: FindingRule[] = [
     threshold: 6,
     triggers: [
       { when: is("load_choice", "usual", "feel"), weight: 3, because: "Asked how you pick your weights, you said {answer:load_choice}." },
-      { when: r("beat_last", 1, 4), weight: 3, because: "You rated how often you try to beat your last session at {answer:beat_last}." },
-      { when: r("beat_last", 5, 6), weight: 1, because: "You only sometimes try to beat your last session ({answer:beat_last})." },
+      { when: r("beat_last", 1, 4), weight: 3, because: "You rated how often you try to beat what you did last time at {answer:beat_last}." },
+      { when: r("beat_last", 5, 6), weight: 1, because: "You only sometimes try to beat what you did last time ({answer:beat_last})." },
       {
         when: all(is("load_choice", "plan"), r("beat_last", 1, 3)),
         weight: 3,
@@ -205,7 +231,7 @@ export const FINDING_RULES: FindingRule[] = [
       {
         when: all(SWITCHES, r("beat_last", 1, 4)),
         weight: 1,
-        because: "You rarely try to beat your last session ({answer:beat_last}), so a program never gets the chance to prove itself.",
+        because: "You rarely try to beat what you did last time ({answer:beat_last}), so a program never gets the chance to prove itself.",
       },
       {
         when: all(SWITCHES, is("training_pattern", "on_off", "comeback")),
@@ -316,7 +342,7 @@ export const FINDING_RULES: FindingRule[] = [
         because: "With {answer:training_age} behind you, the easy strength that comes from skill is already spent.",
       },
       { when: r("heavy_practice", 8, 10), weight: 1, because: "You lift close to your max at {answer:heavy_practice}, which tests muscle without adding any." },
-      { when: DIETING, weight: 1, because: "You're eating to {answer:eating_phase}, which gives new muscle nothing to be built from." },
+      { when: LOSING, weight: 1, because: "Your bodyweight has {answer:weight_trend} over the last two months, which gives new muscle nothing to be built from." },
       {
         when: is("lift_muscle_dose", "none", "low"),
         weight: 1,
@@ -433,7 +459,7 @@ export const FINDING_RULES: FindingRule[] = [
       {
         when: all(SHORT_ROM, r("beat_last", 8, 10)),
         weight: 1,
-        because: "You try to beat your last session at {answer:beat_last}, faster than a full range usually survives.",
+        because: "You try to beat what you did last time at {answer:beat_last}, faster than a full range usually survives.",
       },
       {
         when: all(SHORT_ROM, IN_PAIN),
@@ -514,17 +540,18 @@ export const FINDING_RULES: FindingRule[] = [
     category: "recovery",
     threshold: 5,
     triggers: [
-      { when: IRREGULAR, weight: 3, because: "Asked about your bed and wake times, you said they are {answer:sleep_regular}." },
+      { when: IRREGULAR, weight: 4, because: "Asked about your bed and wake times, you said they are {answer:sleep_regular}." },
+      { when: OFTEN_OFF, weight: 3, because: "Asked about your bed and wake times, you said they are {answer:sleep_regular}." },
       { when: SHIFTS, weight: 2, because: "Your bed and wake times {answer:sleep_regular}." },
       {
-        when: all(any(IRREGULAR, SHIFTS), SLEEP_OK, POOR_WAKE),
+        when: all(CLOCK_MOVES, SLEEP_OK, POOR_WAKE),
         weight: 2,
         because: "You sleep {answer:sleep_hours} hours yet rate how rested you wake up at {answer:wake_rested}: the hours are there, the timing isn't.",
       },
-      { when: all(any(IRREGULAR, SHIFTS), r("wake_rested", 5, 6)), weight: 1, because: "You wake up only half-rested ({answer:wake_rested})." },
-      { when: all(any(IRREGULAR, SHIFTS), is("alcohol", "weekends")), weight: 1, because: "You described your drinking as {answer:alcohol}, and late weekend nights are where a sleep clock slips." },
-      { when: all(any(IRREGULAR, SHIFTS), STRESSED), weight: 1, because: "With stress at {answer:stress}, bedtime is the first thing that moves." },
-      { when: all(IRREGULAR, COFFEE_HIGH), weight: 1, because: "You drink {answer:coffee} cups of coffee a day, which pushes the clock later still." },
+      { when: all(CLOCK_MOVES, r("wake_rested", 5, 6)), weight: 1, because: "You wake up only half-rested ({answer:wake_rested})." },
+      { when: all(CLOCK_MOVES, is("alcohol", "weekends")), weight: 1, because: "You described your drinking as {answer:alcohol}, and late weekend nights are where a sleep clock slips." },
+      { when: all(CLOCK_MOVES, STRESSED), weight: 1, because: "With stress at {answer:stress}, bedtime is the first thing that moves." },
+      { when: all(any(IRREGULAR, OFTEN_OFF), COFFEE_HIGH), weight: 1, because: "You drink {answer:coffee} cups of coffee a day, which pushes the clock later still." },
     ],
   },
   {
@@ -558,7 +585,7 @@ export const FINDING_RULES: FindingRule[] = [
       { when: all(LOW_DRIVE, HIGH_HOURS), weight: 1, because: "It comes inside a week of {answer:weekly_hours} of lifting, the profile of a body that has been asked for too much." },
       { when: all(LOW_DRIVE, SHORT_SLEEP), weight: 1, because: "You sleep {answer:sleep_hours} hours a night, and drive is the first thing short sleep takes." },
       { when: all(LOW_DRIVE, HIGH_STRESS), weight: 1, because: "Life stress sits at {answer:stress}." },
-      { when: all(LOW_DRIVE, r("beat_last", 1, 4)), weight: 1, because: "You rarely try to beat your last session ({answer:beat_last}); without a number to chase, the urge has nothing to hold on to." },
+      { when: all(LOW_DRIVE, r("beat_last", 1, 4)), weight: 1, because: "You rarely try to beat what you did last time ({answer:beat_last}); without a number to chase, the urge has nothing to hold on to." },
       { when: all(LOW_DRIVE, ON_OFF), weight: 1, because: "Your last few months have been {answer:training_pattern}, which is how faded drive looks from the outside." },
     ],
   },
@@ -598,6 +625,41 @@ export const FINDING_RULES: FindingRule[] = [
     ],
   },
 
+  {
+    id: "conditioning_caps_volume",
+    audience: "both",
+    category: "recovery",
+    threshold: 5,
+    triggers: [
+      {
+        when: is("set_recovery", "o3"),
+        weight: 3,
+        because: "Asked how long your breathing takes to settle after a hard set of ten, you said {answer:set_recovery}.",
+      },
+      {
+        when: is("set_recovery", "2_3"),
+        weight: 2,
+        because: "Asked how long your breathing takes to settle after a hard set of ten, you said {answer:set_recovery}.",
+      },
+      {
+        when: all(SLOW_SET_RECOVERY, NO_CARDIO),
+        weight: 2,
+        because: "You do no cardio in a normal week, so nothing trains the engine that recovers you between sets.",
+      },
+      {
+        when: all(SLOW_SET_RECOVERY, is("cardio_sessions", "1")),
+        weight: 1,
+        because: "You do one cardio session a week, too little to move aerobic fitness.",
+      },
+      {
+        when: all(SLOW_SET_RECOVERY, is("legs_dose", "none", "low")),
+        weight: 1,
+        because: "Your legs get {answer:legs_dose} a week, and hard leg sessions are the most demanding work for heart and lungs in most programmes.",
+      },
+      { when: all(SLOW_SET_RECOVERY, OLDER), weight: 1, because: "At {answer:age}, aerobic fitness fades faster when nothing trains it." },
+    ],
+  },
+
   /* ═════════════ nutrition ═════════════ */
   {
     id: "deficit_while_expecting_muscle",
@@ -607,19 +669,20 @@ export const FINDING_RULES: FindingRule[] = [
     suppressedBy: ["no_surplus_no_growth", "gaining_too_fast", "fat_loss_without_deficit"],
     triggers: [
       {
-        when: all(is("physique_aim", "muscle"), DIETING),
+        when: all(is("physique_aim", "muscle"), LOSING),
         weight: 4,
-        because: "You want {answer:physique_aim} most, and you're eating to {answer:eating_phase}.",
+        because: "You want {answer:physique_aim} most, yet over the last two months your bodyweight has {answer:weight_trend}.",
       },
       {
-        when: all(is("physique_aim", "both"), DIETING, PAST_YEAR_ONE),
+        when: all(is("physique_aim", "both"), LOSING, PAST_YEAR_ONE),
         weight: 3,
-        because: "You want {answer:physique_aim}, and you're eating to {answer:eating_phase}.",
+        because: "You want {answer:physique_aim}, and over the last two months your bodyweight has {answer:weight_trend}.",
       },
-      { when: all(DIETING, UNDER_EATS), weight: 1, because: "On top of the diet, you end up eating less than planned at {answer:meal_skip}." },
-      { when: all(DIETING, LOOP_BROKEN), weight: 1, because: "Dieting, you rate how well your training loop runs at {answer:loop_score}." },
-      { when: all(DIETING, any(ECTO, BMI_UNDER)), weight: 1, because: "Your frame is {answer:body_type} and you weigh {answer:weight_kg}: there is little to diet from." },
-      { when: PAST_YEAR_ONE, weight: 1, because: "You've trained for {answer:training_age}, past the stage where muscle grows easily on a diet." },
+      { when: all(WANTS_MUSCLE, LOSING_FAST), weight: 1, because: "Dropping that fast is the pace at which muscle goes with the fat." },
+      { when: all(LOSING, UNDER_EATS), weight: 1, because: "On top of the weight loss, you end up eating less than planned at {answer:meal_skip}." },
+      { when: all(LOSING, LOOP_BROKEN), weight: 1, because: "Losing weight, you rate how well your training loop runs at {answer:loop_score}." },
+      { when: all(LOSING, any(ECTO, BMI_UNDER)), weight: 1, because: "Your frame is {answer:body_type} and you weigh {answer:weight_kg}: there is little to lose." },
+      { when: PAST_YEAR_ONE, weight: 1, because: "You've trained for {answer:training_age}, past the stage where muscle grows easily while weight comes off." },
     ],
   },
   {
@@ -630,27 +693,26 @@ export const FINDING_RULES: FindingRule[] = [
     suppressedBy: ["deficit_while_expecting_muscle", "gaining_too_fast", "recomp_window_closed"],
     triggers: [
       {
-        when: all(is("physique_aim", "muscle"), is("eating_phase", "maintain", "none")),
+        when: all(is("physique_aim", "muscle"), STABLE_WEIGHT),
         weight: 4,
-        because: "You want {answer:physique_aim}, and asked what you're eating for, you said {answer:eating_phase}.",
+        because: "You want {answer:physique_aim} most, yet over the last two months your bodyweight has {answer:weight_trend}: no surplus, no new tissue.",
       },
       {
-        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), UNDER_EATS),
-        weight: 4,
-        because: "You're eating to {answer:eating_phase}, yet you end up eating less than planned at {answer:meal_skip}: the surplus exists on paper.",
+        when: all(is("physique_aim", "muscle"), TREND_UNKNOWN),
+        weight: 3,
+        because: "You want {answer:physique_aim} most and don't weigh yourself, so nobody knows whether a surplus exists.",
       },
       {
-        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), is("appetite", "small"), r("meal_skip", 1, 6)),
-        weight: 4,
-        because: "You're eating to {answer:eating_phase}, but asked about your appetite you said {answer:appetite}: the surplus you're eating for rarely happens.",
+        when: all(WANTS_MUSCLE, any(STABLE_WEIGHT, TREND_UNKNOWN), SMALL_APPETITE),
+        weight: 2,
+        because: "You rated your appetite at {answer:appetite}, and a small appetite quietly caps what you eat.",
       },
-      { when: UNDER_EATS, weight: 1, because: "You rated how often you end up eating less than planned at {answer:meal_skip}." },
-      { when: r("meal_skip", 5, 6), weight: 1, because: "Some days you end up eating less than planned ({answer:meal_skip})." },
       {
-        when: all(is("appetite", "small"), not("eating_phase", "gain")),
-        weight: 1,
-        because: "Asked about your appetite, you said {answer:appetite}, and a small appetite quietly caps what you eat.",
+        when: all(WANTS_MUSCLE, any(STABLE_WEIGHT, TREND_UNKNOWN), UNDER_EATS),
+        weight: 2,
+        because: "You end up eating less than planned at {answer:meal_skip}: the surplus exists on paper.",
       },
+      { when: all(WANTS_MUSCLE, r("meal_skip", 5, 6)), weight: 1, because: "Some days you end up eating less than planned ({answer:meal_skip})." },
       { when: all(WANTS_MUSCLE, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight: not a surplus." },
       { when: all(WANTS_MUSCLE, any(ECTO, BMI_UNDER)), weight: 1, because: "Your frame is {answer:body_type} and you weigh {answer:weight_kg}: the build with the least room to grow without extra food." },
       {
@@ -667,9 +729,14 @@ export const FINDING_RULES: FindingRule[] = [
     threshold: 5,
     triggers: [
       {
-        when: all(is("physique_aim", "both"), is("eating_phase", "maintain", "none")),
+        when: all(is("physique_aim", "both"), STABLE_WEIGHT),
         weight: 3,
-        because: "You want {answer:physique_aim}, and asked what you're eating for, you said {answer:eating_phase}.",
+        because: "You want {answer:physique_aim}, and over the last two months your bodyweight has {answer:weight_trend}.",
+      },
+      {
+        when: all(is("physique_aim", "both"), TREND_UNKNOWN),
+        weight: 3,
+        because: "You want {answer:physique_aim} and don't weigh yourself, so neither side of the change is being steered.",
       },
       {
         when: TRAINED_3Y,
@@ -689,27 +756,28 @@ export const FINDING_RULES: FindingRule[] = [
     audience: "physique",
     category: "nutrition",
     threshold: 6,
-    suppressedBy: ["deficit_while_expecting_muscle", "no_surplus_no_growth"],
+    suppressedBy: ["deficit_while_expecting_muscle", "no_surplus_no_growth", "fat_loss_without_deficit"],
     triggers: [
       {
-        when: all(WANTS_MUSCLE, is("eating_phase", "gain"), BIG_APPETITE, r("meal_skip", 1, 6)),
+        when: all(WANTS_MUSCLE, GAINING_FAST),
         weight: 4,
-        because: "You're eating to {answer:eating_phase}, and asked about your appetite you said {answer:appetite}: the surplus is easy to overshoot.",
+        because: "Over the last two months your bodyweight has {answer:weight_trend}, faster than new muscle can be built.",
       },
+      { when: all(GAINING_FAST, BIG_APPETITE), weight: 2, because: "You rated your appetite at {answer:appetite}: the surplus is easy to overshoot." },
       {
-        when: all(is("eating_phase", "gain"), r("meal_skip", 1, 5)),
-        weight: 1,
-        because: "You rarely end up eating less than planned ({answer:meal_skip}), so the whole surplus arrives, and then some.",
-      },
-      {
-        when: r("weekend_eating", 8, 10),
+        when: all(GAINING_FAST, r("weekend_eating", 8, 10)),
         weight: 2,
         because: "Your weekends run much looser than your weekdays ({answer:weekend_eating}): the surplus is bigger than the plan.",
       },
-      { when: r("weekend_eating", 6, 7), weight: 1, because: "Your weekends run looser than your weekdays ({answer:weekend_eating})." },
-      { when: all(is("eating_phase", "gain"), any(ENDO, BMI_OVER)), weight: 1, because: "You're eating to gain and your frame is {answer:body_type}, the build that stores a surplus as fat first." },
-      { when: all(is("eating_phase", "gain"), CARBS_HIGH), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight." },
-      { when: DRINKS, weight: 1, because: "You described your drinking as {answer:alcohol}: calories that build nothing." },
+      { when: all(GAINING_FAST, r("weekend_eating", 6, 7)), weight: 1, because: "Your weekends run looser than your weekdays ({answer:weekend_eating})." },
+      {
+        when: all(GAINING_FAST, r("meal_skip", 1, 3)),
+        weight: 1,
+        because: "You almost never eat less than planned ({answer:meal_skip}), so every planned meal lands, and then some.",
+      },
+      { when: all(GAINING_FAST, any(ENDO, BMI_OVER)), weight: 1, because: "Your frame is {answer:body_type}, the build that stores a surplus as fat first." },
+      { when: all(GAINING_FAST, CARBS_HIGH), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight." },
+      { when: all(GAINING_FAST, DRINKS), weight: 1, because: "You described your drinking as {answer:alcohol}: calories that build nothing." },
     ],
   },
   {
@@ -717,44 +785,39 @@ export const FINDING_RULES: FindingRule[] = [
     audience: "physique",
     category: "nutrition",
     threshold: 5,
-    suppressedBy: ["week_cancels_itself", "deficit_while_expecting_muscle"],
+    suppressedBy: ["week_cancels_itself", "deficit_while_expecting_muscle", "gaining_too_fast"],
     triggers: [
       {
-        when: all(WANTS_LESS_FAT, NOT_DIETING),
+        when: all(WANTS_LESS_FAT, NOT_LOSING),
         weight: 4,
-        because: "You want {answer:physique_aim} most; asked what you're eating for, you said {answer:eating_phase}.",
+        because: "You want {answer:physique_aim} most, yet over the last two months your bodyweight has {answer:weight_trend}: there is no deficit.",
       },
       {
-        when: all(LEAN_AIM, DIETING, BIG_APPETITE),
+        when: all(WANTS_LESS_FAT, TREND_UNKNOWN),
         weight: 3,
-        because: "You're eating to {answer:eating_phase}, and on a diet an appetite that's hard to keep in check is where the deficit leaks.",
+        because: "You want {answer:physique_aim} most and don't weigh yourself, so nobody knows whether a deficit exists.",
       },
       {
-        when: all(LEAN_AIM, BIG_APPETITE),
+        when: all(LEAN_AIM, any(NOT_LOSING, TREND_UNKNOWN), BIG_APPETITE),
         weight: 2,
-        because: "Asked about your appetite, you said {answer:appetite}, and eating until satisfied lands at maintenance or above, never below it.",
+        because: "You rated your appetite at {answer:appetite}, and eating until satisfied lands at maintenance or above, never below it.",
       },
       {
-        when: all(LEAN_AIM, DIETING, r("weekend_eating", 7, 10)),
+        when: all(LEAN_AIM, any(NOT_LOSING, TREND_UNKNOWN), r("weekend_eating", 7, 10)),
         weight: 2,
         because: "You rated how much looser your weekend eating gets at {answer:weekend_eating}: two loose days can erase five careful ones.",
       },
+      { when: all(WANTS_LESS_FAT, GAINING), weight: 1, because: "Your weight is going up while the goal needs it to come down." },
       {
-        when: all(WANTS_LESS_FAT, is("eating_phase", "gain")),
-        weight: 1,
-        because: "A plan built to gain weight can't take fat off, whatever the training does.",
-      },
-      {
-        when: all(WANTS_LESS_FAT, is("eating_phase", "none")),
-        weight: 1,
-        because: "With no plan, appetite decides, and appetite defends the weight you're already at.",
-      },
-      {
-        when: all(WANTS_LESS_FAT, NOT_DIETING, PAST_YEAR_ONE),
+        when: all(WANTS_LESS_FAT, any(NOT_LOSING, TREND_UNKNOWN), PAST_YEAR_ONE),
         weight: 1,
         because: "You've trained for {answer:training_age}; past the beginner stage, fat rarely comes off without a deliberate deficit.",
       },
-      { when: all(LEAN_AIM, DIETING, CARBS_HIGH), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, which is hard to fit inside a deficit." },
+      {
+        when: all(LEAN_AIM, any(NOT_LOSING, TREND_UNKNOWN), CARBS_HIGH),
+        weight: 1,
+        because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, which is hard to fit inside a deficit.",
+      },
       { when: all(LEAN_AIM, DRINKS), weight: 1, because: "You described your drinking as {answer:alcohol}, and drinks are the calories nobody plans for." },
       {
         when: all(LEAN_AIM, any(PROTEIN_LOW, PROTEIN_UNKNOWN)),
@@ -779,9 +842,9 @@ export const FINDING_RULES: FindingRule[] = [
         because: "You end up eating less than planned at {answer:meal_skip} and loosen up at the weekend: restriction, then rebound.",
       },
       {
-        when: all(r("weekend_eating", 6, 10), DIETING),
+        when: all(r("weekend_eating", 6, 10), LEAN_AIM, STABLE_WEIGHT),
         weight: 1,
-        because: "You're eating to {answer:eating_phase}: a strict week and a loose weekend average out to maintenance.",
+        because: "You want less fat, yet your weight holds steady: a strict week and a loose weekend average out to maintenance.",
       },
       {
         when: all(r("weekend_eating", 6, 10), HIGH_STRESS),
@@ -808,9 +871,9 @@ export const FINDING_RULES: FindingRule[] = [
         because: "You also end up eating less than planned at {answer:meal_skip}, and the meals that shrink take their protein with them.",
       },
       {
-        when: all(PROTEIN_UNKNOWN, is("eating_phase", "none")),
+        when: all(PROTEIN_UNKNOWN, TREND_UNKNOWN),
         weight: 1,
-        because: "Asked what you're eating for, you said {answer:eating_phase}, and protein is the first thing to go missing without a plan.",
+        because: "You don't weigh yourself either, so nothing about your food is checked against a result.",
       },
       { when: all(PROTEIN_UNKNOWN, r("diet_clean", 1, 5)), weight: 1, because: "You rated how clean your diet is at {answer:diet_clean}, and protein is usually the first thing an unplanned diet skimps on." },
     ],
@@ -822,7 +885,7 @@ export const FINDING_RULES: FindingRule[] = [
     threshold: 5,
     triggers: [
       { when: PROTEIN_LOW, weight: 4, because: "You eat {answer:protein_g} grams of protein a day at {answer:weight_kg}: {answer:protein_band}." },
-      { when: all(PROTEIN_MID, DIETING), weight: 3, because: "You eat {answer:protein_g} grams of protein a day, {answer:protein_band}, while eating to {answer:eating_phase}, when the need is highest." },
+      { when: all(PROTEIN_MID, LOSING), weight: 3, because: "You eat {answer:protein_g} grams of protein a day, {answer:protein_band}, while your bodyweight is coming down, when the need is highest." },
       { when: all(PROTEIN_MID, PHYSIQUE, WANTS_MUSCLE), weight: 2, because: "You eat {answer:protein_g} grams of protein a day, {answer:protein_band}, and you want {answer:physique_aim}." },
       { when: all(any(PROTEIN_LOW, PROTEIN_MID), UNDER_EATS), weight: 1, because: "You also end up eating less than planned at {answer:meal_skip}, so the real number is lower still." },
       { when: all(any(PROTEIN_LOW, PROTEIN_MID), OLDER), weight: 1, because: "At {answer:age}, muscle needs more protein per meal to respond, not less." },
@@ -836,14 +899,33 @@ export const FINDING_RULES: FindingRule[] = [
     threshold: 5,
     triggers: [
       { when: CARBS_LOW, weight: 3, because: "You eat {answer:carbs_g} grams of carbs a day at {answer:weight_kg}: {answer:carbs_band}." },
+      {
+        when: all(CARBS_UNKNOWN, FLAT, FOG_ANY),
+        weight: 3,
+        because: "You don't track carbs, your muscles feel flat in training ({answer:pump}), and you get brain fog or sudden weakness {answer:brain_fog}: the pattern of an empty tank.",
+      },
       { when: all(CARBS_LOW, FOG_OFTEN), weight: 2, because: "You get brain fog or sudden weakness {answer:brain_fog}." },
       { when: all(CARBS_LOW, is("brain_fog", "sometimes")), weight: 1, because: "You get brain fog or sudden weakness {answer:brain_fog}." },
-      { when: all(CARBS_LOW, is("training_signs", "floaty")), weight: 1, because: "You told us your legs go soft or floaty in training." },
-      { when: all(CARBS_LOW, VERY_ACTIVE), weight: 1, because: "Your cardio and daily activity sit at {answer:activity_load}, all of it running on the same small carb budget." },
+      { when: all(CARBS_LOW, FLAT), weight: 2, because: "You rated how full and pumped your muscles get at {answer:pump}, and a muscle short on stored carbs tends to feel flat." },
+      {
+        when: all(CARBS_LOW_OR_UNKNOWN, LONG_GAP),
+        weight: 1,
+        because: "You train {answer:pre_meal} hours after your last meal, so the session starts on whatever is left in the tank.",
+      },
+      {
+        when: all(CARBS_LOW_OR_UNKNOWN, is("training_signs", "floaty", "limp")),
+        weight: 1,
+        because: "Your legs go soft or your muscles turn limp in training, more than once this past month.",
+      },
+      {
+        when: all(CARBS_LOW_OR_UNKNOWN, MUCH_CARDIO),
+        weight: 1,
+        because: "You do {answer:cardio_sessions} cardio sessions a week, all of it running on the same carb budget.",
+      },
       { when: all(CARBS_LOW, HIGH_HOURS), weight: 1, because: "Your week holds {answer:weekly_hours} of lifting, work that runs on glycogen." },
-      { when: all(CARBS_LOW, DIETING), weight: 1, because: "You're eating to {answer:eating_phase}, which cuts the fuel further." },
+      { when: all(CARBS_LOW, LOSING), weight: 1, because: "Your bodyweight has {answer:weight_trend} over the last two months, which cuts the fuel further." },
       { when: all(CARBS_LOW, LOOP_BROKEN), weight: 1, because: "You rate how well your training loop runs at {answer:loop_score}." },
-      { when: all(CARBS_LOW, is("sex", "female"), ACTIVE), weight: 1, because: "Low fuel on an active week costs female lifters recovery fastest." },
+      { when: all(CARBS_LOW, is("sex", "female"), MUCH_CARDIO), weight: 1, because: "Low fuel on a cardio-heavy week costs female lifters recovery fastest." },
     ],
   },
   {
@@ -868,15 +950,24 @@ export const FINDING_RULES: FindingRule[] = [
     category: "nutrition",
     threshold: 6,
     triggers: [
-      { when: SIGNS_SEVERAL, weight: 4, because: "During or after training you get {answer:training_signs}." },
-      { when: is("signs_count", "one"), weight: 2, because: "During or after training you get {answer:training_signs}." },
+      { when: SIGNS_SEVERAL, weight: 4, because: "More than once this past month, during or after training, you got {answer:training_signs}." },
+      { when: is("signs_count", "one"), weight: 2, because: "More than once this past month, during or after training, you got {answer:training_signs}." },
       { when: all(SIGNS_ANY, is("training_signs", "cramps", "twitches")), weight: 1, because: "Cramps and twitches are the most specific of those signs." },
-      { when: all(SIGNS_ANY, is("training_signs", "water_worse")), weight: 1, because: "Feeling weaker the more water you drink after sweating is the tell that it isn't a water problem." },
-      { when: all(SIGNS_ANY, VERY_ACTIVE), weight: 1, because: "Your cardio and daily activity sit at {answer:activity_load}, so you sweat a lot of the week away." },
+      {
+        when: all(SIGNS_ANY, HEAVY_SWEAT),
+        weight: 1,
+        because: "Asked how you sweat in a session, you said {answer:sweat_level}, and every litre of sweat takes sodium with it.",
+      },
+      {
+        when: all(SIGNS_ANY, SALTY),
+        weight: 1,
+        because: "The white marks your sweat leaves are salt it carried out of your body.",
+      },
+      { when: all(SIGNS_ANY, VERY_MUCH_CARDIO), weight: 1, because: "You do {answer:cardio_sessions} cardio sessions a week, so you sweat a lot of the week away." },
       { when: all(SIGNS_ANY, COFFEE_HIGH), weight: 1, because: "You drink {answer:coffee} cups of coffee a day." },
       { when: all(SIGNS_ANY, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, and a low-carb week drains minerals with the water it sheds." },
       { when: all(SIGNS_ANY, CLEAN_DIET), weight: 1, because: "You rated how clean your diet is at {answer:diet_clean}: whole-food eating is usually the low-salt kind." },
-      { when: all(SIGNS_ANY, DIETING), weight: 1, because: "You're eating to {answer:eating_phase}, on less food and less of everything in it." },
+      { when: all(SIGNS_ANY, LOSING), weight: 1, because: "Your bodyweight has {answer:weight_trend}: less food means less of every mineral in it." },
     ],
   },
   {
@@ -885,15 +976,12 @@ export const FINDING_RULES: FindingRule[] = [
     category: "nutrition",
     threshold: 5,
     triggers: [
-      { when: DIETING, weight: 3, because: "You're eating to {answer:eating_phase} while asking your lifts to go up." },
-      { when: UNDER_EATS, weight: 2, because: "You rated how often you end up eating less than planned at {answer:meal_skip}." },
-      { when: all(DIETING, LOOP_BROKEN), weight: 1, because: "Dieting, you rate how well your training loop runs at {answer:loop_score}." },
-      { when: all(DIETING, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, and heavy lifting runs on carbs." },
-      {
-        when: all(DIETING, VERY_ACTIVE),
-        weight: 1,
-        because: "Your cardio and daily activity sit at {answer:activity_load} on top of the diet.",
-      },
+      { when: LOSING, weight: 3, because: "Over the last two months your bodyweight has {answer:weight_trend} while you ask your lifts to go up." },
+      { when: all(LOSING, LOSING_FAST), weight: 1, because: "At that pace, the weight loss takes strength along with the fat." },
+      { when: all(LOSING, UNDER_EATS), weight: 2, because: "You rated how often you end up eating less than planned at {answer:meal_skip}." },
+      { when: all(LOSING, LOOP_BROKEN), weight: 1, because: "Losing weight, you rate how well your training loop runs at {answer:loop_score}." },
+      { when: all(LOSING, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, and heavy lifting runs on carbs." },
+      { when: all(LOSING, MUCH_CARDIO), weight: 1, because: "You do {answer:cardio_sessions} cardio sessions a week on top of the weight loss." },
     ],
   },
 
@@ -904,25 +992,25 @@ export const FINDING_RULES: FindingRule[] = [
     category: "lifestyle",
     threshold: 5,
     triggers: [
-      { when: VERY_ACTIVE, weight: 3, because: "You rated your cardio and day-to-day activity at {answer:activity_load}." },
-      { when: r("activity_load", 6, 7), weight: 1, because: "Your cardio and day-to-day activity are fairly heavy ({answer:activity_load})." },
+      { when: VERY_MUCH_CARDIO, weight: 3, because: "You do {answer:cardio_sessions} cardio sessions a week on top of your lifting." },
+      { when: is("cardio_sessions", "4"), weight: 1, because: "You do {answer:cardio_sessions} cardio sessions a week on top of your lifting." },
       {
-        when: all(ACTIVE, LOOP_BROKEN),
+        when: all(MUCH_CARDIO, LOOP_BROKEN),
         weight: 2,
-        because: "Next to all that activity, you rate how well your training loop runs at {answer:loop_score}.",
+        because: "Next to all that cardio, you rate how well your training loop runs at {answer:loop_score}.",
       },
       {
-        when: all(ACTIVE, UNDER_EATS, NOT_DIETING),
+        when: all(MUCH_CARDIO, UNDER_EATS),
         weight: 1,
-        because: "You end up eating less than planned at {answer:meal_skip} without meaning to diet, so the extra work is not being paid for.",
+        because: "You end up eating less than planned at {answer:meal_skip}, so the extra work is not being paid for.",
       },
-      { when: all(ACTIVE, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, and cardio spends carbs first." },
+      { when: all(MUCH_CARDIO, CARBS_LOW), weight: 1, because: "You eat {answer:carbs_g} grams of carbs a day, {answer:carbs_band} at your weight, and cardio spends carbs first." },
       {
-        when: all(ACTIVE, POOR_WAKE, SLEEP_OK),
+        when: all(MUCH_CARDIO, POOR_WAKE, SLEEP_OK),
         weight: 1,
         because: "You sleep {answer:sleep_hours} hours yet wake up unrested ({answer:wake_rested}), and the extra work is the likeliest reason.",
       },
-      { when: all(ACTIVE, HIGH_HOURS), weight: 1, because: "It sits on top of {answer:weekly_hours} of lifting a week." },
+      { when: all(MUCH_CARDIO, HIGH_HOURS), weight: 1, because: "It sits on top of {answer:weekly_hours} of lifting a week." },
     ],
   },
   {
@@ -944,7 +1032,11 @@ export const FINDING_RULES: FindingRule[] = [
         because: "You rarely get a full night's sleep ({answer:full_nights}), and drinking nights are the shortest ones.",
       },
       { when: all(DRINKS, LOOP_BROKEN), weight: 1, because: "You rate how well your training loop runs at {answer:loop_score}, and the night before is a common reason." },
-      { when: all(DRINKS, IRREGULAR), weight: 1, because: "Your bed and wake times are {answer:sleep_regular}; drinking nights are usually the ones that move them." },
+      {
+        when: all(DRINKS, any(IRREGULAR, OFTEN_OFF)),
+        weight: 1,
+        because: "Your bed and wake times are {answer:sleep_regular}; drinking nights are usually the ones that move them.",
+      },
     ],
   },
   {
@@ -1049,6 +1141,7 @@ export const FINDING_RULES: FindingRule[] = [
       "life_is_the_limiter",
       "drive_has_faded",
       "training_around_pain",
+      "conditioning_caps_volume",
       "deficit_while_expecting_muscle",
       "no_surplus_no_growth",
       "recomp_window_closed",
@@ -1072,7 +1165,7 @@ export const FINDING_RULES: FindingRule[] = [
       { when: all(is("training_age", "over_6y"), CLEAN), weight: 3, because: "You've trained for {answer:training_age}." },
       { when: all(is("training_age", "3_6y"), CLEAN), weight: 2, because: "You've trained for {answer:training_age}." },
       { when: r("effort_grind", 7, 10), weight: 1, because: "Your sets are genuinely hard: your last rep grinds at {answer:effort_grind}." },
-      { when: r("beat_last", 7, 10), weight: 1, because: "You rated how often you try to beat your last session at {answer:beat_last}." },
+      { when: r("beat_last", 7, 10), weight: 1, because: "You rated how often you try to beat what you did last time at {answer:beat_last}." },
       {
         when: all(STEADY, not("sessions_week", "1", "2")),
         weight: 1,
@@ -1099,7 +1192,7 @@ export const CLEARANCES: ClearanceRule[] = [
     audience: "both",
     when: any(all(is("load_choice", "plan"), r("beat_last", 7, 10)), r("beat_last", 8, 10)),
     title: "Something already pushes your weights up",
-    text: "You try to beat your last session most of the time, or your program does the pushing for you. Progression pressure is there; the stall is coming from somewhere else.",
+    text: "You try to beat what you did last time most of the time, or your program does the pushing for you. Progression pressure is there; the stall is coming from somewhere else.",
   },
   {
     id: "protein_covered",
@@ -1111,9 +1204,9 @@ export const CLEARANCES: ClearanceRule[] = [
   {
     id: "carbs_fuel_training",
     audience: "both",
-    when: all(is("carbs_band", "mid", "high"), r("meal_skip", 1, 5)),
+    when: all(is("carbs_band", "mid", "high"), r("meal_skip", 1, 5), r("pump", 5, 10)),
     title: "Your sessions are fuelled",
-    text: "The carbs you eat cover the training you do at your bodyweight. Flat sessions, if you have them, are not a fuel problem.",
+    text: "The carbs you eat cover the training you do at your bodyweight, and your muscles fill up when you train. Fuel isn't what's holding the sessions back.",
   },
   {
     id: "sleep_covered",
@@ -1202,9 +1295,9 @@ export const CLEARANCES: ClearanceRule[] = [
   {
     id: "life_leaves_room",
     audience: "both",
-    when: all(r("stress", 1, 4), r("activity_load", 1, 5)),
+    when: all(r("stress", 1, 4), is("cardio_sessions", "0", "1", "2", "3")),
     title: "Life leaves room to recover",
-    text: "Your stress is low and you're not stacking hard physical work on top of lifting. Life outside the gym isn't what's draining your recovery.",
+    text: "Your stress is low and you're not stacking a heavy cardio load on top of lifting. Life outside the gym isn't what's draining your recovery.",
   },
   {
     id: "not_overreaching",
@@ -1225,22 +1318,22 @@ export const CLEARANCES: ClearanceRule[] = [
     audience: "physique",
     when: all(
       WANTS_MUSCLE,
-      is("eating_phase", "gain"),
-      is("appetite", "normal"),
+      is("weight_trend", "up"),
+      r("appetite", 4, 7),
       r("weekend_eating", 1, 5),
       r("meal_skip", 1, 5),
       PROTEIN_OK,
       is("alcohol", "none", "light"),
     ),
     title: "Your eating points the right way",
-    text: "You want muscle, you're eating to gain, your protein is where it needs to be, and no weekend swing undoes it. The food side of growth is set up.",
+    text: "You want muscle and your weight is climbing slowly, the pace that builds muscle without much fat. Your protein is where it needs to be and no weekend swing undoes it.",
   },
   {
     id: "deficit_is_real",
     audience: "physique",
-    when: all(WANTS_LESS_FAT, DIETING, is("appetite", "small", "normal"), r("weekend_eating", 1, 5)),
+    when: all(WANTS_LESS_FAT, is("weight_trend", "down"), r("appetite", 1, 7), r("weekend_eating", 1, 5)),
     title: "Your deficit is real",
-    text: "You want less fat, you're eating for it, your appetite isn't fighting you, and your weekends don't undo the week. The diet itself is set up to work.",
+    text: "You want less fat and your weight is coming down steadily, your appetite isn't fighting you, and your weekends don't undo the week. The diet itself is working.",
   },
   {
     id: "lagging_gets_priority",
@@ -1273,8 +1366,15 @@ export const CLEARANCES: ClearanceRule[] = [
   {
     id: "fuel_is_there",
     audience: "strength",
-    when: all(is("eating_phase", "gain", "maintain"), r("meal_skip", 1, 4), PROTEIN_OK),
+    when: all(is("weight_trend", "same", "up"), r("meal_skip", 1, 4), PROTEIN_OK),
     title: "Your lifts have fuel",
-    text: "You're not dieting, you rarely end up eating less than planned, and your protein is where it needs to be. The food side of strength is covered; the stall is coming from somewhere else.",
+    text: "Your weight is holding or climbing slowly, you rarely end up eating less than planned, and your protein is where it needs to be. The food side of strength is covered; the stall is coming from somewhere else.",
+  },
+  {
+    id: "engine_keeps_up",
+    audience: "both",
+    when: all(is("set_recovery", "u1", "1_2"), is("cardio_sessions", "2", "3", "4", "5plus")),
+    title: "Your engine keeps up",
+    text: "Your breathing settles within two minutes of a hard set and you do regular cardio. Your conditioning recovers you between sets, so it isn't what's capping your work.",
   },
 ];

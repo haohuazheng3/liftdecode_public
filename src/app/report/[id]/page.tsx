@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { notFound, redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { and, desc, eq } from "drizzle-orm";
@@ -10,6 +11,10 @@ import { isAdminEmail } from "@/lib/env";
 import { captureFromUnknown } from "@/lib/errors";
 import { Report } from "@/components/report/Report";
 import { UnlockPing } from "@/components/report/ReportTools";
+import { AiReportView } from "@/components/report/AiReportView";
+import { AnalysisWaiting } from "@/components/report/AnalysisWaiting";
+import { getJob, jobView, MAX_ATTEMPTS, MEMBER_ANALYSES_PER_30_DAYS, recentAnalyses } from "@/lib/ai/jobs";
+import { buildScorecard } from "@/lib/report/scorecard";
 
 export const metadata: Metadata = { title: "Your report", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -65,6 +70,38 @@ export default async function ReportPage(props: PageProps<"/report/[id]">) {
   ]);
 
   const o = lastOrder[0];
+  const doneSteps = done.map((d) => d.stepKey);
+
+  // The paid analysis: written once, after payment, then served from the database.
+  const job = await getJob(id);
+  let body: ReactNode;
+  if (job?.status === "done" && job.output) {
+    body = <AiReportView assessment={a} report={job.output} via={via} doneSteps={doneSteps} isOwner={owns} />;
+  } else {
+    const view = jobView(job);
+    const exhausted = view.status === "failed" && !view.canRetry && view.attempts >= MAX_ATTEMPTS;
+    const capped = !job && owns && via === "membership" && (await recentAnalyses(userId)) >= MEMBER_ANALYSES_PER_30_DAYS;
+    if (exhausted || capped || (!owns && view.status !== "running")) {
+      // The rule-based report stands in: every finding, fix and plan, without the written analysis.
+      body = (
+        <>
+          <div className="mx-auto mb-4 max-w-4xl slab-inset p-4 sm:p-5 text-sm leading-relaxed text-ink-2">
+            {capped
+              ? `Your membership includes ${MEMBER_ANALYSES_PER_30_DAYS} written analyses every 30 days, and you have used them. Your full diagnosis is below, and your next written analysis unlocks as the oldest one ages out.`
+              : exhausted
+                ? "Your written analysis did not finish, and we have been alerted. Your full diagnosis is below in the meantime; we will complete the written analysis and it will appear here."
+                : "No written analysis has been generated for this report yet."}
+          </div>
+          <Report assessment={a} via={via} doneSteps={doneSteps} isOwner={owns} />
+        </>
+      );
+    } else {
+      const facts = buildScorecard(a.answers, a.track === "strength" ? "strength" : "physique")
+        .flatMap((d) => d.items.map((i) => i.fact))
+        .slice(0, 16);
+      body = <AnalysisWaiting assessmentId={id} initial={view} facts={facts} />;
+    }
+  }
 
   return (
     <div className="px-3 sm:px-5 py-6 sm:py-10">
@@ -77,7 +114,7 @@ export default async function ReportPage(props: PageProps<"/report/[id]">) {
           orderId={o?.id ?? null}
         />
       )}
-      <Report assessment={a} via={via} doneSteps={done.map((d) => d.stepKey)} isOwner={owns} />
+      {body}
     </div>
   );
 }

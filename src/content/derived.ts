@@ -1,5 +1,5 @@
 /**
- * Derived answers (v3): numbers the intake collects, turned into the bands the rules read.
+ * Derived answers (v4): numbers the intake collects, turned into the bands the rules read.
  * Computed inside the engine before scoring; never shown as questions. A derived id can be
  * used in conditions and in because-lines exactly like a question id.
  */
@@ -15,8 +15,10 @@ const num = (a: A, id: string): number | undefined => {
 };
 const str = (a: A, id: string): string | undefined => (typeof a[id] === "string" ? (a[id] as string) : undefined);
 
-/** midpoint hours of a "hours a week" band */
-const HOURS_MID: Record<string, number> = { u1: 0.5, "1_2": 1.5, "2_3": 2.5, "3_4": 3.5, "4plus": 4.5 };
+/** midpoint hours of a "time on it per session" band (v4) */
+const TIME_MID: Record<string, number> = { u20: 0.25, "20_40": 0.5, "40_60": 0.83, "60_90": 1.25, o90: 1.75 };
+/** midpoint hours of the v3 "hours a week" band, still read for assessments stored before v4 */
+const LEGACY_HOURS_MID: Record<string, number> = { u1: 0.5, "1_2": 1.5, "2_3": 2.5, "3_4": 3.5, "4plus": 4.5 };
 const SESSIONS_N: Record<string, number> = { "0": 0, "1": 1, "2": 2, "3": 3, "4plus": 4 };
 const PROTEIN_MID: Record<string, number> = { u100: 80, "100_140": 120, "140_180": 160, "180_220": 200, o220: 240 };
 const CARBS_MID: Record<string, number> = { u150: 110, "150_250": 200, "250_350": 300, "350_450": 400, o450: 480 };
@@ -25,13 +27,22 @@ const SLEEP_MID: Record<string, number> = { u5: 4.5, "5_6": 5.5, "6_7": 6.5, "7_
 export const GROUPS = ["chest", "back", "arms", "legs"] as const;
 export type MuscleGroup = (typeof GROUPS)[number];
 
-export function groupHours(a: A, g: MuscleGroup): number | undefined {
-  const v = str(a, `${g}_hours`);
-  return v ? HOURS_MID[v] : undefined;
-}
 export function groupSessions(a: A, g: MuscleGroup): number | undefined {
   const v = str(a, `${g}_sessions`);
   return v ? SESSIONS_N[v] : undefined;
+}
+/** hours per session on the group (v4 answers only) */
+export function groupSessionHours(a: A, g: MuscleGroup): number | undefined {
+  const v = str(a, `${g}_time`);
+  return v ? TIME_MID[v] : undefined;
+}
+/** weekly hours on the group: sessions × time per session (v4), or the v3 weekly band */
+export function groupHours(a: A, g: MuscleGroup): number | undefined {
+  const per = groupSessionHours(a, g);
+  const s = groupSessions(a, g);
+  if (per !== undefined && s !== undefined) return s * per;
+  const legacy = str(a, `${g}_hours`);
+  return legacy ? LEGACY_HOURS_MID[legacy] : undefined;
 }
 export function weeklyHours(a: A): number | undefined {
   let total = 0;
@@ -77,16 +88,27 @@ const AREA_GROUP: Record<string, MuscleGroup> = {
 };
 const LIFT_GROUP: Record<string, MuscleGroup> = { squat: "legs", deadlift: "legs", bench: "chest", press: "arms" };
 
-/** none / low / ok / high from a group's sessions and hours */
+/**
+ * none / low / ok / high from a group's sessions and weekly hours. An hour a week on one
+ * group is roughly 15 hard sets with rests; under 0.4 h (one short slot) is a token few
+ * sets; 2.5 hours over three or more sessions is a specialisation dose.
+ */
 function dose(a: A, g: MuscleGroup): string | undefined {
   const s = groupSessions(a, g);
   const h = groupHours(a, g);
   if (s === undefined || h === undefined) return undefined;
-  if (s === 0 || h < 1) return "none";
-  if (s === 1 || h < 2) return "low";
-  if (s >= 3 && h >= 3.5) return "high";
+  if (s === 0 || h < 0.4) return "none";
+  if (s === 1 || h < 1) return "low";
+  if (s >= 3 && h >= 2.5) return "high";
   return "ok";
 }
+const DOSE_OPTIONS = [
+  { value: "none", label: "next to nothing" },
+  { value: "low", label: "one session or under an hour" },
+  { value: "ok", label: "a moderate dose" },
+  { value: "high", label: "three or more long sessions" },
+];
+const GROUP_INPUTS = GROUPS.flatMap((g) => [`${g}_sessions`, `${g}_time`]);
 
 export const DERIVED: DerivedQuestion[] = [
   {
@@ -127,7 +149,7 @@ export const DERIVED: DerivedQuestion[] = [
     id: "weekly_hours",
     audience: "both",
     prompt: "Lifting hours a week",
-    from: ["chest_hours", "back_hours", "arms_hours", "legs_hours"],
+    from: GROUP_INPUTS,
     options: [
       { value: "low", label: "under 3 hours" },
       { value: "moderate", label: "3–7 hours" },
@@ -144,7 +166,7 @@ export const DERIVED: DerivedQuestion[] = [
     id: "legs_share",
     audience: "both",
     prompt: "Legs' share of your week",
-    from: ["chest_hours", "back_hours", "arms_hours", "legs_hours"],
+    from: GROUP_INPUTS,
     options: [
       { value: "low", label: "under a fifth" },
       { value: "ok", label: "a fair share" },
@@ -160,7 +182,7 @@ export const DERIVED: DerivedQuestion[] = [
     id: "arms_share",
     audience: "both",
     prompt: "Arms' share of your week",
-    from: ["chest_hours", "back_hours", "arms_hours", "legs_hours"],
+    from: GROUP_INPUTS,
     options: [
       { value: "heavy", label: "over a third" },
       { value: "ok", label: "a fair share" },
@@ -176,14 +198,8 @@ export const DERIVED: DerivedQuestion[] = [
     id: "lagging_dose",
     audience: "physique",
     prompt: "Weekly dose of your slowest area",
-    from: ["lagging_area", "chest_sessions", "chest_hours", "back_sessions", "back_hours", "arms_sessions", "arms_hours", "legs_sessions", "legs_hours"],
-    options: [
-      { value: "none", label: "none" },
-      { value: "low", label: "one session or under two hours" },
-      { value: "ok", label: "two or three sessions" },
-      { value: "high", label: "three or more sessions, over three hours" },
-      { value: "na", label: "no single area" },
-    ],
+    from: ["lagging_area", ...GROUP_INPUTS],
+    options: [...DOSE_OPTIONS, { value: "na", label: "no single area" }],
     compute: (a) => {
       const area = str(a, "lagging_area");
       if (!area) return undefined;
@@ -196,18 +212,21 @@ export const DERIVED: DerivedQuestion[] = [
     id: "lift_muscle_dose",
     audience: "strength",
     prompt: "Weekly dose of the muscles behind your stuck lift",
-    from: ["main_lift", "chest_sessions", "chest_hours", "back_sessions", "back_hours", "arms_sessions", "arms_hours", "legs_sessions", "legs_hours"],
-    options: [
-      { value: "none", label: "none" },
-      { value: "low", label: "one session or under two hours" },
-      { value: "ok", label: "two or three sessions" },
-      { value: "high", label: "three or more sessions, over three hours" },
-    ],
+    from: ["main_lift", ...GROUP_INPUTS],
+    options: DOSE_OPTIONS,
     compute: (a) => {
       const lift = str(a, "main_lift");
       const g = lift ? LIFT_GROUP[lift] : undefined;
       return g ? dose(a, g) : undefined;
     },
+  },
+  {
+    id: "legs_dose",
+    audience: "both",
+    prompt: "Weekly dose of leg work",
+    from: ["legs_sessions", "legs_time"],
+    options: DOSE_OPTIONS,
+    compute: (a) => dose(a, "legs"),
   },
   {
     id: "protein_band",

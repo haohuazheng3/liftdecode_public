@@ -4,8 +4,9 @@ import type { AnswerOption } from "@/content/types";
 
 /**
  * Pick any of a short list of signs. One option is exclusive ("None of these"): choosing
- * it clears the others, and choosing anything else clears it. The parent shows "Next";
- * a multi never auto-advances.
+ * it clears the others, and choosing anything else clears it. A "Pick all that apply" line
+ * says up front that several can be ticked. The parent shows "Next"; a multi never
+ * auto-advances.
  */
 export function MultiInput({
   labelledBy,
@@ -32,8 +33,17 @@ export function MultiInput({
     onChange([...without, o.value]);
   };
 
+  const hintId = `${labelledBy}-hint`;
   return (
-    <div role="group" aria-labelledby={labelledBy} className="flex flex-col gap-2.5">
+    <div role="group" aria-labelledby={labelledBy} aria-describedby={hintId} className="flex flex-col gap-2.5">
+      <p id={hintId} className="eyebrow mb-1 flex items-center gap-2 text-signal">
+        <span aria-hidden="true" className="grid size-4 place-items-center rounded-[5px] border-[1.5px] border-current">
+          <svg viewBox="0 0 16 16" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 8.5l3.2 3L13 4.5" />
+          </svg>
+        </span>
+        Pick all that apply
+      </p>
       {options.map((o) => {
         const selected = value.includes(o.value);
         return (

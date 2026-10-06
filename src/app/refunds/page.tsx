@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "When a LiftDecode single report is refunded, how membership cancellation works, what happens with an accidental renewal, and exactly how to ask.",
 };
 
-const LAST_UPDATED = "2026-09-25";
+const LAST_UPDATED = "2026-10-06";
 
 const SECTIONS: LegalSection[] = [
   {
@@ -42,8 +42,8 @@ const SECTIONS: LegalSection[] = [
           refund.
         </p>
         <p>
-          Remember that your primary bottleneck is shown in full before you pay. If it does not describe you, that is
-          the moment to stop.
+          Remember that your problems are named, with the answers behind each one, before you pay. If they do not
+          describe you, that is the moment to stop.
         </p>
       </>
     ),

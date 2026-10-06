@@ -6,9 +6,9 @@ export const FINDING: FindingContent = {
   category: "nutrition",
   title: "You're asking a deficit to build muscle",
   verdict:
-    "You want muscle while eating to lose weight, and the further past your first months of training you are, the less a diet leaves over for growth.",
+    "You want muscle while your bodyweight is coming down, and the further past your first months of training you are, the less a shrinking body leaves over for growth.",
   summary:
-    "What you want most is more muscle, or muscle and less fat at once, yet you're eating to lose weight. Your goal and your food are pulling in opposite directions, and the longer you have trained, the more reliably the food wins. Every week this continues, you are training hard to hold on to tissue rather than to add it, and then reading the mirror as proof that the training doesn't work.",
+    "What you want most is more muscle, or muscle and less fat at once, yet your bodyweight has been coming down. Your goal and your food are pulling in opposite directions, and the longer you have trained, the more reliably the food wins. Every week this continues, you are training hard to hold on to tissue rather than to add it, and then reading the mirror as proof that the training doesn't work.",
   mechanism: [
     "Muscle is expensive tissue. Building it means synthesising new protein faster than you break it down, day after day, and that process runs on energy that has to come from somewhere. When your intake sits below what you burn, the body has a shortfall to cover first, and it covers it by drawing on stored fat and, to a degree, on muscle itself. Growth is a luxury the system funds when there is a surplus to fund it with. Eating to lose weight is, by definition, choosing the shortfall.",
     "The reason this catches experienced lifters out is that it used to work. In the first year or so, and in people carrying a lot of body fat, the studies that track body composition during a deficit do show fat going down while lean mass goes up: the training stimulus is so novel that the body builds even while it is underfed. That window narrows with every year of training. Your body has already taken the easy adaptations. What remains is slow, and slow growth is the first thing an energy shortfall cancels.",
@@ -17,7 +17,7 @@ export const FINDING: FindingContent = {
     "Your goal makes it sharper. Visible new muscle, in a lifter past the first year, needs a small surplus, protein near 1.6–2.2 g per kg, and a body weight that is drifting up, not down. Asked to do that from a deficit, the honest forecast is that you get a little leaner, hold roughly what you have, and see almost none of the change you are training for. That is not a stall in your training. It is your training doing exactly what your energy balance allows.",
   ],
   howItShowsUp: [
-    "Your goal is muscle, or muscle and less fat at once, and the food you're eating right now is set up to lose weight. Nothing about your intake is set up to pay for new tissue.",
+    "Your goal is muscle, or muscle and less fat at once, and the scale has been drifting down for weeks. Nothing about your intake is paying for new tissue.",
     "The \"lose fat and build at the same time\" effect that carries beginners fades with every month of training, so the further past your first year you are, the less a diet leaves for growth.",
     "If meals also get skipped or come in smaller than planned, the real deficit is deeper than the one you chose, and growth is the first thing it cancels.",
     "You look slightly leaner and slightly smaller at the same time, and you have been calling that \"losing muscle\" or \"not responding\" rather than \"under-eating\".",

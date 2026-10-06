@@ -51,13 +51,6 @@ export async function POST(req: Request) {
       }
       const access = await canViewReport(userId, assessmentId);
       if (access.allowed) return NextResponse.json({ url: `${APP_URL}/report/${assessmentId}`, already: true });
-      // Never sell a report that found nothing. The result page says so too; this is the server-side guard.
-      if (kind === "report" && a.result.findings.length === 0) {
-        return NextResponse.json(
-          { error: "This diagnosis found no bottleneck, so there is nothing to unlock. Run it again in four weeks." },
-          { status: 409 },
-        );
-      }
     }
     // Never open a second subscription for someone who already has one (the /pricing
     // button and the ?intent=membership auto-trigger carry no assessmentId).

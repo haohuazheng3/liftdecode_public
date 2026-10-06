@@ -8,7 +8,7 @@ export const FINDING: FindingContent = {
   verdict:
     "Losing fat and gaining muscle at the same time worked early on, and at your stage it has stalled both goals.",
   summary:
-    "You want to lose fat and build muscle at once, and your eating has no direction beyond staying the same. That deal was real in your first year or two; at your training age it has mostly expired, and what's left is a body asked to do two opposite jobs on a budget that funds neither. Every month you keep waiting for the recomp to arrive is a month of hard training with maintenance-level results.",
+    "You want to lose fat and build muscle at once, and your weight has no direction beyond staying the same. That deal was real in your first year or two; at your training age it has mostly expired, and what's left is a body asked to do two opposite jobs on a budget that funds neither. Every month you keep waiting for the recomp to arrive is a month of hard training with maintenance-level results.",
   mechanism: [
     "Recomposition is real, but it runs on a resource that shrinks every year you train: the gap between what your muscles can do and what they've been asked to do. A beginner has a huge gap, so almost any stimulus plus adequate protein builds tissue, and the body will happily fund that construction from stored fat. In the studies where untrained or lightly trained people gained muscle and lost fat at the same time, that is what was happening. The effect is largest in year one and fades fast; the research on trained lifters is thinner, and shows it still happens, but slowly and with small gains.",
     "By the time you've trained with intent for three years or more, most of that gap is spent. What's left is slow, expensive growth: a realistic ceiling for a trained natural lifter is somewhere around 0.5–1 kg of muscle in a good year, sometimes less, and it only shows up when the stimulus is strong and the energy is there to build with. At a flat body weight the only building material is stored fat, and for a trained lifter the growth it can fund is small and slow: possible, but usually too slow to see or feel. Your body is being asked to pay for new tissue out of a budget that's balanced to the gram.",
@@ -17,7 +17,7 @@ export const FINDING: FindingContent = {
     "The cost isn't just the missing muscle. Sitting at maintenance while wanting growth means the hard sessions never get converted; the fatigue is real, the adaptation is capped. And because nothing dramatic ever happens, there is no signal telling you that anything is wrong, so the same setup can quietly run for years. The fix is to stop asking one body weight to do two opposite jobs and give it one job at a time.",
   ],
   howItShowsUp: [
-    "You want to lose fat and build muscle at the same time, you're eating to stay the same or without a plan, and you've been training seriously for a while.",
+    "You want to lose fat and build muscle at the same time, your weight has stayed about the same or goes unweighed, and you've been training seriously for a while.",
     "You're well past your first year of training, and \"both at once\" is still the plan.",
     "Your lifts inch up a rep or two at a time, but you don't look any different for it.",
     "You've never run a dedicated gaining phase because you didn't want to \"get fat\", and you've never run a dedicated cut because you didn't want to \"lose muscle\".",

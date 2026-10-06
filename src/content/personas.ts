@@ -2,7 +2,7 @@ import type { Persona } from "./types";
 
 /**
  * Hand-written lifters with the outcome a coach would sign off after a real
- * intake (v3: real numbers included). The first three per track are the reference
+ * intake (v4: real numbers, the bodyweight trend and the conditioning answers included). The first three per track are the reference
  * cases; the rest pin down specific judgements (a deliberate reserve is not low
  * effort, a big week that recovers is not too much, fat loss needs a deficit, cramps
  * plus sweat is minerals, four coffees plus bad nights is caffeine, and so on) so
@@ -24,15 +24,16 @@ const BASE: A = {
   training_pattern: "steady",
   sessions_week: "4",
   chest_sessions: "2",
-  chest_hours: "1_2",
+  chest_time: "40_60",
   back_sessions: "2",
-  back_hours: "1_2",
+  back_time: "40_60",
   arms_sessions: "2",
-  arms_hours: "1_2",
+  arms_time: "40_60",
   legs_sessions: "2",
-  legs_hours: "1_2",
+  legs_time: "40_60",
   hard_set_habit: "push",
   effort_grind: "7",
+  set_recovery: "1_2",
   beat_last: "8",
   load_choice: "plan",
   program_switch: "2",
@@ -40,11 +41,14 @@ const BASE: A = {
   drive: "8",
   pain_limits: "2",
   brain_fog: "never",
+  pump: "7",
+  sweat_level: "moderate",
   training_signs: ["none"],
   loop_score: "8",
-  eating_phase: "gain",
+  weight_trend: "up",
   protein_g: "140_180",
   carbs_g: "250_350",
+  pre_meal: "2_4",
   diet_clean: "8",
   meal_skip: "2",
   sleep_hours: "7_8",
@@ -54,7 +58,7 @@ const BASE: A = {
   alcohol: "light",
   coffee: "1",
   stress: "4",
-  activity_load: "3",
+  cardio_sessions: "2",
 };
 
 const PHYSIQUE_BASE: A = {
@@ -63,7 +67,7 @@ const PHYSIQUE_BASE: A = {
   lagging_area: "arms",
   lagging_priority: "first",
   feel_target: "7",
-  appetite: "normal",
+  appetite: "6",
   weekend_eating: "3",
 };
 
@@ -77,7 +81,7 @@ const STRENGTH_BASE: A = {
   form_breakdown: "3",
   max_testing: "few_months",
   muscle_work: "6",
-  eating_phase: "maintain",
+  weight_trend: "same",
 };
 
 const physique = (over: A): A => ({ ...PHYSIQUE_BASE, ...over });
@@ -114,11 +118,11 @@ export const PERSONAS: Persona[] = [
       training_age: "1_3y",
       sessions_week: "3",
       chest_sessions: "1",
-      chest_hours: "u1",
+      chest_time: "u20",
       arms_sessions: "3",
-      arms_hours: "2_3",
+      arms_time: "40_60",
       legs_sessions: "1",
-      legs_hours: "u1",
+      legs_time: "u20",
       hard_set_habit: "stop",
       effort_grind: "3",
       beat_last: "3",
@@ -128,7 +132,7 @@ export const PERSONAS: Persona[] = [
       feel_target: "4",
       protein_g: "unknown",
       carbs_g: "unknown",
-      eating_phase: "none",
+      weight_trend: "unknown",
       sleep_hours: "6_7",
       sleep_regular: "shifts",
       full_nights: "5",
@@ -160,12 +164,12 @@ export const PERSONAS: Persona[] = [
     },
   },
   {
-    name: "Physique lifter who wants less fat and has no eating plan",
+    name: "Physique lifter who wants less fat but whose weight hasn't moved",
     track: "physique",
     answers: physique({
       physique_aim: "leaner",
-      eating_phase: "none",
-      appetite: "big",
+      weight_trend: "same",
+      appetite: "9",
       weekend_eating: "7",
       body_type: "endo",
       weight_kg: "96",
@@ -182,12 +186,12 @@ export const PERSONAS: Persona[] = [
     },
   },
   {
-    name: "Physique dieter whose deficit leaks",
+    name: "Physique lifter cutting without weighing in, whose weekends run loose",
     track: "physique",
     answers: physique({
       physique_aim: "leaner",
-      eating_phase: "lose",
-      appetite: "big",
+      weight_trend: "unknown",
+      appetite: "9",
       weekend_eating: "8",
       alcohol: "weekends",
     }),
@@ -203,8 +207,8 @@ export const PERSONAS: Persona[] = [
     name: "Physique lifter whose bulk overshoots",
     track: "physique",
     answers: physique({
-      eating_phase: "gain",
-      appetite: "big",
+      weight_trend: "up_fast",
+      appetite: "9",
       weekend_eating: "7",
       body_type: "endo",
       carbs_g: "o450",
@@ -223,8 +227,8 @@ export const PERSONAS: Persona[] = [
     name: "Physique lifter who can't eat enough to grow",
     track: "physique",
     answers: physique({
-      eating_phase: "gain",
-      appetite: "small",
+      weight_trend: "same",
+      appetite: "2",
       meal_skip: "8",
       body_type: "ecto",
       weight_kg: "62",
@@ -246,7 +250,7 @@ export const PERSONAS: Persona[] = [
     answers: physique({
       training_age: "over_6y",
       age: "38",
-      eating_phase: "lose",
+      weight_trend: "down",
       alcohol: "often",
       wake_rested: "4",
       full_nights: "4",
@@ -265,8 +269,8 @@ export const PERSONAS: Persona[] = [
     track: "physique",
     answers: physique({
       physique_aim: "leaner",
-      eating_phase: "lose",
-      activity_load: "8",
+      weight_trend: "down",
+      cardio_sessions: "5plus",
       carbs_g: "250_350",
       protein_g: "180_220",
       weight_kg: "74",
@@ -274,15 +278,16 @@ export const PERSONAS: Persona[] = [
     expect: {
       min: 0,
       max: 3,
-      mustExclude: ["cardio_eating_the_budget", "underfuelled_sessions", "fat_loss_without_deficit"],
+      mustExclude: ["cardio_eating_the_budget", "underfuelled_sessions", "fat_loss_without_deficit", "conditioning_caps_volume"],
     },
   },
   {
-    name: "Physique lifter with cramps who sweats a lot and eats clean",
+    name: "Salty sweater with cramps who does a lot of cardio and eats clean",
     track: "physique",
     answers: physique({
-      training_signs: ["cramps", "floaty", "water_worse"],
-      activity_load: "8",
+      training_signs: ["cramps", "floaty", "limp"],
+      sweat_level: "salty",
+      cardio_sessions: "5plus",
       diet_clean: "9",
       coffee: "3",
     }),
@@ -295,7 +300,7 @@ export const PERSONAS: Persona[] = [
     },
   },
   {
-    name: "Physique dieter running on almost no carbs",
+    name: "Physique dieter running on almost no carbs, training fasted",
     track: "physique",
     answers: physique({
       sex: "female",
@@ -303,11 +308,13 @@ export const PERSONAS: Persona[] = [
       height_cm: "165",
       weight_kg: "63",
       physique_aim: "leaner",
-      eating_phase: "lose",
+      weight_trend: "down",
       carbs_g: "u150",
       protein_g: "100_140",
       brain_fog: "often",
-      activity_load: "7",
+      pump: "3",
+      pre_meal: "fasted",
+      cardio_sessions: "4",
       loop_score: "4",
       training_signs: ["floaty"],
     }),
@@ -336,6 +343,25 @@ export const PERSONAS: Persona[] = [
       max: 7,
       mustInclude: ["inflammatory_diet", "sleep_clock_drifts"],
       primaryOneOf: ["inflammatory_diet", "sleep_clock_drifts", "alcohol_tax"],
+    },
+  },
+
+  {
+    name: "Physique lifter who skips cardio and legs and is still puffing between sets",
+    track: "physique",
+    answers: physique({
+      set_recovery: "o3",
+      cardio_sessions: "0",
+      legs_sessions: "1",
+      legs_time: "u20",
+      lagging_area: "chest",
+    }),
+    expect: {
+      min: 1,
+      max: 4,
+      mustInclude: ["conditioning_caps_volume"],
+      primaryOneOf: ["conditioning_caps_volume"],
+      mustExclude: ["cardio_eating_the_budget"],
     },
   },
 
@@ -371,7 +397,7 @@ export const PERSONAS: Persona[] = [
       weak_point_work: "2",
       form_breakdown: "7",
       legs_sessions: "1",
-      legs_hours: "u1",
+      legs_time: "u20",
       load_choice: "feel",
       beat_last: "4",
     }),
@@ -387,7 +413,7 @@ export const PERSONAS: Persona[] = [
     name: "Strength lifter running on empty",
     track: "strength",
     answers: strength({
-      eating_phase: "lose",
+      weight_trend: "down",
       meal_skip: "8",
       carbs_g: "u150",
       loop_score: "3",
@@ -421,13 +447,13 @@ export const PERSONAS: Persona[] = [
     answers: strength({
       sessions_week: "6",
       chest_sessions: "3",
-      chest_hours: "2_3",
+      chest_time: "40_60",
       back_sessions: "3",
-      back_hours: "2_3",
+      back_time: "40_60",
       arms_sessions: "2",
-      arms_hours: "1_2",
+      arms_time: "40_60",
       legs_sessions: "3",
-      legs_hours: "3_4",
+      legs_time: "60_90",
       loop_score: "8",
       wake_rested: "8",
       pain_limits: "1",
@@ -489,6 +515,19 @@ export const PERSONAS: Persona[] = [
       mustInclude: ["protein_below_target"],
       primaryOneOf: ["protein_below_target"],
       mustExclude: ["protein_unknown"],
+    },
+  },
+  {
+    name: "Strength lifter who recovers slowly between sets but runs three times a week",
+    track: "strength",
+    answers: strength({
+      set_recovery: "2_3",
+      cardio_sessions: "3",
+    }),
+    expect: {
+      min: 0,
+      max: 2,
+      mustExclude: ["conditioning_caps_volume", "cardio_eating_the_budget"],
     },
   },
 ];

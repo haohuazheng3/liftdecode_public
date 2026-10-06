@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/admin/orders", label: "Orders", badge: null },
   { href: "/admin/users", label: "Users", badge: null },
   { href: "/admin/assessments", label: "Assessments", badge: null },
+  { href: "/admin/analyses", label: "Analyses", badge: null },
   { href: "/admin/contact", label: "Contact", badge: "contact" },
   { href: "/admin/inbox", label: "Inbox", badge: null },
   { href: "/admin/events", label: "Events", badge: null },

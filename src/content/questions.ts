@@ -1,12 +1,15 @@
 /**
- * LiftDecode question bank (v3, 2026-09-30). The intake now takes the numbers the report
- * needs (build, weekly dose per muscle group, grams, hours) and keeps the habit and
- * intensity questions from v2. QUESTIONS is the display order; questions that share a
- * `screen` id render together (see SCREENS). Sections only group questions for ordering
- * and are never shown. Nothing here states how many questions there are.
+ * LiftDecode question bank (v4, 2026-10-06). The intake takes the numbers the report
+ * needs (build, sessions and time per muscle group, grams, hours, the bodyweight trend)
+ * and keeps the habit and intensity questions from v2. v4 replaced the stated eating plan
+ * with the measured weight trend, weekly hours with time per session, the 1–10 activity
+ * scale with a cardio count, and added sweat, pump, set-to-set recovery and the gap
+ * between the last meal and training. QUESTIONS is the display order; questions that
+ * share a `screen` id render together (see SCREENS). Sections only group questions for
+ * ordering and are never shown. Nothing here states how many questions there are.
  *
  * Answers that check each other sit far apart: training_pattern ↔ loop_score,
- * hard_set_habit ↔ effort_grind, load_choice ↔ beat_last, physique_aim ↔ eating_phase.
+ * hard_set_habit ↔ effort_grind, load_choice ↔ beat_last, physique_aim ↔ weight_trend.
  * Answers that build on each other sit together: lagging_area → lagging_priority →
  * feel_target, and fail_point → weak_point_work.
  */
@@ -36,23 +39,24 @@ const SESSIONS = [
   { value: "3", label: "3" },
   { value: "4plus", label: "4+" },
 ];
-const HOURS = [
-  { value: "u1", label: "<1" },
-  { value: "1_2", label: "1–2" },
-  { value: "2_3", label: "2–3" },
-  { value: "3_4", label: "3–4" },
-  { value: "4plus", label: "4+" },
+/** time spent on the group in one session; weekly time = sessions × this (derived.ts) */
+const TIME = [
+  { value: "u20", label: "<20 min" },
+  { value: "20_40", label: "20–40 min" },
+  { value: "40_60", label: "40–60 min" },
+  { value: "60_90", label: "60–90 min" },
+  { value: "o90", label: "90+ min" },
 ];
 const group = (id: string, screen: string): Question[] => [
   { id: `${id}_sessions`, audience: "both", section: "week", screen, type: "pills", prompt: "Sessions a week", options: SESSIONS },
   {
-    id: `${id}_hours`,
+    id: `${id}_time`,
     audience: "both",
     section: "week",
     screen,
     type: "pills",
-    prompt: "Hours a week, all sets included",
-    options: HOURS,
+    prompt: "Time on it per session, sets and rests included",
+    options: TIME,
   },
 ];
 
@@ -67,11 +71,11 @@ export const SECTIONS: Section[] = [
 
 export const SCREENS: Screen[] = [
   { id: "about", title: "First, the basics.", lead: "The report reads every number against your build." },
-  { id: "chest", title: "Chest, in a normal week.", lead: "Count every session that trains it, even as a second muscle." },
+  { id: "chest", title: "Chest, in a normal week.", lead: "Sessions with direct chest work, and how long the chest part of each one takes." },
   { id: "back", title: "Back, in a normal week." },
   { id: "arms", title: "Arms, in a normal week.", lead: "Biceps, triceps and shoulders." },
   { id: "legs", title: "Legs, in a normal week.", lead: "Quads, hamstrings, glutes and calves." },
-  { id: "intake", title: "On a normal day, you eat…", lead: "Pick “Not sure” if you don't track it. The report works either way." },
+  { id: "intake", title: "Your food, on a normal day.", lead: "Pick “Not sure” if you don't track it. The report works either way." },
   { id: "sleep", title: "Sleep, on a normal week." },
 ];
 
@@ -346,11 +350,26 @@ export const QUESTIONS: Question[] = [
     scale: scale("Never", "Every set"),
   },
   {
+    id: "set_recovery",
+    audience: "both",
+    section: "training",
+    type: "single",
+    prompt: "After a hard set of 10, how long until your breathing settles?",
+    help: "Think of a big lift: squat, deadlift, leg press or rows. Count from the last rep until you could hold a normal conversation.",
+    options: [
+      { value: "u1", label: "Under a minute" },
+      { value: "1_2", label: "1–2 minutes" },
+      { value: "2_3", label: "2–3 minutes" },
+      { value: "o3", label: "Still puffing after 3" },
+    ],
+  },
+  {
     id: "beat_last",
     audience: "both",
     section: "training",
     type: "scale",
-    prompt: "How often do you try to beat your last session?",
+    prompt: "How often do you try to beat what you did last time on a lift?",
+    help: "Beating it means doing more than last time on the same exercise: more weight, more reps, or more sets.",
     options: [],
     scale: scale("Never", "Every session"),
   },
@@ -438,18 +457,43 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "pump",
+    audience: "both",
+    section: "training",
+    type: "scale",
+    prompt: "How full and pumped do your muscles get when you train?",
+    help: "Pump: the tight, full feeling a muscle gets after a few hard sets.",
+    options: [],
+    scale: scale("Flat, no pump", "Full, big pump"),
+  },
+  {
+    id: "sweat_level",
+    audience: "both",
+    section: "training",
+    type: "single",
+    prompt: "How much do you sweat in a normal session?",
+    help: "Salt marks: white streaks or crust on your shirt or cap, or sweat that stings your eyes or tastes salty.",
+    options: [
+      { value: "light", label: "Barely a sweat" },
+      { value: "moderate", label: "A normal sweat" },
+      { value: "heavy", label: "Soaked through" },
+      { value: "salty", label: "Soaked, with white salt marks" },
+    ],
+  },
+  {
     id: "training_signs",
     audience: "both",
     section: "training",
     type: "multi",
-    prompt: "During or after training, do you get any of these?",
+    prompt: "In the past month, which of these hit you more than once in training?",
+    help: "Count anything during a session or in the hours after it.",
     maxSelect: 5,
     options: [
       { value: "cramps", label: "Cramps" },
       { value: "twitches", label: "Muscle twitches" },
       { value: "floaty", label: "Legs go soft or floaty" },
       { value: "dizzy", label: "Dizziness or a racing heart" },
-      { value: "water_worse", label: "Weaker the more water I drink" },
+      { value: "limp", label: "Muscles feel limp and powerless" },
       { value: "none", label: "None of these", exclusive: true },
     ],
   },
@@ -459,36 +503,36 @@ export const QUESTIONS: Question[] = [
     section: "training",
     type: "scale",
     prompt: "How consistent is your training loop?",
-    help: "A good loop: you arrive in decent shape, train well, recover well, and the next session starts from there.",
+    help: "A good loop: you arrive in decent shape, train well, recover well, and want to train again, so the next session starts from there.",
     options: [],
     scale: scale("Always broken", "Runs itself"),
   },
 
   /* ─────────────── food ─────────────── */
   {
-    id: "eating_phase",
+    id: "weight_trend",
     audience: "both",
     section: "food",
     type: "single",
-    prompt: "Right now, you're eating to…",
+    prompt: "Over the last two months, your bodyweight has…",
+    help: "Fast means more than about 2 kg (4 lb) a month, either way.",
     options: [
-      { value: "gain", label: "Gain weight" },
-      { value: "lose", label: "Lose weight" },
-      { value: "maintain", label: "Stay the same" },
-      { value: "none", label: "No real plan" },
+      { value: "down_fast", label: "Dropped fast" },
+      { value: "down", label: "Gone down slowly" },
+      { value: "same", label: "Stayed about the same" },
+      { value: "up", label: "Gone up slowly" },
+      { value: "up_fast", label: "Gone up fast" },
+      { value: "unknown", label: "Not sure, I don't weigh in" },
     ],
   },
   {
     id: "appetite",
     audience: "physique",
     section: "food",
-    type: "single",
-    prompt: "How is your appetite lately?",
-    options: [
-      { value: "small", label: "Hard to eat enough" },
-      { value: "normal", label: "About right" },
-      { value: "big", label: "Hard to keep in check" },
-    ],
+    type: "scale",
+    prompt: "How strong is your appetite lately?",
+    options: [],
+    scale: scale("Hard to eat enough", "Always hungry"),
   },
   {
     id: "protein_g",
@@ -520,6 +564,21 @@ export const QUESTIONS: Question[] = [
       { value: "250_350", label: "250–350" },
       { value: "350_450", label: "350–450" },
       { value: "o450", label: "450+" },
+    ],
+  },
+  {
+    id: "pre_meal",
+    audience: "both",
+    section: "food",
+    screen: "intake",
+    type: "pills",
+    prompt: "Hours from your last meal to training",
+    options: [
+      { value: "u1", label: "<1" },
+      { value: "1_2", label: "1–2" },
+      { value: "2_4", label: "2–4" },
+      { value: "o4", label: "4+" },
+      { value: "fasted", label: "Fasted" },
     ],
   },
   {
@@ -579,6 +638,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { value: "same", label: "About the same every day" },
       { value: "shifts", label: "Shift by an hour or two" },
+      { value: "often_off", label: "Often irregular" },
       { value: "all_over", label: "All over the place" },
     ],
   },
@@ -640,13 +700,19 @@ export const QUESTIONS: Question[] = [
     scale: scale("Calm", "Overwhelming"),
   },
   {
-    id: "activity_load",
+    id: "cardio_sessions",
     audience: "both",
     section: "life",
-    type: "scale",
-    prompt: "How hard is your cardio and day-to-day activity?",
-    help: "Running, sport, a job on your feet, long walks — everything outside the lifting itself.",
-    options: [],
-    scale: scale("Barely any", "Very heavy"),
+    type: "pills",
+    prompt: "How many cardio sessions do you do a week?",
+    help: "Runs, rides, rows, classes, sport: 20+ minutes that keep you breathing hard. Hard leg days push your heart rate up like cardio does too; count those in your leg answers, not here.",
+    options: [
+      { value: "0", label: "0" },
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" },
+      { value: "4", label: "4" },
+      { value: "5plus", label: "5+" },
+    ],
   },
 ];

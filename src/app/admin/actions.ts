@@ -2,11 +2,14 @@
 
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { after } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { contactMessages, errorEvents } from "@/lib/db/schema";
+import { aiReports, contactMessages, errorEvents } from "@/lib/db/schema";
 import { isAdminEmail } from "@/lib/env";
 import { captureFromUnknown } from "@/lib/errors";
+import { claimJob } from "@/lib/ai/jobs";
+import { runAnalysis } from "@/lib/ai/generate";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 export type ContactStatus = "new" | "replied" | "spam";
@@ -54,5 +57,29 @@ export async function setContactStatus(id: number, status: ContactStatus): Promi
   } catch (e) {
     await captureFromUnknown(e, "action:admin.setContactStatus");
     return { ok: false, error: "Could not save — try again" };
+  }
+}
+
+/**
+ * Re-run a paid analysis that failed (or never ran): the owner keeps the promise the fallback
+ * page makes ("we will complete the written analysis"). Resets the attempt counter, claims the
+ * job and writes it after the response, inside the admin page's time budget.
+ */
+export async function rerunAnalysis(assessmentId: string): Promise<ActionResult> {
+  try {
+    if (!(await isAdmin())) return { ok: false, error: "Not allowed" };
+    const input = z.string().min(8).max(40).safeParse(assessmentId);
+    if (!input.success) return { ok: false, error: "Bad input" };
+    const rows = await db.select().from(aiReports).where(eq(aiReports.assessmentId, input.data)).limit(1);
+    const job = rows[0];
+    if (job?.status === "done") return { ok: false, error: "Already done" };
+    if (job) await db.update(aiReports).set({ attempts: 0, status: "failed", updatedAt: new Date() }).where(eq(aiReports.assessmentId, input.data));
+    const claimed = await claimJob(input.data, job?.userId ?? null);
+    if (!claimed) return { ok: false, error: "Could not claim the job (already running?)" };
+    after(() => runAnalysis(input.data));
+    return { ok: true };
+  } catch (e) {
+    await captureFromUnknown(e, "action:admin.rerunAnalysis");
+    return { ok: false, error: "Could not start — try again" };
   }
 }

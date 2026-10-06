@@ -33,7 +33,7 @@ const jsonLd = {
     {
       "@type": "HowToStep",
       name: "Read the report and run the 4-week plan",
-      text: "Your primary bottleneck is shown free. The full report unlocks every finding with its mechanism, how it shows up, the fix, timeline, mistakes to avoid, what is not your problem, and a week-by-week plan.",
+      text: "Your problems are named free, each with the answers behind it, and ten parts of your set-up are scored. Paying unlocks the written analysis: why each problem is happening in your case, the fix in your numbers, training-dose, fuel and recovery audits, a 4-week plan and the sources behind it.",
       url: "https://liftdecode.com/how-it-works#report",
     },
   ],
@@ -65,24 +65,18 @@ function Stage({
 }
 
 const REPORT_PARTS: { title: string; text: string }[] = [
-  { title: "Verdict", text: "One sentence per finding. What is wrong, in plain words, before any explanation." },
+  { title: "Verdict and first move", text: "What is holding you back, in one sentence, and the single change to make this week." },
+  { title: "The chain", text: "How your problems feed each other, from the root cause to the stall you feel, so you fix causes, not symptoms." },
+  { title: "Your scorecard", text: "Ten parts of your set-up scored 0–100 from your answers, each with the lever that moves it." },
   {
-    title: "What you told us",
-    text: "The exact answers that triggered the finding, quoted back to you. You can check our reasoning against your own words.",
+    title: "Each problem, in your case",
+    text: "Why it is happening to you, what it is costing you, and the fix in your numbers, with the answers that triggered it quoted back.",
   },
-  { title: "Mechanism", text: "Why this stalls progress — the physiology and the logic, evidence-informed, no hand-waving." },
-  { title: "How it shows up", text: "The symptoms you will recognise from your own sessions, so you can tell whether we got it right." },
-  { title: "The fix", text: "The protocol, in numbered steps. Specific numbers, specific changes, in an order that works." },
-  { title: "Timeline", text: "What to expect and when — so you do not abandon a fix a week before it starts working." },
-  { title: "Mistakes", text: "The wrong fixes people reach for with this exact problem, and why each one fails." },
-  {
-    title: "Not your problem",
-    text: "Clearances: things you may have suspected that your answers rule out. Stop spending effort there.",
-  },
-  {
-    title: "4-week plan",
-    text: "Week-by-week directives built from your top three findings, with check-offs, so the report turns into sessions.",
-  },
+  { title: "Training-dose audit", text: "Every muscle group's sessions and time turned into hard sets a week, against what grows muscle." },
+  { title: "Fuel audit", text: "Protein and carbs per kilo, meal timing, sweat and minerals, and what your weight trend says about your goal." },
+  { title: "Recovery and conditioning", text: "Sleep, stress and set-to-set recovery, and what cardio does and does not do for growth." },
+  { title: "4-week plan", text: "Week-by-week actions with check-offs, plus the numbers to track and what to leave alone." },
+  { title: "Sources", text: "Every research claim links to the study behind it, from an evidence base we checked entry by entry." },
 ];
 
 export default function HowItWorksPage() {
@@ -120,8 +114,8 @@ export default function HowItWorksPage() {
             <p>
               The first question picks your track — <strong>physique</strong> (you want to look different) or{" "}
               <strong>strength</strong> (you want the bar to move) — and the questions adapt. From there they cover
-              the things that actually decide progress: your build and your training week (sessions and hours per
-              muscle group), how you train and progress, how hard your sets really end, how your programme is built,
+              the things that actually decide progress: your build and your training week (sessions and time per
+              session for each muscle group), how you train and progress, how hard your sets really end, how your programme is built,
               how you sleep and recover, what you eat, and how much the rest of your life is asking of you.
             </p>
             <p>
@@ -139,7 +133,7 @@ export default function HowItWorksPage() {
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
               ["What it reads", "Your training, effort, food, sleep, recovery and life load right now — not intentions or knowledge."],
-              ["What it does not ask", "Your name, your weight, your lifts or any other numbers. Nothing that is not used by a rule."],
+              ["What it does not ask", "Your name, your lifts, or anything no rule uses. Every question feeds at least one finding."],
               ["If you are unsure", "Pick the option closest to a normal week. The engine weights, it does not punish."],
             ].map(([t, b]) => (
               <div key={t} className="slab-inset p-4">
@@ -185,9 +179,14 @@ export default function HowItWorksPage() {
                 Versioned. A report is stored with the engine version that produced it and is never silently recomputed.
               </li>
               <li className="flex gap-3">
+                <span className="text-clear shrink-0">✓</span>
+                The rules decide the findings. After you pay, an AI model (Anthropic&rsquo;s Claude) writes them up for
+                your case from your answers, citing only a verified evidence base: it explains what the rules found, it
+                does not replace them.
+              </li>
+              <li className="flex gap-3">
                 <span className="text-alert shrink-0">✕</span>
-                Not a language model guessing from your answers, and not a quiz that maps one answer to one canned
-                paragraph.
+                Not a quiz that maps one answer to one canned paragraph, and no model runs before you pay.
               </li>
             </ul>
           </div>
@@ -196,9 +195,9 @@ export default function HowItWorksPage() {
         <Stage id="report" number="3" eyebrow="Stage three · the report" title={<>Everything the <em>report</em> contains.</>}>
           <div className="prose-ld mt-5">
             <p>
-              Your result page shows your primary bottleneck in full — verdict, summary and the answers behind it —
-              before you pay anything. If it does not describe you, walk away. If it does, the full report opens the
-              rest. Each finding is written to the same structure:
+              Your result page names every problem the engine found, each with the answers behind it, and scores ten
+              parts of your set-up, before you pay anything. If it does not describe you, walk away. If it does, the
+              report explains it, written for your case:
             </p>
           </div>
           <ol className="mt-6 grid gap-3 sm:grid-cols-2">

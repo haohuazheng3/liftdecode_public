@@ -6,9 +6,9 @@ export const FINDING: FindingContent = {
   category: "nutrition",
   title: "Maintenance calories, maintenance body",
   verdict:
-    "You want new muscle but eat to stay the same, eat less than you plan, or can't eat enough, and a trained body won't build muscle for free.",
+    "You want new muscle but your weight isn't climbing, whether you eat to stay the same, eat less than you plan or can't eat enough, and a trained body won't build muscle for free.",
   summary:
-    "You want more muscle and you're putting the work in under the bar, but the food side never funds it: either you eat to stay where you are, or the surplus you plan quietly shrinks because meals get skipped or your appetite gives out first. A body that is never given anything extra does exactly what it's fed to do, which is hold what it has. If you're newer to lifting, maintenance also leaves most of your fastest-growth window unused. Either way, every month like this is a month of hard sessions that keeps you close to where you are.",
+    "You want more muscle and you're putting the work in under the bar, but the food side never funds it: your weight stays where it is, either because you eat to stay there or because the surplus you plan quietly shrinks because meals get skipped or your appetite gives out first. A body that is never given anything extra does exactly what it's fed to do, which is hold what it has. If you're newer to lifting, maintenance also leaves most of your fastest-growth window unused. Either way, every month like this is a month of hard sessions that keeps you close to where you are.",
   mechanism: [
     "Muscle is tissue, and new tissue has to be paid for. Building a kilo of it takes energy over and above what you burn keeping the lights on, plus the protein to make it from. When your calorie intake matches your expenditure, the ledger closes at zero every day and nothing is left over for construction. Your body holds this balance well: it keeps what it has, repairs what you damage and goes no further.",
     "Early on, the rules are looser. In the first year or so of proper training, and especially with a decent amount of body fat, people can pull energy from stored fat and put on muscle at the same time, which is why body recomposition is real for beginners and for people returning after a long break. In the studies that show recomposition, the subjects are almost always new to training, carrying extra fat, or both. But possible is not fast: even a beginner builds clearly more on a small surplus than at maintenance, so eating to stay the same spends the quickest-growing stage of your training life at a fraction of its rate. And once you're past that stage, the route narrows sharply, and further growth needs a surplus to fund it.",
@@ -18,7 +18,7 @@ export const FINDING: FindingContent = {
     "This is also why lifts can creep up while the body stays the same. Strength has two sources: more muscle and better use of the muscle you have. Practice and nervous-system efficiency keep delivering small load increases at maintenance, which feels like progress and hides the fact that the tissue side is stalled. Barely-up numbers with an unchanged physique is the signature of a stimulus that is present and a supply that is not.",
   ],
   howItShowsUp: [
-    "You want more muscle, but when you think about what you're eating for, the honest answer is \"to stay about the same\" or nothing in particular.",
+    "You want more muscle, but your weight has sat in the same place for months, or you don't weigh in at all.",
     "You cannot point to a period in the last year where you ate more on purpose and kept it up for more than a few weeks.",
     "You tell yourself you're bulking, but on busy or tired days a meal drops out, and those days happen most weeks.",
     "Finishing a big plate feels like a chore, you're full long before the target, and breakfast is often coffee and nothing else.",
@@ -33,7 +33,7 @@ export const FINDING: FindingContent = {
         "Weigh yourself every morning after the bathroom and before food, and write it down. Use the 7-day average as your number; single readings are noise.",
         "For the next 7 days, log everything you eat as honestly as you can. Don't change anything yet. The average daily calories over a week in which your weight stays flat is your maintenance, and it is the only number this plan is built on.",
         "Add 200–300 kcal a day to that average, and add it from foods you'll actually eat every day: an extra 60–80 g of dry rice or oats, 2 tablespoons of olive oil, a glass of whole milk, an extra 100 g of meat or a handful of nuts.",
-        "Set the target rate at 0.25–0.5% of body weight per week, so about 0.2–0.4 kg per week at 80 kg, or roughly 1–1.5 kg a month. Faster puts on fat you'll have to diet off later; slower is the maintenance you just left.",
+        "Set the target rate at 0.25–0.5% of body weight per week, so about 0.2–0.4 kg per week at 80 kg, or roughly 1–1.5 kg a month. Faster puts on fat you'll have to diet off later; slower suits only advanced lifters.",
         "Keep protein at 1.6–2.2 g per kg of body weight per day, spread over 3–4 meals. If you don't know where you are, weigh your protein sources for the same 7 days you log calories.",
       ],
     },
@@ -73,7 +73,7 @@ export const FINDING: FindingContent = {
     "Week 4: take the second set of photos and tape, confirm you're gaining roughly 1–1.5 kg a month, and lock the intake in for the next 8–16 weeks. Push the priority lifts; the material is now there to use.",
   ],
   timeline:
-    "The scale responds in days; muscle responds in months. The first one to two weeks of a surplus produce a quick 0.5–1 kg of glycogen and water that has nothing to do with muscle, and then the real trend begins. Lifts usually move first, often within three to four weeks, as training on a full tank feels different. Visible change in photos and tape typically needs 10–16 weeks of steady, measured gain, and for a lifter past the first couple of years the honest figure is a kilo or so of muscle across a well-run 4–6 month phase. Newer lifters usually see more, and sooner. Either way, the surplus is what turns the training into tissue; without it, the clock never really starts.",
+    "The scale responds in days; muscle responds in months. The first one to two weeks of a surplus produce a quick 0.5–1 kg of glycogen and water that has nothing to do with muscle, and then the real trend begins. Lifts usually move first, often within three to four weeks, as training on a full tank feels different. Visible change in photos and tape typically needs 10–16 weeks of steady, measured gain, and for a lifter past the first couple of years the honest figure is a kilo or so of muscle across a well-run 4–6 month phase. Newer lifters usually see more, and sooner. Either way, the surplus is what turns the training into tissue; without it, the clock runs far slower.",
   mistakes: [
     "Adding food \"by feel\" without a baseline, so intake rises for a week, appetite adjusts and the scale ends up exactly where it started.",
     "Going straight to a 500–1,000 kcal surplus to make up for lost time. Beyond a modest surplus, extra calories don't buy extra muscle, only extra fat and a longer cut.",

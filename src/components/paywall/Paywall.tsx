@@ -106,7 +106,7 @@ export function Paywall({
           <div>
             <h3 className="text-lg font-semibold">Just this report</h3>
             <p className="text-sm text-ink-2 mt-1 leading-relaxed">
-              The full diagnosis and your 4-week plan for this set of answers. Yours to keep.
+              Your full written analysis and 4-week plan for this set of answers. Yours to keep.
             </p>
           </div>
           <div className="text-right shrink-0">

@@ -147,8 +147,8 @@ export function Report({
             </>
           ) : (
             <>
-              Your answers describe a well-run programme with nothing clearly broken — which is itself useful to know.
-              Read the clearances below, then re-run in four weeks.
+              Your set-up is solid, so the gains left are smaller levers rather than one big fault. Your scorecard and
+              the plan below show where they are; re-run in four weeks to see them move.
             </>
           )}
         </p>
