@@ -18,6 +18,12 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
+  // Dev-only previews answer a real 404 outside local development. The page's own notFound()
+  // runs after the root loading UI has started streaming, which leaves the status at 200.
+  const path = req.nextUrl.pathname;
+  if (process.env.NODE_ENV === "production" && (path === "/dev" || path.startsWith("/dev/"))) {
+    return new NextResponse("Not found", { status: 404 });
+  }
   if (isProtectedRoute(req)) {
     const { userId, redirectToSignIn } = await auth();
     if (!userId) {
