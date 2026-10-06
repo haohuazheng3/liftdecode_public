@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@/components/Analytics";
 
@@ -10,22 +10,26 @@ export function Paywall({
   assessmentId,
   signedIn,
   returnTo,
+  intent,
   compact = false,
 }: {
   assessmentId?: string;
   signedIn: boolean;
   returnTo: string;
+  /** Set when the visitor comes back from sign-in after choosing a plan: continue to Checkout. */
+  intent?: Kind;
   compact?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<Kind | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const autoFired = useRef(false);
 
-  async function go(kind: Kind) {
+  async function go(kind: Kind, auto = false) {
     if (busy) return;
     setBusy(kind); // instant feedback — before any network
     setError(null);
-    track("paywall_click", { kind, assessmentId, signedIn });
+    track("paywall_click", { kind, assessmentId, signedIn, auto });
     if (!signedIn) {
       router.push(`/sign-in?redirect_url=${encodeURIComponent(`${returnTo}${returnTo.includes("?") ? "&" : "?"}intent=${kind}`)}`);
       return;
@@ -48,6 +52,22 @@ export function Paywall({
       setError(e instanceof Error ? e.message : "Something went wrong");
     }
   }
+
+  // Back from sign-in with ?intent=… → open Stripe Checkout once, without a second click.
+  useEffect(() => {
+    if (autoFired.current || !signedIn || !intent) return;
+    // deferred a tick so the effect itself stays free of state updates (and survives dev double-mount)
+    const t = window.setTimeout(() => {
+      if (autoFired.current) return;
+      autoFired.current = true;
+      // Drop the intent from the address bar first, so the browser's back button from Stripe
+      // lands on the plain result page instead of opening Checkout again.
+      window.history.replaceState(window.history.state, "", returnTo);
+      void go(intent, true);
+    }, 0);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signedIn, intent]);
 
   return (
     <div className={compact ? "" : "space-y-3"}>

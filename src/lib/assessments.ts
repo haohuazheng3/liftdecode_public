@@ -2,6 +2,8 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { assessments } from "@/lib/db/schema";
 import { getAnonTokens } from "@/lib/cookies";
+import { captureFromUnknown } from "@/lib/errors";
+import { ensureUser } from "@/lib/users";
 
 export type Assessment = typeof assessments.$inferSelect;
 
@@ -22,11 +24,22 @@ export async function resolveOwnership(a: Assessment, userId: string | null): Pr
   const tokens = await getAnonTokens();
   if (!tokens.includes(a.anonToken)) return { owns: false, claimed: false };
   if (userId) {
-    await db
-      .update(assessments)
-      .set({ userId, claimedAt: new Date() })
-      .where(and(eq(assessments.id, a.id), isNull(assessments.userId)));
-    return { owns: true, claimed: true };
+    try {
+      // A first-time sign-up lands here straight from the sign-in page, before anything else
+      // has created their users row (the Clerk webhook is optional), and the claim below has a
+      // foreign key to it.
+      await ensureUser(userId);
+      await db
+        .update(assessments)
+        .set({ userId, claimedAt: new Date() })
+        .where(and(eq(assessments.id, a.id), isNull(assessments.userId)));
+      return { owns: true, claimed: true };
+    } catch (e) {
+      // The cookie already proves ownership, so a failed claim must not take the page down;
+      // checkout claims again after its own ensureUser.
+      await captureFromUnknown(e, "lib/assessments#resolveOwnership", "server", { assessmentId: a.id });
+      return { owns: true, claimed: false };
+    }
   }
   return { owns: true, claimed: false };
 }

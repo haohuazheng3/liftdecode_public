@@ -44,6 +44,8 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
   const hiddenCount = Math.max(0, ranked.length - 3);
   const mins = minutes(a.durationSeconds);
   const canceled = sp.canceled === "1";
+  // set by the paywall when a signed-out visitor picks a plan; sign-in brings them back here with it
+  const intent = sp.intent === "report" || sp.intent === "membership" ? sp.intent : undefined;
   const returnTo = `/diagnose/result/${id}`;
   const trackLabel = a.track === "strength" ? "Strength track" : "Physique track";
 
@@ -257,7 +259,7 @@ export default async function ResultPage(props: PageProps<"/diagnose/result/[id]
                 <h2 className="text-2xl font-semibold tracking-tight mb-4">
                   Read the full diagnosis and exactly what to change.
                 </h2>
-                <Paywall assessmentId={id} signedIn={Boolean(userId)} returnTo={returnTo} />
+                <Paywall assessmentId={id} signedIn={Boolean(userId)} returnTo={returnTo} intent={canceled ? undefined : intent} />
               </div>
             )}
             <p className="mt-3 text-center text-xs text-ink-3">
