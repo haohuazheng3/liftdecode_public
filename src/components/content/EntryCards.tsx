@@ -25,12 +25,7 @@ export function ConclusionCard({ answer, title = "The short answer" }: { answer:
       <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-signal/10 blur-3xl" aria-hidden="true" />
       <div className="eyebrow mb-3">{title}</div>
       <p className="text-[1.08rem] leading-relaxed text-ink sm:text-lg">{answer}</p>
-      <div className="hairline mt-5" aria-hidden="true" />
-      <p className="mt-4 text-sm leading-relaxed text-ink-2">
-        Asking because your progress stalled? The program is rarely the whole story. The diagnosis reads how you train, eat, sleep
-        and recover, and ranks what is actually holding you back.
-      </p>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <TrackedCta place="verdict" className="btn btn-primary">
           Find your bottleneck
         </TrackedCta>
@@ -38,6 +33,11 @@ export function ConclusionCard({ answer, title = "The short answer" }: { answer:
           What it costs
         </Link>
       </div>
+      <div className="hairline mt-5" aria-hidden="true" />
+      <p className="mt-4 text-sm leading-relaxed text-ink-2">
+        Asking because your progress stalled? The program is rarely the whole story. The diagnosis reads how you train, eat, sleep
+        and recover, and ranks what is actually holding you back.
+      </p>
     </section>
   );
 }

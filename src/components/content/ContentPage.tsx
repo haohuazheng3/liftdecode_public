@@ -57,6 +57,8 @@ export async function ContentPage(p: Props) {
 
   const variant = p.variant ?? (p.top ? "tool" : "article");
   const tool = variant === "tool";
+  // Tool and verdict pages keep the header compact so the tool or the short answer, with its button, lands on a phone's first screen.
+  const compact = tool || variant === "verdict";
   const top =
     variant === "verdict" && p.verdict ? (
       <ConclusionCard answer={p.verdict} />
@@ -73,20 +75,25 @@ export async function ContentPage(p: Props) {
         {faqLd && <JsonLd data={faqLd} />}
 
         <article>
-          <header className={`slab animate-rise ${tool ? "p-5 sm:p-8" : "p-6 sm:p-10"}`}>
-            <div className={tool ? "mb-3" : "mb-5"}>
+          <header className={`slab animate-rise ${compact ? "p-5 sm:p-8" : "p-6 sm:p-10"}`}>
+            <div className={compact ? "mb-3" : "mb-5"}>
               <Breadcrumb items={p.crumbs} />
             </div>
-            <div className={`flex flex-wrap items-center gap-2 ${tool ? "mb-3" : "mb-4"}`}>
+            <div className={`flex flex-wrap items-center gap-2 ${compact ? "mb-3" : "mb-4"}`}>
               <Link href={p.tag.href} className="tag tag-signal hover:bg-signal/15 transition-colors">
                 {p.tag.label}
               </Link>
               {p.draft && <span className="tag tag-alert">Draft — not in production</span>}
             </div>
-            <h1 className={`display ${tool ? "text-[2.1rem] leading-[1.02] sm:text-5xl" : "text-4xl sm:text-6xl"}`}>{p.title}</h1>
-            <p className={`text-ink-2 leading-relaxed ${tool ? "mt-3 text-base sm:text-lg" : "mt-4 text-lg"}`}>{p.description}</p>
+            <h1 className={`display ${compact ? "text-[2.1rem] leading-[1.02] sm:text-5xl" : "text-4xl sm:text-6xl"}`}>{p.title}</h1>
+            {/* On verdict pages the short answer follows right below, so phones skip the summary line. */}
+            <p
+              className={`text-ink-2 leading-relaxed ${compact ? "mt-3 text-base sm:text-lg" : "mt-4 text-lg"} ${variant === "verdict" ? "hidden sm:block" : ""}`}
+            >
+              {p.description}
+            </p>
             {tool && <HeroCta line={p.heroLine} />}
-            {!tool && <Meta publishedAt={p.publishedAt} updatedAt={p.updatedAt} mins={mins} className="mt-6 text-sm" />}
+            {!compact && <Meta publishedAt={p.publishedAt} updatedAt={p.updatedAt} mins={mins} className="mt-6 text-sm" />}
           </header>
 
           {top && (
@@ -101,7 +108,7 @@ export async function ContentPage(p: Props) {
                 <Figure image={p.image} eager />
               </div>
             )}
-            {tool && <Meta publishedAt={p.publishedAt} updatedAt={p.updatedAt} mins={mins} className="mb-4 text-xs" />}
+            {compact && <Meta publishedAt={p.publishedAt} updatedAt={p.updatedAt} mins={mins} className="mb-4 text-xs" />}
             <Toc headings={headings} />
             {p.image && tool && <Figure image={p.image} />}
             <div className="prose-ld">{content}</div>
