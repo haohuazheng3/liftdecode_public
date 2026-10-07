@@ -9,7 +9,7 @@ const COLS = [
       { href: "/diagnose", label: "Start diagnosis" },
       { href: "/how-it-works", label: "How it works" },
       { href: "/pricing", label: "Pricing" },
-      { href: "/library", label: "Fix library" },
+      { href: "/library", label: "Fix library", rel: "nofollow" },
       { href: "/faq", label: "FAQ" },
     ],
   },
@@ -62,7 +62,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {c.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-ink-2 hover:text-ink transition-colors">
+                    <Link href={l.href} rel={"rel" in l ? l.rel : undefined} className="text-sm text-ink-2 hover:text-ink transition-colors">
                       {l.label}
                     </Link>
                   </li>

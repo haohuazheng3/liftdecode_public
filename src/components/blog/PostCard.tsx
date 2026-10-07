@@ -11,7 +11,7 @@ export function PostCard({ post, showCategory = true }: { post: Post; showCatego
           {showCategory && category && <span className="tag tag-signal">{category.title}</span>}
           {post.draft && <span className="tag tag-alert">Draft</span>}
           <span className="eyebrow">
-            {formatDate(post.publishedAt)} · {mins} min read
+            {post.updatedAt !== post.publishedAt ? `Updated ${formatDate(post.updatedAt)}` : formatDate(post.publishedAt)} · {mins} min read
           </span>
         </div>
         <h3 className="display text-2xl sm:text-3xl text-ink group-hover:text-signal-2 transition-colors">

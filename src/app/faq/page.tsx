@@ -85,7 +85,7 @@ const GROUPS: { id: string; title: string; items: Faq[] }[] = [
         a: "Yes, any time, from your account page. Access continues until the end of the period you already paid for, and you are not charged again. There are no partial-month refunds, but an accidental renewal is refunded on request within 7 days if no report was unlocked in that period.",
         body: (
           <>
-            Yes, any time, from your <Link href="/account">account page</Link>. Access continues until the end of the
+            Yes, any time, from your <Link href="/account" rel="nofollow">account page</Link>. Access continues until the end of the
             period you already paid for, and you are not charged again. There are no partial-month refunds, but an
             accidental renewal is refunded on request within 7 days if no report was unlocked in that period.
           </>

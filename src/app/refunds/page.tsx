@@ -56,7 +56,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <h3>Cancelling</h3>
         <p>
-          Cancel any time from <Link href="/account">your account page</Link> — one button, no email required, no
+          Cancel any time from <Link href="/account" rel="nofollow">your account page</Link> — one button, no email required, no
           retention call. Your membership then runs to the end of the period you already paid for; you keep full access
           until then and are not charged again. Reports you opened while a member stay readable afterwards; reports
           you never opened lock again until you re-join or unlock them singly.
@@ -150,7 +150,7 @@ export default function RefundsPage() {
       summary={[
         "Single report: full refund within 14 days if it failed to open, you were charged twice, or it clearly did not process your answers. Otherwise not refundable — but we will help.",
         <>
-          Membership: cancel any time from <Link href="/account">your account</Link>. Access continues to the end of
+          Membership: cancel any time from <Link href="/account" rel="nofollow">your account</Link>. Access continues to the end of
           the paid period; no partial-month refunds.
         </>,
         "An accidental renewal is refunded on request within 7 days if no report was unlocked in that period.",

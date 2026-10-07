@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 import { Show, UserButton, useAuth } from "@clerk/nextjs";
 import { LogoLink } from "./Logo";
 
-const NAV = [
+// Library sits behind sign-in, so crawlers get a redirect; nofollow keeps them from chasing it.
+const NAV: { href: string; label: string; rel?: string }[] = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
-  { href: "/library", label: "Library" },
+  { href: "/library", label: "Library", rel: "nofollow" },
   { href: "/blog", label: "Blog" },
   { href: "/tools", label: "Tools" },
 ];
@@ -36,6 +37,7 @@ export function Header() {
                   <Link
                     key={n.href}
                     href={n.href}
+                    rel={n.rel}
                     className={`px-3 py-2 rounded-full text-sm transition-colors ${
                       active ? "text-ink bg-white/[0.06]" : "text-ink-2 hover:text-ink hover:bg-white/[0.05]"
                     }`}
@@ -116,6 +118,7 @@ export function Header() {
                 <Link
                   key={n.href}
                   href={n.href}
+                  rel={n.rel}
                   onClick={() => setOpen(false)}
                   className="block px-3 py-3 rounded-2xl text-ink-2 hover:text-ink hover:bg-white/[0.05]"
                 >

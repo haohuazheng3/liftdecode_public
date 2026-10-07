@@ -216,13 +216,18 @@ function loadAll(): Post[] {
       }
     }
   }
-  posts.sort((a, b) => (a.publishedAt === b.publishedAt ? a.slug.localeCompare(b.slug) : b.publishedAt < a.publishedAt ? -1 : 1));
+  // Newest first by last update, then publish date; slug only breaks exact ties (it used to decide almost everything,
+  // because most posts share a publish date).
+  posts.sort(
+    (a, b) =>
+      b.updatedAt.localeCompare(a.updatedAt) || b.publishedAt.localeCompare(a.publishedAt) || a.slug.localeCompare(b.slug),
+  );
   // Cache only in production builds; in dev, re-read so new files show up without a restart.
   if (process.env.NODE_ENV === "production") cache = posts;
   return posts;
 }
 
-/** All visible posts, newest first. Drafts are excluded in production. */
+/** All visible posts, most recently updated first. Drafts are excluded in production. */
 export function getAllPosts(): Post[] {
   const hideDrafts = isProduction();
   return loadAll().filter((p) => !(hideDrafts && p.draft));

@@ -116,7 +116,7 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           Cancelling and refunds are covered in the <Link href="/refunds">refund and cancellation policy</Link>. In
-          short: cancel any time from <Link href="/account">your account</Link>, access continues to the end of the
+          short: cancel any time from <Link href="/account" rel="nofollow">your account</Link>, access continues to the end of the
           paid period, and single reports are refundable within 14 days only when something went wrong with the
           purchase or the report.
         </p>
