@@ -319,11 +319,11 @@ export const BENCH_PLATEAU: MiniCheckConfig = {
     },
     triceps: {
       title: "Triceps are the weak link",
-      body: "A bench that dies halfway up or near lockout is usually short on triceps strength. Close-grip bench and dips move it.",
+      body: "A bench that slows halfway up or near lockout often points to the triceps. Add close-grip bench or dips: if they climb and the bench follows, that was it.",
     },
     fuel: {
       title: "You are benching on a cut",
-      body: "Holding your bench while losing weight is a win. Adding to it in a deficit is slow for anyone past the first year.",
+      body: "Holding your bench while losing weight is a win. Strength can still creep up in a deficit, but muscle gain mostly waits until you eat at maintenance again.",
     },
   },
   clear: {
