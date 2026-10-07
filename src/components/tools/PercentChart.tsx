@@ -35,11 +35,11 @@ const MODES = [
 const DEFAULTS = { units: "us", mode: "max", max: "", weight: "", reps: "5" };
 const MAX_LOAD = { lb: 1500, kg: 680 } as const;
 
-/** What the reps column means in practice: how a % of max usually feels. */
+/** How a load at this % of max is usually used in a program (sets stop short of the max reps shown). */
 function zone(p: number): string {
-  if (p >= 90) return "Heavy singles to triples";
-  if (p >= 80) return "Strength work, 3–6 reps";
-  if (p >= 65) return "Hypertrophy work, 6–12 reps";
+  if (p >= 90) return "Heavy singles and doubles";
+  if (p >= 80) return "Strength sets";
+  if (p >= 65) return "Hypertrophy sets";
   return "Warm-ups and technique";
 }
 

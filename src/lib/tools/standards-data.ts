@@ -1,6 +1,7 @@
 /**
  * Strength standards by bodyweight, from Strength Level's public tables (lb; pull-ups in reps),
- * retrieved 2026-10-07 (their data: 1.35M qualifying results, Dec 2016 – Mar 2026). Each row is
+ * retrieved 2026-10-07 (qualifying results through March 2026: bench 10.9M, squat 7.0M, deadlift 6.4M,
+ * pull-ups 1.35M). Each row is
  * [bodyweight, beginner, novice, intermediate, advanced, elite]; the levels mean "stronger than
  * 5 / 20 / 50 / 80 / 95% of lifters who log the lift there" (https://strengthlevel.com/faq).
  * Self-reported, gym-going lifters — not the general population. Raw pages and the parser:

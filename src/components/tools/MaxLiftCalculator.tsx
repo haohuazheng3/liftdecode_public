@@ -142,7 +142,7 @@ export function MaxLiftCalculator() {
               {st?.next && <MiniStat label="Next level" value={show(st.next.value)} unit={unit} note={`${st.next.level}`} />}
               {bw.value !== null && <MiniStat label="× bodyweight" value={`${fmt(max / bw.value, 2, true)}×`} />}
             </MiniStats>
-            {st && st.index >= 0 && <Note>{st.level} usually takes {LEVEL_TRAINING[st.index]} of training.</Note>}
+            {st && st.index >= 0 && <Note>{st.level} usually takes {LEVEL_TRAINING[st.index]}.</Note>}
             {lift === "deadlift" && reps.value !== null && reps.value > 1 && (
               <Note>Rep-based estimates tend to undershoot a tested deadlift max: your real single may be a little higher.</Note>
             )}

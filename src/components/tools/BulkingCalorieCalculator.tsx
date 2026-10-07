@@ -69,8 +69,8 @@ const sanitize = (s: State): State => ({
 
 const EXPERIENCE_LINE: Record<Experience, string> = {
   beginner: "Beginners sit at the top of both ranges: a 20% surplus and about 0.5% of bodyweight a week.",
-  intermediate: "Intermediates sit in the middle: a 15% surplus and about 0.375% of bodyweight a week.",
-  advanced: "Advanced lifters sit at the bottom: a 10% surplus and about 0.25% of bodyweight a week, or slower if fat climbs.",
+  intermediate: "Intermediates sit lower: a 10% surplus and about 0.35% of bodyweight a week.",
+  advanced: "Advanced lifters sit at the bottom: a 5% surplus and about 0.25% of bodyweight a week, or slower if fat climbs.",
 };
 
 export function BulkingCalorieCalculator() {
@@ -164,7 +164,7 @@ export function BulkingCalorieCalculator() {
               sub={
                 <>
                   Maintenance about {fmtKcal(maintenance)} kcal + a {Math.round(guide.surplus * 100)}% surplus (
-                  {fmtKcal(plan.surplusKcal)} kcal). The full 10–20% surplus range is {fmtKcal(plan.rangeKcal[0])}–
+                  {fmtKcal(plan.surplusKcal)} kcal). The full 5–20% surplus range is {fmtKcal(plan.rangeKcal[0])}–
                   {fmtKcal(plan.rangeKcal[1])} kcal.
                 </>
               }
@@ -191,9 +191,9 @@ export function BulkingCalorieCalculator() {
             </p>
             <Note>
               BMR by Mifflin–St Jeor. Activity factor from the FAO/WHO/UNU worked examples (1.53 mostly sitting, 1.76
-              moderately active, 2.25 very active). Surplus of 10–20% over maintenance and a gain of 0.25–0.5% of
-              bodyweight a week from Iraki et al.; the split by experience is our reading of their advice that newer
-              lifters can use larger surpluses and advanced lifters should stay near the low end.
+              moderately active, 2.25 very active). A gain of 0.25–0.5% of bodyweight a week from Iraki et al., who advise
+              larger surpluses for newer lifters and the low end for advanced ones; in trained lifters a 15% surplus added
+              fat without more muscle than 5% (Helms et al. 2023), so intermediates start at 10% and advanced lifters at 5%.
             </Note>
 
             <Sources
@@ -201,6 +201,7 @@ export function BulkingCalorieCalculator() {
                 { label: "Mifflin et al. 1990, Am J Clin Nutr", href: "https://doi.org/10.1093/ajcn/51.2.241" },
                 { label: "FAO/WHO/UNU Human Energy Requirements, ch. 5", href: "https://www.fao.org/4/y5686e/y5686e07.htm" },
                 { label: "Iraki et al. 2019, Sports 7(7):154", href: "https://pmc.ncbi.nlm.nih.gov/articles/PMC6680710/" },
+                { label: "Helms et al. 2023, Sports Med Open — 5% vs 15% surplus in trained lifters", href: "https://pubmed.ncbi.nlm.nih.gov/37914977/" },
               ]}
             />
           </>

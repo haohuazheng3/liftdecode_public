@@ -417,18 +417,19 @@ export const WEEKS_PER_MONTH = 365.25 / 12 / 7;
 
 /**
  * Iraki et al. 2019, "Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative
- * Review", Sports 7(7):154: surplus ~10–20% above maintenance, gain ~0.25–0.5% of bodyweight/week;
- * "larger energy surpluses may be more beneficial for novice bodybuilders", advanced "aim for the
- * lower end". https://pmc.ncbi.nlm.nih.gov/articles/PMC6680710/
- * Mapping by experience (LiftDecode's reading of that guidance): beginners at the top of both ranges,
- * intermediates in the middle, advanced lifters at the bottom.
+ * Review", Sports 7(7):154: gain ~0.25–0.5% of bodyweight/week; "larger energy surpluses may be more
+ * beneficial for novice bodybuilders", advanced "aim for the lower end". https://pmc.ncbi.nlm.nih.gov/articles/PMC6680710/
+ * Helms et al. 2023, Sports Med Open (PMID 37914977): in 17 trained lifters over 8 weeks, a 15% surplus
+ * added more skinfold thickness than maintenance, with no evidence of more muscle than a 5% surplus.
+ * Mapping (LiftDecode's reading of both): beginners 20% and ~0.5%/week; intermediates 10% and ~0.35%/week;
+ * advanced 5% and ~0.25%/week. The range shown runs from the trained-lifter 5% to the beginner 20%.
  */
-export const BULK_SURPLUS_RANGE = [0.1, 0.2] as const;
+export const BULK_SURPLUS_RANGE = [0.05, 0.2] as const;
 export const BULK_WEEKLY_GAIN_RANGE_PCT = [0.25, 0.5] as const;
 export const BULK_GUIDE: Record<Experience, { surplus: number; weeklyGainPct: number }> = {
   beginner: { surplus: 0.2, weeklyGainPct: 0.5 },
-  intermediate: { surplus: 0.15, weeklyGainPct: 0.375 },
-  advanced: { surplus: 0.1, weeklyGainPct: 0.25 },
+  intermediate: { surplus: 0.1, weeklyGainPct: 0.35 },
+  advanced: { surplus: 0.05, weeklyGainPct: 0.25 },
 };
 
 export interface BulkPlan {

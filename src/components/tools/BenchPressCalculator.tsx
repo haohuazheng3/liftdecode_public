@@ -13,6 +13,7 @@ import {
   strengthRatio,
 } from "@/lib/tools/formulas";
 import { LOAD_STEP, roundToStep } from "@/lib/tools/units";
+import { kgToLb, standing } from "@/lib/tools/standards";
 import {
   BODYWEIGHT_RANGE,
   BigStat,
@@ -28,6 +29,8 @@ import {
   ProgressBar,
   ResultHint,
   ResultPanel,
+  SEX_OPTIONS,
+  Segmented,
   Sources,
   Stepper,
   SubHeading,
@@ -43,9 +46,13 @@ import {
 } from "./shared";
 
 const KEY = "ld_tool_bench_v1";
-const DEFAULTS = { units: "us", weight: "185", reps: "5", bodyweight: "" };
+const DEFAULTS = { units: "us", weight: "185", reps: "5", bodyweight: "", sex: "male" };
 type State = typeof DEFAULTS;
-const sanitize = (s: State): State => ({ ...s, units: oneOf(s.units, UNIT_SYSTEMS, "us") });
+const sanitize = (s: State): State => ({
+  ...s,
+  units: oneOf(s.units, UNIT_SYSTEMS, "us"),
+  sex: oneOf(s.sex, ["male", "female"] as const, "male"),
+});
 
 const MAX_BENCH = { lb: 1000, kg: 450 } as const;
 
@@ -60,6 +67,9 @@ export function BenchPressCalculator() {
   const oneRm = weight.value !== null && reps.value !== null ? headlineOneRepMax(weight.value, reps.value) : null;
   const est = weight.value !== null && reps.value !== null ? oneRepMaxEstimates(weight.value, reps.value) : null;
   const ratio = oneRm !== null && bw.value !== null ? strengthRatio(oneRm, bw.value) : null;
+  const sex = s.sex === "female" ? "female" : "male";
+  const toLb = (v: number) => (unit === "kg" ? kgToLb(v) : v);
+  const level = oneRm !== null && bw.value !== null ? standing("bench", sex, toLb(bw.value), toLb(oneRm)) : null;
   const milestones = BENCH_MILESTONES[unit];
   const next = oneRm !== null ? milestones.find((m) => oneRm < m) : undefined;
 
@@ -104,9 +114,10 @@ export function BenchPressCalculator() {
           hint={
             bw.bad
               ? `Enter a bodyweight between ${BODYWEIGHT_RANGE[unit][0]} and ${BODYWEIGHT_RANGE[unit][1]} ${unit}.`
-              : "Adds your bench-to-bodyweight ratio."
+              : "Adds your ratio and your level."
           }
         />
+        <Segmented label="Sex" value={sex} options={SEX_OPTIONS} onChange={(v) => set({ sex: v })} />
       </FieldGrid>
       {reps.value !== null && reps.value > CAUTION_ABOVE_REPS && (
         <Caution>
@@ -142,6 +153,11 @@ export function BenchPressCalculator() {
                 label="Bench ÷ bodyweight"
                 value={ratio !== null ? `${fmt(ratio, 2, true)}×` : "–"}
                 note={ratio !== null ? undefined : "Add bodyweight"}
+              />
+              <MiniStat
+                label="Level"
+                value={level ? level.level : "–"}
+                note={level ? `Beats ~${level.share}% of logged lifters` : "Add bodyweight"}
               />
               <MiniStat
                 label="Next milestone"
@@ -190,6 +206,7 @@ export function BenchPressCalculator() {
             <Sources
               items={[
                 { label: "One-repetition maximum formulas (Wikipedia)", href: "https://en.wikipedia.org/wiki/One-repetition_maximum" },
+                { label: "Strength Level bench press standards (self-reported, by bodyweight)", href: "https://strengthlevel.com/strength-standards/bench-press/lb" },
                 {
                   label: "Mayhew et al. 2008, J Strength Cond Res — bench press 1RM prediction accuracy",
                   href: "https://www.unm.edu/~rrobergs/478PredictionAccuracy.pdf",
