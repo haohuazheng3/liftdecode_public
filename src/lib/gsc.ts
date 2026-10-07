@@ -1,7 +1,7 @@
 import { createSign } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { searchAnalytics } from "@/lib/db/schema";
+import { searchAnalytics, searchDaily } from "@/lib/db/schema";
 
 /**
  * Google Search Console pull for sc-domain:liftdecode.com.
@@ -15,7 +15,10 @@ const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 /** Search Console data is final about 3 days after the fact. */
 export const GSC_LAG_DAYS = 3;
-const ROW_LIMIT = 5000;
+/** Each run re-pulls this many final days, so late-arriving data and missed runs heal themselves. */
+export const GSC_WINDOW_DAYS = 14;
+/** The API's maximum page size; larger result sets are paged with startRow. */
+const ROW_LIMIT = 25000;
 const UPSERT_CHUNK = 500;
 
 interface ServiceAccount {
@@ -32,7 +35,9 @@ export interface GscRow {
   position: number;
 }
 
-export type GscResult = { skipped: "google service account not configured" } | { day: string; rows: number };
+export type GscResult =
+  | { skipped: "google service account not configured" }
+  | { from: string; to: string; queryRows: number; pageRows: number; siteDays: number };
 
 function b64url(input: Buffer | string): string {
   return Buffer.from(input).toString("base64url");
@@ -83,40 +88,50 @@ export async function fetchAccessToken(sa: ServiceAccount): Promise<string> {
   return json.access_token;
 }
 
-export async function querySearchAnalytics(token: string, day: string): Promise<GscRow[]> {
+type Dimension = "date" | "query" | "page";
+
+/** One Search Analytics query over a date range, paged until the API runs out of rows. */
+export async function querySearchAnalytics(token: string, from: string, to: string, dimensions: Dimension[]): Promise<GscRow[]> {
   const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(GSC_SITE)}/searchAnalytics/query`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      startDate: day,
-      endDate: day,
-      dimensions: ["query", "page"],
-      rowLimit: ROW_LIMIT,
-      dataState: "final",
-    }),
-  });
-  const json = (await res.json().catch(() => ({}))) as { rows?: GscRow[]; error?: { message?: string } };
-  if (!res.ok) throw new Error(`search console query failed: ${res.status} ${json.error?.message ?? ""}`.trim());
-  return json.rows ?? [];
+  const all: GscRow[] = [];
+  for (let startRow = 0; ; startRow += ROW_LIMIT) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ startDate: from, endDate: to, dimensions, rowLimit: ROW_LIMIT, startRow, dataState: "final" }),
+    });
+    const json = (await res.json().catch(() => ({}))) as { rows?: GscRow[]; error?: { message?: string } };
+    if (!res.ok) throw new Error(`search console query failed: ${res.status} ${json.error?.message ?? ""}`.trim());
+    const rows = json.rows ?? [];
+    all.push(...rows);
+    if (rows.length < ROW_LIMIT) return all;
+  }
 }
 
 export function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** The day we should be pulling right now, honouring the reporting lag. */
+/** The latest day we should pull right now, honouring the reporting lag. */
 export function targetDay(now = new Date()): string {
   return isoDate(new Date(now.getTime() - GSC_LAG_DAYS * 24 * 3600 * 1000));
 }
 
-export async function upsertSearchAnalytics(day: string, rows: GscRow[]): Promise<number> {
+/** The rolling window a scheduled run pulls: GSC_WINDOW_DAYS final days ending at targetDay(). */
+export function defaultWindow(now = new Date()): { from: string; to: string } {
+  const to = targetDay(now);
+  const from = isoDate(new Date(Date.parse(to) - (GSC_WINDOW_DAYS - 1) * 24 * 3600 * 1000));
+  return { from, to };
+}
+
+/** Query × page rows; keys are [date, query, page]. */
+export async function upsertSearchAnalytics(rows: GscRow[]): Promise<number> {
   let written = 0;
   for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
     const chunk = rows.slice(i, i + UPSERT_CHUNK).map((r) => ({
-      day,
-      query: r.keys[0] ?? "",
-      page: r.keys[1] ?? "",
+      day: r.keys[0],
+      query: r.keys[1] ?? "",
+      page: r.keys[2] ?? "",
       clicks: Math.round(r.clicks),
       impressions: Math.round(r.impressions),
       ctr: r.ctr.toFixed(5),
@@ -141,15 +156,57 @@ export async function upsertSearchAnalytics(day: string, rows: GscRow[]): Promis
   return written;
 }
 
-/** One daily pull. `day` defaults to three days ago (Search Console lag). */
-export async function pullSearchConsole(day = targetDay()): Promise<GscResult> {
+/** Day totals; keys are [date, page] for page rows or [date] for the whole site (stored as page ""). */
+export async function upsertSearchDaily(rows: GscRow[]): Promise<number> {
+  let written = 0;
+  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+    const chunk = rows.slice(i, i + UPSERT_CHUNK).map((r) => ({
+      day: r.keys[0],
+      page: r.keys[1] ?? "",
+      clicks: Math.round(r.clicks),
+      impressions: Math.round(r.impressions),
+      ctr: r.ctr.toFixed(5),
+      position: r.position.toFixed(3),
+    }));
+    if (chunk.length === 0) continue;
+    await db
+      .insert(searchDaily)
+      .values(chunk)
+      .onConflictDoUpdate({
+        target: [searchDaily.day, searchDaily.page],
+        set: {
+          clicks: sql`excluded.clicks`,
+          impressions: sql`excluded.impressions`,
+          ctr: sql`excluded.ctr`,
+          position: sql`excluded.position`,
+          fetchedAt: sql`now()`,
+        },
+      });
+    written += chunk.length;
+  }
+  return written;
+}
+
+/**
+ * One pull over a date range (default: the rolling window). Three queries: query × page for the detail
+ * table, page totals and site totals for search_daily. Every write is an upsert, so re-pulling a day
+ * simply refreshes it.
+ */
+export async function pullSearchConsole(range = defaultWindow()): Promise<GscResult> {
   const sa = loadServiceAccount();
   if (!sa) {
     console.warn("[gsc] GOOGLE_SERVICE_ACCOUNT_B64 is not set; skipping Search Console pull");
     return { skipped: "google service account not configured" };
   }
   const token = await fetchAccessToken(sa);
-  const rows = await querySearchAnalytics(token, day);
-  const written = await upsertSearchAnalytics(day, rows);
-  return { day, rows: written };
+  const { from, to } = range;
+  const [detail, pages, site] = await Promise.all([
+    querySearchAnalytics(token, from, to, ["date", "query", "page"]),
+    querySearchAnalytics(token, from, to, ["date", "page"]),
+    querySearchAnalytics(token, from, to, ["date"]),
+  ]);
+  const queryRows = await upsertSearchAnalytics(detail);
+  const pageRows = await upsertSearchDaily(pages);
+  const siteDays = await upsertSearchDaily(site);
+  return { from, to, queryRows, pageRows, siteDays };
 }

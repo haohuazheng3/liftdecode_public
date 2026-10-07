@@ -257,6 +257,25 @@ export const searchAnalytics = pgTable(
   (t) => [uniqueIndex("search_analytics_unique").on(t.day, t.query, t.page)],
 );
 
+/**
+ * Search Console totals per day: one row per page, plus page = "" for the whole site. Unlike
+ * search_analytics (query × page), these keep the clicks Google hides behind anonymised queries.
+ */
+export const searchDaily = pgTable(
+  "search_daily",
+  {
+    id: serial("id").primaryKey(),
+    day: date("day").notNull(),
+    page: text("page").notNull(),
+    clicks: integer("clicks").notNull(),
+    impressions: integer("impressions").notNull(),
+    ctr: numeric("ctr", { precision: 8, scale: 5 }).notNull(),
+    position: numeric("position", { precision: 8, scale: 3 }).notNull(),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("search_daily_unique").on(t.day, t.page)],
+);
+
 /** Fixed-window rate limiter keyed by route + ip (serverless-safe). */
 export const rateLimits = pgTable("rate_limits", {
   key: text("key").primaryKey(),
