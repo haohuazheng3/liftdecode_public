@@ -8,6 +8,7 @@ import { Pagination, pageHref } from "./Pagination";
 import { JsonLd } from "./JsonLd";
 import { renderMarkdown } from "./MdxComponents";
 import { APP_URL, BRAND } from "@/lib/env";
+import { EntryCard } from "@/components/content/EntryCards";
 
 /** Shared body for `/blog/[category]` and `/blog/[category]/page/[n]`. */
 export async function CategoryHub({ category, page }: { category: Category; page: number }) {
@@ -58,6 +59,9 @@ export async function CategoryHub({ category, page }: { category: Category; page
           </h1>
           <p className="mt-4 text-ink-2 text-lg leading-relaxed max-w-2xl">{isFirst ? category.description : category.intro}</p>
         </header>
+        <div className="mt-4 animate-rise" style={{ animationDelay: "40ms" }}>
+          <EntryCard category={category.slug} />
+        </div>
 
         {hubContent && (
           <section className="slab p-6 sm:p-10 mt-4 animate-rise" style={{ animationDelay: "60ms" }}>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAllPosts, getCategory, getPost } from "@/lib/blog";
 import { ContentPage, articleSchema } from "@/components/content/ContentPage";
 import { siteIndex } from "@/lib/site-index";
+import { PageTool } from "@/components/tools/registry";
 import { APP_URL, BRAND } from "@/lib/env";
 
 export const dynamicParams = false;
@@ -63,6 +64,10 @@ export default async function PostPage(props: PageProps<"/blog/[category]/[slug]
       siblings={siblings}
       ctaCategory={category.slug}
       draft={post.draft}
+      variant={post.level === "A" ? "tool" : post.level === "B" ? "verdict" : "article"}
+      top={post.level === "A" && post.tool ? <PageTool id={post.tool} /> : undefined}
+      verdict={post.verdict || undefined}
+      heroLine={post.heroLine || undefined}
       schema={articleSchema({
         url,
         title: post.title,

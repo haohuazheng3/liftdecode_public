@@ -7,6 +7,7 @@ import { MembershipButton } from "@/components/trust/MembershipButton";
 import { CheckoutNotice } from "@/components/trust/CheckoutNotice";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/pricing" },
   title: "Pricing",
   description:
     "LiftDecode membership is $15 a month: unlimited diagnoses, the plateau tracker, report comparison and the fix library. Or unlock a single report for $5. No hidden tiers.",

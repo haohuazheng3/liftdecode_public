@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/trust/JsonLd";
 import { PageHero } from "@/components/trust/PageHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/faq" },
   title: "FAQ",
   description:
     "Straight answers about the LiftDecode diagnosis, the report, pricing and refunds, and how your account and data are handled.",

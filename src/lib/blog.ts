@@ -40,6 +40,14 @@ export type Post = {
   image: ContentImage | null;
   related: string[];
   content: string;
+  /** search-intent level: "A" = tool-first page, "B" = decision page; absent = legacy article */
+  level: "A" | "B" | null;
+  /** A level: id of the first-screen tool (src/components/tools/registry.tsx) */
+  tool: string;
+  /** B level: the short answer shown in the conclusion card */
+  verdict: string;
+  /** A level: one line beside the hero button */
+  heroLine: string;
 };
 
 export type PostPage = {
@@ -185,6 +193,10 @@ function parsePost(category: string, file: string): Post | null {
     image: toImage(data.image),
     related: toList(data.related).filter((u) => u.startsWith("/")),
     content,
+    level: data.level === "A" || data.level === "B" ? data.level : null,
+    tool: typeof data.tool === "string" ? data.tool.trim() : "",
+    verdict: typeof data.verdict === "string" ? data.verdict.trim() : "",
+    heroLine: typeof data.heroLine === "string" ? data.heroLine.trim() : "",
   };
 }
 

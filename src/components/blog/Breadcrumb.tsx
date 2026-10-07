@@ -4,8 +4,9 @@ import { JsonLd } from "./JsonLd";
 
 export type Crumb = { href: string; label: string };
 
-/** Visible breadcrumb trail plus the matching BreadcrumbList JSON-LD. */
-export function Breadcrumb({ items }: { items: Crumb[] }) {
+/** Visible breadcrumb trail plus the matching BreadcrumbList JSON-LD, always rooted at Home. */
+export function Breadcrumb({ items: trail }: { items: Crumb[] }) {
+  const items = trail[0]?.href === "/" ? trail : [{ href: "/", label: "Home" }, ...trail];
   const data = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -13,7 +14,7 @@ export function Breadcrumb({ items }: { items: Crumb[] }) {
       "@type": "ListItem",
       position: i + 1,
       name: c.label,
-      item: `${APP_URL}${c.href}`,
+      item: c.href === "/" ? `${APP_URL}/` : `${APP_URL}${c.href}`,
     })),
   };
   return (

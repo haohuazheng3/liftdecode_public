@@ -4,6 +4,7 @@ import { PageHero } from "@/components/trust/PageHero";
 import { ContactForm } from "./ContactForm";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact",
   description:
     "Email contact@liftdecode.com or use the form. LiftDecode replies within 2 business days — about a report, a payment, a refund, or your account.",

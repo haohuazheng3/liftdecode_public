@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TrackedCta } from "@/components/cta/TrackedCta";
 import { useCallback, useId, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
 import {
   cmToFtIn,
@@ -409,19 +409,27 @@ export function Sources({ items, lead = "Sources" }: { items: SourceRef[]; lead?
 }
 
 /** Ends every result panel: numbers describe a stall, the diagnosis explains it. */
-export function DiagnoseLink() {
+export function DiagnoseLink({
+  children = "Numbers not moving for weeks? Find out why",
+  detail,
+}: {
+  children?: ReactNode;
+  /** the result that was on screen, recorded with the click */
+  detail?: string;
+}) {
   return (
     <>
       <div className="hairline mt-6" aria-hidden="true" />
-      <Link
-        href="/diagnose"
+      <TrackedCta
+        place="tool"
+        detail={detail}
         className="group mt-2 -mb-2 inline-flex min-h-12 items-center gap-2 text-sm font-semibold text-signal transition-colors hover:text-signal-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal"
       >
-        Numbers not moving for weeks? Find out why
+        {children}
         <span aria-hidden="true" className="transition-transform duration-150 group-hover:translate-x-0.5">
           →
         </span>
-      </Link>
+      </TrackedCta>
     </>
   );
 }

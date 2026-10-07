@@ -5,6 +5,7 @@ import { JsonLd } from "@/components/trust/JsonLd";
 import { PageHero } from "@/components/trust/PageHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/how-it-works" },
   title: "How it works",
   description:
     "Quick, honest taps about how you train, eat, sleep and live, a rule engine that cross-references your answers into ranked bottlenecks, and a report that says what to change and what to stop worrying about.",

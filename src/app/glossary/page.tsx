@@ -7,6 +7,7 @@ import { Breadcrumb } from "@/components/blog/Breadcrumb";
 import { JsonLd } from "@/components/blog/JsonLd";
 import { renderMarkdown } from "@/components/blog/MdxComponents";
 import { APP_URL } from "@/lib/env";
+import { EntryCard } from "@/components/content/EntryCards";
 
 export const metadata: Metadata = {
   title: GLOSSARY_HUB.h1,
@@ -48,6 +49,9 @@ export default async function GlossaryIndex() {
           <h1 className="display text-4xl sm:text-6xl max-w-3xl">{GLOSSARY_HUB.h1}</h1>
           <p className="mt-4 text-ink-2 text-lg leading-relaxed max-w-2xl">{GLOSSARY_HUB.description}</p>
         </header>
+        <div className="mt-4 animate-rise" style={{ animationDelay: "40ms" }}>
+          <EntryCard />
+        </div>
 
         {intro && (
           <section className="slab p-6 sm:p-10 mt-4 animate-rise" style={{ animationDelay: "60ms" }}>

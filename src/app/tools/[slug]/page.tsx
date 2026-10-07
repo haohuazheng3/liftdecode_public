@@ -56,6 +56,8 @@ export default async function ToolPageRoute(props: PageProps<"/tools/[slug]">) {
       siblings={siteIndex().filter((e) => e.kind === "tool")}
       draft={t.draft}
       top={<Calculator />}
+      variant="tool"
+      heroLine={t.heroLine || undefined}
       schema={{
         "@context": "https://schema.org",
         "@type": "WebApplication",

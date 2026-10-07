@@ -28,11 +28,15 @@ export async function generateMetadata(props: PageProps<"/blog/[category]/page/[
   const category = getCategory(slug);
   const page = parsePageNumber(n);
   if (!category || !page) return {};
-  const { totalPages } = getPostsByCategory(slug, page);
+  const { totalPages, posts } = getPostsByCategory(slug, page);
   if (page > totalPages) return {};
+  // A description of its own (not page 1's): what is on this page, by title.
+  const listed = posts.map((p) => p.title.split(":")[0]).join("; ");
+  const full = `${category.title}, page ${page} of ${totalPages}: ${listed}.`;
+  const description = full.length <= 160 ? full : `${full.slice(0, 157).replace(/;[^;]*$/, "")}.`;
   return {
     title: `${category.title} — page ${page}`,
-    description: category.description,
+    description,
     alternates: { canonical: pageHref(slug, page) },
     pagination: {
       previous: pageHref(slug, page - 1),
@@ -40,7 +44,7 @@ export async function generateMetadata(props: PageProps<"/blog/[category]/page/[
     },
     openGraph: {
       title: `${category.title} · page ${page} · ${BRAND} Blog`,
-      description: category.description,
+      description,
       url: `${APP_URL}${pageHref(slug, page)}`,
     },
   };

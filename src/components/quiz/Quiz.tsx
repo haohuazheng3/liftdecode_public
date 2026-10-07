@@ -468,14 +468,15 @@ export function Quiz() {
         </div>
 
         <div key={screen.id} ref={stageRef}>
-          <h1
+          {/* h2: the page's h1 is server-rendered above the quiz (src/app/diagnose/page.tsx). */}
+          <h2
             ref={titleRef}
             id={PROMPT_ID}
             tabIndex={-1}
             className="display text-[2.15rem] leading-[1.02] sm:text-5xl outline-none text-balance"
           >
             {title}
-          </h1>
+          </h2>
           {(screen.screen?.lead ?? (!shared ? single.help : undefined)) && (
             <p className="mt-3 text-[0.95rem] sm:text-base leading-relaxed text-ink-2 max-w-xl">
               {screen.screen?.lead ?? single.help}

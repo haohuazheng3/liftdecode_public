@@ -19,6 +19,8 @@ export type ToolPage = {
   related: string[];
   draft: boolean;
   content: string;
+  /** one line beside the hero button */
+  heroLine: string;
 };
 
 /** Slugs that have an interactive component in `src/components/tools` (keep in sync with TOOL_COMPONENTS). */
@@ -33,6 +35,10 @@ export const TOOL_SLUGS: readonly string[] = [
   "lean-body-mass-calculator",
   "body-recomposition-calculator",
   "plate-calculator",
+  "squat-deadlift-max-calculator",
+  "1rm-percentage-chart",
+  "how-strong-am-i",
+  "muscle-gain-macro-calculator",
 ];
 
 let cache: ToolPage[] | null = null;
@@ -58,6 +64,7 @@ function loadAll(): ToolPage[] {
       image: toImage(data.image),
       related: toStringArray(data.related).filter((u) => u.startsWith("/")),
       draft: data.draft === true,
+      heroLine: typeof data.heroLine === "string" ? data.heroLine.trim() : "",
       content,
     });
   }

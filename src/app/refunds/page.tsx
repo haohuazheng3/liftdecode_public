@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/trust/LegalPage";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/refunds" },
   title: "Refunds & cancellation",
   description:
     "When a LiftDecode single report is refunded, how membership cancellation works, what happens with an accidental renewal, and exactly how to ask.",

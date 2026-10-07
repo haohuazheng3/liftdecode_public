@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { CATEGORIES, getAllPosts, type Post } from "@/lib/blog";
+import { CATEGORIES, getAllPosts, getPostsByCategory, type Post } from "@/lib/blog";
 import { getAllTerms } from "@/lib/glossary";
 import { getAllToolPages } from "@/lib/tool-pages";
 import { LAUNCH_DATE, STATIC_ROUTES, absoluteUrl, isPrivatePath } from "@/lib/seo";
@@ -24,7 +24,7 @@ function postEntry(p: Post): Entry {
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticEntries: Entry[] = STATIC_ROUTES.map((r) => ({
     url: absoluteUrl(r.path),
-    lastModified: LAUNCH_DATE,
+    lastModified: toDate(r.lastModified, LAUNCH_DATE),
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }));
@@ -47,6 +47,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       const d = e.lastModified instanceof Date ? e.lastModified : null;
       return d && d > acc ? d : acc;
     }, LAUNCH_DATE);
+    // Paginated pages are crawlable through rel=next/prev; listing them lets crawlers find page 2+ directly.
+    const { totalPages } = getPostsByCategory(c.slug, 1);
     return [
       {
         url: absoluteUrl(`/blog/${c.slug}`),
@@ -54,6 +56,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: "weekly",
         priority: 0.5,
       },
+      ...Array.from({ length: Math.max(0, totalPages - 1) }, (_, k) => ({
+        url: absoluteUrl(`/blog/${c.slug}/page/${k + 2}`),
+        lastModified: latest,
+        changeFrequency: "weekly" as const,
+        priority: 0.3,
+      })),
     ];
   });
 

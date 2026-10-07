@@ -1,5 +1,5 @@
-/** Page-shaped skeleton: the outline of a headline slab and two content slabs. */
-export default function Loading() {
+/** Page-shaped skeleton for dynamic routes: the outline of a headline slab and two content slabs. */
+export function PageSkeleton() {
   return (
     <div className="px-3 sm:px-5 py-6 sm:py-10" aria-busy="true" aria-label="Loading">
       <div className="mx-auto max-w-5xl">

@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/trust/JsonLd";
 import { PageHero } from "@/components/trust/PageHero";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About",
   description:
     "LiftDecode is a diagnostic for lifters who stopped progressing: a rule-based engine that turns honest answers into ranked bottlenecks, clearances and a 4-week plan. What it is, how the method works, and what it is not.",

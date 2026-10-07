@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/trust/LegalPage";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy policy",
   description:
     "What LiftDecode collects (your answers, reports, sign-in email, payment status, analytics), where it lives, who processes it, how long it is kept, and how to see or delete it.",

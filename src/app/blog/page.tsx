@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/blog/JsonLd";
 import { RelatedLinks } from "@/components/content/RelatedLinks";
 import { GLOSSARY_HUB, TOOLS_HUB, lookup } from "@/lib/site-index";
 import { APP_URL, BRAND } from "@/lib/env";
+import { EntryCard } from "@/components/content/EntryCards";
 
 /** Start-here picks: the pages that answer the questions stalled lifters ask most. */
 const FEATURED = [
@@ -60,6 +61,9 @@ export default function BlogIndex() {
             secret programmes — the levers that move results and how to tell which one you need.
           </p>
         </header>
+        <div className="mt-4 animate-rise" style={{ animationDelay: "40ms" }}>
+          <EntryCard />
+        </div>
 
         <section className="mt-10" aria-labelledby="topics">
           <div className="flex items-baseline justify-between gap-3 mb-4 px-1">

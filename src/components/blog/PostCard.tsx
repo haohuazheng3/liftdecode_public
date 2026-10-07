@@ -28,20 +28,3 @@ export function PostCard({ post, showCategory = true }: { post: Post; showCatego
     </article>
   );
 }
-
-/** Shimmer block shaped like a PostCard, for loading states. */
-export function PostCardSkeleton() {
-  return (
-    <div className="slab p-5 sm:p-7" aria-hidden="true">
-      <div className="flex gap-2 mb-4">
-        <div className="skeleton h-6 w-24" />
-        <div className="skeleton h-6 w-40" />
-      </div>
-      <div className="skeleton h-8 w-4/5" />
-      <div className="skeleton h-8 w-3/5 mt-2" />
-      <div className="skeleton h-4 w-full mt-4" />
-      <div className="skeleton h-4 w-11/12 mt-2" />
-      <div className="skeleton h-4 w-24 mt-5" />
-    </div>
-  );
-}

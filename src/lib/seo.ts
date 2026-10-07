@@ -22,21 +22,23 @@ export interface StaticRoute {
   path: string;
   priority: number;
   changeFrequency: ChangeFrequency;
+  /** last real content change (YYYY-MM-DD); bump it when the page's copy changes */
+  lastModified: string;
 }
 
 /** Public, cacheable pages. Personal and transactional routes are deliberately absent. */
 export const STATIC_ROUTES: readonly StaticRoute[] = [
-  { path: "/", priority: 1.0, changeFrequency: "weekly" },
-  { path: "/diagnose", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/how-it-works", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/blog", priority: 0.7, changeFrequency: "daily" },
-  { path: "/about", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/faq", priority: 0.6, changeFrequency: "monthly" },
-  { path: "/contact", priority: 0.4, changeFrequency: "yearly" },
-  { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
-  { path: "/terms", priority: 0.2, changeFrequency: "yearly" },
-  { path: "/refunds", priority: 0.2, changeFrequency: "yearly" },
+  { path: "/", priority: 1.0, changeFrequency: "weekly", lastModified: "2026-09-26" },
+  { path: "/diagnose", priority: 0.9, changeFrequency: "monthly", lastModified: "2026-10-07" },
+  { path: "/pricing", priority: 0.8, changeFrequency: "monthly", lastModified: "2026-10-06" },
+  { path: "/how-it-works", priority: 0.8, changeFrequency: "monthly", lastModified: "2026-10-06" },
+  { path: "/blog", priority: 0.7, changeFrequency: "daily", lastModified: "2026-10-07" },
+  { path: "/about", priority: 0.5, changeFrequency: "monthly", lastModified: "2026-09-30" },
+  { path: "/faq", priority: 0.6, changeFrequency: "monthly", lastModified: "2026-10-06" },
+  { path: "/contact", priority: 0.4, changeFrequency: "yearly", lastModified: "2026-09-25" },
+  { path: "/privacy", priority: 0.2, changeFrequency: "yearly", lastModified: "2026-10-06" },
+  { path: "/terms", priority: 0.2, changeFrequency: "yearly", lastModified: "2026-10-06" },
+  { path: "/refunds", priority: 0.2, changeFrequency: "yearly", lastModified: "2026-10-06" },
 ] as const;
 
 /** Path prefixes that must never be indexed or listed. */
@@ -47,8 +49,10 @@ export const PRIVATE_PATHS: readonly string[] = [
   "/account",
   "/admin",
   "/checkout",
+  "/library",
   "/sign-in",
   "/api",
+  "/dev",
 ] as const;
 
 export function isPrivatePath(path: string): boolean {
