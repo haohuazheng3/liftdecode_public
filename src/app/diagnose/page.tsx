@@ -15,6 +15,12 @@ export default function DiagnosePage() {
         {/* Server-rendered so the page has a heading before the quiz hydrates (the quiz reads localStorage). */}
         <h1 className="eyebrow mb-3 px-1">LiftDecode diagnosis · find what stalled your progress</h1>
         <Quiz />
+        {/* Server-rendered too, so crawlers and readers without JavaScript learn what the diagnosis does. */}
+        <p className="mt-4 px-1 max-w-xl text-sm leading-relaxed text-ink-3">
+          LiftDecode reads your build, your training week and how you eat, sleep and recover, then names what is most
+          likely holding your progress back. No account is needed to answer, and you see what was found before you pay
+          anything.
+        </p>
       </div>
     </div>
   );
