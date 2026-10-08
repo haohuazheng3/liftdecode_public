@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
   title: "Terms of service",
   description:
-    "The agreement between you and LiftDecode: what the diagnosis is and is not, who can use it, how paying and cancelling work, what you own, and what we are responsible for.",
+    "The agreement between you and LiftDecode: what the diagnosis is and is not, who can use it, how paying and cancelling work, what you own and what we answer for.",
 };
 
 const LAST_UPDATED = "2026-10-06";

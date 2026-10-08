@@ -5,6 +5,7 @@ import { ContentPage, articleSchema } from "@/components/content/ContentPage";
 import { siteIndex } from "@/lib/site-index";
 import { PageTool } from "@/components/tools/registry";
 import { APP_URL, BRAND } from "@/lib/env";
+import { pageTitle } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -19,7 +20,7 @@ export async function generateMetadata(props: PageProps<"/blog/[category]/[slug]
   const path = `/blog/${post.category}/${post.slug}`;
   const ogImage = post.image ? [{ url: `${post.image.src}?auto=compress&cs=tinysrgb&w=1200`, alt: post.image.alt }] : undefined;
   return {
-    title: post.title,
+    title: pageTitle(post.title),
     description: post.description,
     alternates: { canonical: path },
     openGraph: {

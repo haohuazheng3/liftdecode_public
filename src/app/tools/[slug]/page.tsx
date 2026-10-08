@@ -5,6 +5,7 @@ import { ContentPage } from "@/components/content/ContentPage";
 import { TOOL_COMPONENTS } from "@/components/tools";
 import { TOOLS_HUB, siteIndex } from "@/lib/site-index";
 import { APP_URL, BRAND } from "@/lib/env";
+import { pageTitle } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -18,7 +19,7 @@ export async function generateMetadata(props: PageProps<"/tools/[slug]">): Promi
   if (!t) return {};
   const path = `/tools/${t.slug}`;
   return {
-    title: t.title,
+    title: pageTitle(t.title),
     description: t.description,
     alternates: { canonical: path },
     openGraph: {

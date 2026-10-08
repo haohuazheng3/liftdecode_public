@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { APP_URL, BRAND } from "@/lib/env";
 
 /** Canonical origin of the site, without a trailing slash. */
@@ -8,6 +9,16 @@ export const SITE_TAGLINE = "Find out why your training stopped working";
 
 /** The day the site went live — lastmod for pages that are not content-managed. */
 export const LAUNCH_DATE = new Date("2026-09-25T00:00:00.000Z");
+
+const TITLE_SUFFIX = ` · ${BRAND}`; // the layout's title template
+
+/**
+ * A content page's <title>. The " · LiftDecode" suffix stays only while the whole title fits in 60
+ * characters; longer, search results would cut it, and they show the site name on their own anyway.
+ */
+export function pageTitle(title: string): Metadata["title"] {
+  return title.length + TITLE_SUFFIX.length <= 60 ? title : { absolute: title };
+}
 
 /** Turn a site-relative path into an absolute URL. Absolute URLs pass through. */
 export function absoluteUrl(path: string): string {

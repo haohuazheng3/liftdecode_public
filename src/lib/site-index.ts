@@ -17,7 +17,7 @@ export const TOOLS_HUB = {
   title: "Gym calculators",
   keyword: "gym calculator",
   description:
-    "Free gym calculators for lifters: one-rep max, RPE, bench press, protein, bulking calories, FFMI, lean body mass, recomposition, DOTS and Wilks, and barbell plates.",
+    "Free gym calculators for lifters: one-rep max, 1RM chart, RPE, bench and squat max, protein, bulking calories and macros, FFMI, lean body mass, DOTS and plates.",
 };
 
 export const GLOSSARY_HUB = {

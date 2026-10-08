@@ -4,6 +4,7 @@ import { CATEGORIES, getCategory, getPostsByCategory } from "@/lib/blog";
 import { CategoryHub } from "@/components/blog/CategoryHub";
 import { pageHref } from "@/components/blog/Pagination";
 import { APP_URL } from "@/lib/env";
+import { pageTitle } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -17,7 +18,7 @@ export async function generateMetadata(props: PageProps<"/blog/[category]">): Pr
   if (!category) return {};
   const { totalPages } = getPostsByCategory(slug, 1);
   return {
-    title: category.h1,
+    title: pageTitle(category.h1),
     description: category.description,
     alternates: { canonical: `/blog/${slug}` },
     pagination: totalPages > 1 ? { next: pageHref(slug, 2) } : undefined,

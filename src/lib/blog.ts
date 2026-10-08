@@ -75,7 +75,7 @@ export const CATEGORIES: Category[] = [
     h1: "Hypertrophy Training: Sets, Reps, Rest and Progression",
     keyword: "hypertrophy training",
     description:
-      "Hypertrophy training explained with numbers: weekly sets, rep ranges, rest periods, effort and progression, plus the training myths that quietly stall muscle growth.",
+      "Hypertrophy training explained with numbers: weekly sets, rep ranges, rest, effort and progression, plus the training myths that quietly stall muscle growth.",
     intro:
       "Most people do not need a new programme. They need to know which training variable stopped working and how far to turn it.",
   },
@@ -85,7 +85,7 @@ export const CATEGORIES: Category[] = [
     h1: "Workout Splits and Programs: Which One, and When It Stalls",
     keyword: "workout splits",
     description:
-      "Workout splits and classic programs compared: how PPL, upper/lower, bro splits, 5x5, 5/3/1 and GZCLP are built, who each suits, and exactly where each one stalls.",
+      "Workout splits and classic programs compared: how PPL, upper/lower, bro splits, 5x5, 5/3/1 and GZCLP are built, who each suits, and where each one stalls.",
     intro:
       "Every program works until it doesn't. What matters is knowing how yours progresses, where it runs out, and what to run next.",
   },
@@ -95,7 +95,7 @@ export const CATEGORIES: Category[] = [
     h1: "Exercise Form: Technique Fixes for the Big Lifts",
     keyword: "exercise form",
     description:
-      "Exercise form guides for the lifts that matter: setup, step-by-step technique and the specific form mistakes that cap your squat, bench, deadlift, press and rows.",
+      "Exercise form guides for the lifts that matter: setup, step-by-step technique and the form mistakes that cap your squat, bench, deadlift, press and rows.",
     intro:
       "Technique is a strength limiter long before it is a safety issue. These guides show what good form looks like and which mistakes stall each lift.",
   },
@@ -105,7 +105,7 @@ export const CATEGORIES: Category[] = [
     h1: "Strength Standards: How Strong Are You, Really?",
     keyword: "strength standards",
     description:
-      "Strength standards and averages for the bench press, squat, deadlift and pull-ups, with the data behind every number, plus how to get stronger when your lifts stall.",
+      "Strength standards and averages for the bench press, squat, deadlift and pull-ups, with the data behind every number and what to do when your lifts stall.",
     intro:
       "Numbers are only useful if you know who they describe. Every standard here says where it comes from, and what to do if you are stuck below it.",
   },

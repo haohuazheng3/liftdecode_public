@@ -14,7 +14,7 @@ import {
 } from "@/components/marketing";
 
 const DESCRIPTION =
-  "Find the real reason your training stopped working — and what to change first. A diagnostic for lifters that reads your training, effort, food, sleep and recovery, then names your bottleneck.";
+  "Find the real reason your training stopped working. LiftDecode reads your training, effort, food, sleep and recovery, then names your bottleneck.";
 
 export const metadata: Metadata = {
   title: { absolute: `${BRAND} — Find out why your training stopped working` },

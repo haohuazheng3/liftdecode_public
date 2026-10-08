@@ -4,6 +4,7 @@ import { getAllTerms, getTerm } from "@/lib/glossary";
 import { ContentPage, articleSchema } from "@/components/content/ContentPage";
 import { GLOSSARY_HUB, siteIndex } from "@/lib/site-index";
 import { APP_URL } from "@/lib/env";
+import { pageTitle } from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -17,7 +18,7 @@ export async function generateMetadata(props: PageProps<"/glossary/[slug]">): Pr
   if (!t) return {};
   const path = `/glossary/${t.slug}`;
   return {
-    title: t.title,
+    title: pageTitle(t.title),
     description: t.description,
     alternates: { canonical: path },
     openGraph: {
