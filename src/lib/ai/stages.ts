@@ -26,12 +26,16 @@ export function stageFromText(text: string): number {
   return stage;
 }
 
+/** the share of the bar that belongs to reading and thinking, before anything is written */
+const THINKING_SHARE = 30;
+
 /**
- * 0–100 for the progress bar: the first 12% belongs to reading and thinking (time-based, since
- * nothing is written yet), the rest follows the written characters, never quite reaching 100
- * until the report is saved.
+ * 0–100 for the progress bar. Reading and thinking (nothing written yet) eases towards 30% on time
+ * alone and keeps moving the whole while: the first real run thought for about 100 seconds, and a
+ * bar parked at 12% for that long reads as frozen. Writing then runs from 30% with the written
+ * characters, never quite reaching 100 until the report is saved.
  */
 export function progressFrom(chars: number, thinkingSeconds: number): number {
-  if (chars === 0) return Math.min(12, Math.round(2 + thinkingSeconds / 6));
-  return Math.min(97, Math.round(12 + 85 * Math.min(1, chars / EXPECTED_CHARS)));
+  if (chars === 0) return Math.round(2 + (THINKING_SHARE - 2) * (1 - Math.exp(-thinkingSeconds / 70)));
+  return Math.min(97, Math.round(THINKING_SHARE + (97 - THINKING_SHARE) * Math.min(1, chars / EXPECTED_CHARS)));
 }
