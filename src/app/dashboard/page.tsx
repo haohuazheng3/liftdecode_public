@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { entitlements, orders, planProgress } from "@/lib/db/schema";
+import { aiReports, entitlements, orders, planProgress } from "@/lib/db/schema";
 import { FINDINGS } from "@/content/findings";
 import { listAssessments } from "@/lib/assessments";
 import { activeMembership } from "@/lib/entitlements";
@@ -39,14 +39,30 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const isUnlocked = (id: string) => Boolean(member) || unlockedIds.has(id);
   const unlockedList = list.filter((a) => isUnlocked(a.id));
 
-  const progress = unlockedList.length
-    ? await db
-        .select({ assessmentId: planProgress.assessmentId, n: sql<number>`count(*)::int` })
-        .from(planProgress)
-        .where(and(eq(planProgress.userId, userId), inArray(planProgress.assessmentId, unlockedList.map((a) => a.id))))
-        .groupBy(planProgress.assessmentId)
-    : [];
-  const progressBy = new Map(progress.map((p) => [p.assessmentId, p.n]));
+  const unlockedIdList = unlockedList.map((a) => a.id);
+  // A finished AI report has its own plan (keys "ai:w1:0"…); otherwise the rule-based plan counts.
+  const [progress, aiPlans] = unlockedIdList.length
+    ? await Promise.all([
+        db
+          .select({
+            assessmentId: planProgress.assessmentId,
+            ai: sql<number>`(count(*) filter (where ${planProgress.stepKey} like 'ai:%'))::int`,
+            rules: sql<number>`(count(*) filter (where ${planProgress.stepKey} not like 'ai:%'))::int`,
+          })
+          .from(planProgress)
+          .where(and(eq(planProgress.userId, userId), inArray(planProgress.assessmentId, unlockedIdList)))
+          .groupBy(planProgress.assessmentId),
+        db
+          .select({
+            assessmentId: aiReports.assessmentId,
+            steps: sql<number>`(select coalesce(sum(jsonb_array_length(w -> 'actions')), 0) from jsonb_array_elements(${aiReports.output} -> 'plan') as w)::int`,
+          })
+          .from(aiReports)
+          .where(and(inArray(aiReports.assessmentId, unlockedIdList), eq(aiReports.status, "done"))),
+      ])
+    : [[], []];
+  const progressBy = new Map(progress.map((p) => [p.assessmentId, p]));
+  const aiStepsBy = new Map(aiPlans.map((p) => [p.assessmentId, p.steps]));
 
   const series = member ? await loadSeries(userId) : [];
   const stalled = series.filter((s) => s.stalled);
@@ -148,8 +164,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               {list.map((a) => {
                 const unlocked = isUnlocked(a.id);
                 const primary = a.result.primary ? FINDINGS[a.result.primary] : null;
-                const done = progressBy.get(a.id) ?? 0;
-                const totalSteps = Math.min(3, a.result.findings.length) * 4;
+                const aiSteps = aiStepsBy.get(a.id);
+                const totalSteps = aiSteps ?? Math.min(3, a.result.findings.length) * 4;
+                const done = (aiSteps !== undefined ? progressBy.get(a.id)?.ai : progressBy.get(a.id)?.rules) ?? 0;
                 return (
                   <li key={a.id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
