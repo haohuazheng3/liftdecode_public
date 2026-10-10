@@ -69,7 +69,7 @@ export function LegalPage({
           <section
             key={s.id}
             id={s.id}
-            className="slab p-6 sm:p-8 scroll-mt-24 animate-rise"
+            className="slab p-6 sm:p-8 scroll-mt-4 animate-rise"
             style={{ animationDelay: `${Math.min(300, 90 + i * 30)}ms` }}
           >
             <div className="flex items-baseline gap-3 mb-4">

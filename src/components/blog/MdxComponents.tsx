@@ -107,12 +107,12 @@ function Paragraph({ children, ...rest }: ComponentPropsWithoutRef<"p">) {
 
 export const mdxComponents = {
   h2: ({ children, ...p }: ComponentPropsWithoutRef<"h2">) => (
-    <h2 id={headingId(textOf(children))} className="scroll-mt-28" {...p}>
+    <h2 id={headingId(textOf(children))} className="scroll-mt-4" {...p}>
       {children}
     </h2>
   ),
   h3: ({ children, ...p }: ComponentPropsWithoutRef<"h3">) => (
-    <h3 id={headingId(textOf(children))} className="scroll-mt-28" {...p}>
+    <h3 id={headingId(textOf(children))} className="scroll-mt-4" {...p}>
       {children}
     </h3>
   ),

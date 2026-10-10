@@ -180,7 +180,7 @@ export default function FaqPage() {
         </PageHero>
 
         {GROUPS.map((g, gi) => (
-          <section key={g.id} id={g.id} className="scroll-mt-24 animate-rise" style={{ animationDelay: `${60 + gi * 40}ms` }}>
+          <section key={g.id} id={g.id} className="scroll-mt-4 animate-rise" style={{ animationDelay: `${60 + gi * 40}ms` }}>
             <div className="eyebrow px-2 mb-2 mt-6">{g.title}</div>
             <div className="space-y-3">
               {g.items.map((f) => (

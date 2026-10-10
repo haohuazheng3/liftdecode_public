@@ -1047,7 +1047,7 @@ export const FINDING_RULES: FindingRule[] = [
     triggers: [
       { when: COFFEE_VERY_HIGH, weight: 3, because: "You drink {answer:coffee} cups of coffee a day." },
       { when: is("coffee", "3"), weight: 2, because: "You drink {answer:coffee} cups of coffee a day." },
-      { when: all(COFFEE_HIGH, POOR_WAKE), weight: 1, because: "You wake up at {answer:wake_rested} on the rested scale, which is where the afternoon cups land." },
+      { when: all(COFFEE_HIGH, POOR_WAKE), weight: 1, because: "You wake up at {answer:wake_rested} on the rested scale, and caffeine from later in the day can still be working at bedtime." },
       { when: all(COFFEE_HIGH, r("full_nights", 1, 5)), weight: 1, because: "You get a full night's sleep {answer:full_nights} of the time." },
       { when: all(COFFEE_HIGH, is("training_signs", "dizzy")), weight: 1, because: "You told us you get dizziness or a racing heart in training." },
       { when: all(COFFEE_HIGH, FOG_ANY), weight: 1, because: "You get brain fog or sudden weakness {answer:brain_fog}, the shape of a stimulant wearing off mid-session." },

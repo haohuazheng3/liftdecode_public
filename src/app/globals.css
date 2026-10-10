@@ -81,6 +81,8 @@ html {
   background: var(--color-void);
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* The header floats over the page: anchors, scrollIntoView and Next's route-change scroll land below it. */
+  scroll-padding-top: 5.5rem;
 }
 
 body {

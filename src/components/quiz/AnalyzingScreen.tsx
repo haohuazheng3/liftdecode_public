@@ -8,7 +8,7 @@ const STEPS = [
   "Scoring every stall pattern we know",
   "Ruling out what is NOT your problem",
   "Ordering your bottlenecks by impact",
-  "Writing your report",
+  "Preparing your results",
 ];
 
 export function AnalyzingScreen({

@@ -4,15 +4,15 @@ import { SectionHeading } from "./SectionHeading";
 const FAQ = [
   {
     q: "Do I need to know my numbers?",
-    a: "No. You don’t need your lifts, macros or bodyweight to hand. The questions ask how your training, food, sleep and life actually go — not for data.",
+    a: "Only a few you already know: height, weight and age. Protein and carbs are rough ranges with a “Not sure” option, and you never need your lifts. The rest asks how your training, food, sleep and life actually go.",
   },
   {
     q: "Is this medical advice?",
     a: "No. LiftDecode is a training diagnostic. It does not diagnose or treat any condition. If you have pain, an injury or a health concern, see a qualified professional.",
   },
   {
-    q: "What if nothing is wrong?",
-    a: "Then the report says so. Clearances are as real as findings: if your answers describe a well-run programme, you get what is fine, a note on expectations, and a nudge to re-check in four weeks.",
+    q: "What if the result doesn’t describe me?",
+    a: "Your problems are named before you pay anything, each with the answers behind it. If they don’t describe you, don’t pay — email us what you answered instead; that is how the rules get better.",
   },
   {
     q: "Can I redo it?",

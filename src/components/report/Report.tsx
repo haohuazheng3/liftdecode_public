@@ -44,7 +44,7 @@ function FindingSection({
   primary: boolean;
 }) {
   return (
-    <section id={content.id} className="slab p-6 sm:p-10 scroll-mt-24">
+    <section id={content.id} className="slab p-6 sm:p-10 scroll-mt-4">
       <div className="flex flex-wrap items-center gap-2 mb-5">
         <span className={`tag ${primary ? "tag-alert" : ""}`}>{primary ? "Primary bottleneck" : `Bottleneck ${index}`}</span>
         <span className="tag">{CATEGORY_LABEL[content.category]}</span>
@@ -205,7 +205,7 @@ export function Report({
             {alsoFlagged.map((f, i) => {
               const c = FINDINGS[f.id];
               return (
-                <details key={f.id} id={f.id} className="slab-inset p-5 scroll-mt-24 group">
+                <details key={f.id} id={f.id} className="slab-inset p-5 scroll-mt-4 group">
                   <summary className="cursor-pointer list-none select-none">
                     <span className="flex items-start justify-between gap-3">
                       <span className="min-w-0">
@@ -267,7 +267,7 @@ export function Report({
 
       {/* plan */}
       {plan[0]?.items.length > 0 && (
-        <section id="plan" className="slab p-6 sm:p-10 scroll-mt-24">
+        <section id="plan" className="slab p-6 sm:p-10 scroll-mt-4">
           <div className="tag tag-signal mb-4">Your 4-week plan</div>
           <h2 className="display text-3xl sm:text-4xl">One month, in order.</h2>
           <p className="mt-3 text-ink-2 leading-relaxed">

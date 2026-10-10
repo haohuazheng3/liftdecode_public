@@ -83,7 +83,7 @@ export default async function GlossaryIndex() {
               {terms.map((t, i) => {
                 const first = i === 0 || terms[i - 1].term[0].toUpperCase() !== t.term[0].toUpperCase();
                 return (
-                  <div key={t.slug} id={first ? `letter-${t.term[0].toUpperCase()}` : undefined} className="slab slab-hover scroll-mt-28">
+                  <div key={t.slug} id={first ? `letter-${t.term[0].toUpperCase()}` : undefined} className="slab slab-hover scroll-mt-4">
                     <Link href={`/glossary/${t.slug}`} className="block p-5 sm:p-6 group">
                       <dt className="display text-2xl text-ink group-hover:text-signal-2 transition-colors">{t.term}</dt>
                       <dd className="mt-2 text-sm text-ink-2 leading-relaxed">{t.short}</dd>

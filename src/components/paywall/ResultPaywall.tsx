@@ -246,13 +246,20 @@ const optionLabel = (answers: Answers, qid: string): string | undefined => {
   return QUESTIONS.find((q) => q.id === qid)?.options.find((o) => o.value === v)?.label;
 };
 
+// The engine stores metric; many lifters typed ft/in or lb, so their own unit sits beside it.
+const feetInches = (cm: number) => {
+  const inches = Math.round(cm / 2.54);
+  return `${Math.floor(inches / 12)}′${inches % 12}″`;
+};
+const pounds = (kg: number) => Math.round(kg * 2.20462);
+
 /** the few numbers that prove the page is about this lifter */
 function profileStrip(answers: Answers): string[] {
   const out: string[] = [];
   const h = Number(answers.height_cm);
   const w = Number(answers.weight_kg);
-  if (Number.isFinite(h) && h > 0) out.push(`${Math.round(h)} cm`);
-  if (Number.isFinite(w) && w > 0) out.push(`${w} kg`);
+  if (Number.isFinite(h) && h > 0) out.push(`${Math.round(h)} cm · ${feetInches(h)}`);
+  if (Number.isFinite(w) && w > 0) out.push(`${w} kg · ${pounds(w)} lb`);
   const sessions = optionLabel(answers, "sessions_week");
   if (sessions) out.push(`${sessions} sessions a week`);
   const hours = weeklyHours(answers);
@@ -286,7 +293,7 @@ function insideList(answers: Answers, problems: number, clearances: number): { t
     { title: "Your training-dose audit", detail: week ? `${week}, checked against what grows muscle` : "every muscle group checked against what grows muscle" },
     {
       title: "Your fuel audit",
-      detail: `${fuel || "protein and carbs"}${Number.isFinite(w) && w > 0 ? ` at ${w} kg` : ""}, meal timing, minerals and the scale`,
+      detail: `${fuel || "protein and carbs"}${Number.isFinite(w) && w > 0 ? ` at ${w} kg (${pounds(w)} lb)` : ""}, meal timing, minerals and the scale`,
     },
     { title: "Recovery and conditioning", detail: "sleep, stress, set-to-set recovery, and what cardio does for growth" },
     { title: "A 4-week plan built around your week", detail: "weekly targets with check-offs, and the numbers to retest" },

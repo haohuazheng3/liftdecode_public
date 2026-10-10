@@ -76,6 +76,7 @@ export function ImageChoiceInput({
                             src={src}
                             alt=""
                             fill
+                            loading="eager"
                             sizes="(min-width: 640px) 200px, 92vw"
                             className={`object-cover transition-opacity duration-150 ${selected ? "opacity-100" : "opacity-90 group-hover:opacity-100"}`}
                           />

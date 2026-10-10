@@ -216,7 +216,7 @@ export function AiReportView({
         const content = p.findingId ? FINDINGS[p.findingId] : undefined;
         const sev = SEVERITY[p.severity] ?? SEVERITY.medium;
         return (
-          <section key={`${p.findingId ?? "x"}-${i}`} id={`problem-${i + 1}`} className="slab p-6 sm:p-10 scroll-mt-24">
+          <section key={`${p.findingId ?? "x"}-${i}`} id={`problem-${i + 1}`} className="slab p-6 sm:p-10 scroll-mt-4">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className="tag">Problem {i + 1}</span>
               <span className={`tag ${sev.cls}`}>{sev.label}</span>
@@ -379,7 +379,7 @@ export function AiReportView({
 
       {/* plan */}
       {plan.length > 0 && (
-        <section id="plan" className="slab p-6 sm:p-10 scroll-mt-24">
+        <section id="plan" className="slab p-6 sm:p-10 scroll-mt-4">
           <div className="tag tag-signal mb-4">Your 4-week plan</div>
           <h2 className="display text-3xl sm:text-4xl">One month, in order.</h2>
           <p className="mt-3 leading-relaxed text-ink-2">
@@ -478,7 +478,7 @@ export function AiReportView({
           </h2>
           <ol className="mt-5 space-y-3">
             {sources.map(({ n, e }) => (
-              <li key={e.id} id={`src-${n}`} className="flex gap-3 scroll-mt-24 text-sm leading-relaxed">
+              <li key={e.id} id={`src-${n}`} className="flex gap-3 scroll-mt-4 text-sm leading-relaxed">
                 <span className="w-6 shrink-0 font-mono text-ink-3">{n}.</span>
                 <span className="min-w-0 text-ink-2">
                   {e.source}.{" "}

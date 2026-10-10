@@ -54,7 +54,7 @@ function Stage({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="slab p-6 sm:p-10 scroll-mt-24 animate-rise">
+    <section id={id} className="slab p-6 sm:p-10 scroll-mt-4 animate-rise">
       <div className="flex items-center gap-3 mb-5">
         <span className="grid place-items-center w-9 h-9 rounded-full bg-signal/15 text-signal font-mono text-sm">{number}</span>
         <span className="eyebrow">{eyebrow}</span>
@@ -218,7 +218,7 @@ export default function HowItWorksPage() {
           </p>
         </Stage>
 
-        <section id="membership" className="slab p-6 sm:p-10 scroll-mt-24 animate-rise border-signal/30">
+        <section id="membership" className="slab p-6 sm:p-10 scroll-mt-4 animate-rise border-signal/30">
           <span className="tag tag-signal mb-4">What membership adds</span>
           <h2 className="display text-3xl sm:text-5xl">The report tells you what to change. Membership tells you whether it <em>worked</em>.</h2>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">

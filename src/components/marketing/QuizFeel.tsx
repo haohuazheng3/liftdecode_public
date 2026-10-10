@@ -9,10 +9,10 @@ export function QuizFeel() {
         eyebrow="How it feels"
         title={
           <>
-            Tap a number. <em>That&rsquo;s it.</em>
+            Tap a number. <em>Mostly.</em>
           </>
         }
-        intro="No weights, macros or measurements to dig up. Most questions are a single tap on a 1–10 scale; the rest are three or four short picks."
+        intro="Most questions are a single tap on a 1–10 scale or one short pick. A handful ask for real numbers: height, weight, and rough protein and carbs, where “Not sure” counts as an answer."
       />
       <IntensityPreview />
     </section>
