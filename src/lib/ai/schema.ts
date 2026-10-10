@@ -10,7 +10,7 @@ import { z } from "zod";
  * Property order matters: the model writes in this order, and the waiting screen reads which
  * property it has reached to show progress (src/lib/ai/stages.ts).
  */
-export const PROMPT_VERSION = "ai-report-v2";
+export const PROMPT_VERSION = "ai-report-v3";
 
 export const FINDING_IDS = [
   "sets_end_too_early",

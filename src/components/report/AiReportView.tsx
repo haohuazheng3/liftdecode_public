@@ -100,7 +100,8 @@ export function AiReportView({
   const results = new Map(assessment.result.findings.map((f) => [f.id, f]));
   const plan: PlanWeek[] = report.plan.slice(0, 4).map((w, wi) => ({
     week: wi + 1,
-    items: w.actions.map((text, i) => ({ key: `ai:w${wi + 1}:${i}`, text, source: w.focus })),
+    focus: w.focus,
+    items: w.actions.map((text, i) => ({ key: `ai:w${wi + 1}:${i}`, text })),
   }));
   const sources = [...refs.entries()].map(([id, n]) => ({ n, e: evidenceById(id)! }));
 

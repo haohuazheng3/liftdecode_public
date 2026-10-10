@@ -952,7 +952,7 @@ export const FINDING_RULES: FindingRule[] = [
     triggers: [
       { when: SIGNS_SEVERAL, weight: 4, because: "More than once this past month, during or after training, you got {answer:training_signs}." },
       { when: is("signs_count", "one"), weight: 2, because: "More than once this past month, during or after training, you got {answer:training_signs}." },
-      { when: all(SIGNS_ANY, is("training_signs", "cramps", "twitches")), weight: 1, because: "Cramps and twitches are the most specific of those signs." },
+      { when: all(SIGNS_ANY, is("training_signs", "cramps", "twitches")), weight: 1, because: "Cramps or twitches are on your list, the most telling of those signs." },
       {
         when: all(SIGNS_ANY, HEAVY_SWEAT),
         weight: 1,

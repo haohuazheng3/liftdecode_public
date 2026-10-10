@@ -6,7 +6,10 @@ import { track } from "@/components/Analytics";
 
 export interface PlanWeek {
   week: number;
-  items: { key: string; text: string; source: string }[];
+  /** the week's theme, shown once under its heading (AI reports) */
+  focus?: string;
+  /** source: the finding an item comes from (rule-based reports); omitted when every item shares the week's focus */
+  items: { key: string; text: string; source?: string }[];
 }
 
 export function PlanChecklist({
@@ -70,7 +73,9 @@ export function PlanChecklist({
       <div className="grid gap-3 sm:grid-cols-2">
         {weeks.map((w) => (
           <div key={w.week} className="slab-inset p-4">
-            <div className="eyebrow mb-3">Week {w.week}</div>
+            <div className="eyebrow">Week {w.week}</div>
+            {w.focus && <div className="mt-1 text-sm font-semibold text-ink">{w.focus}</div>}
+            <div className="mb-3" aria-hidden="true" />
             <ul className="space-y-2.5">
               {w.items.map((it) => {
                 const checked = optimistic.has(it.key);
@@ -101,7 +106,7 @@ export function PlanChecklist({
                         <span className={`block text-sm leading-snug ${checked ? "text-ink-3 line-through" : "text-ink"}`}>
                           {it.text}
                         </span>
-                        <span className="block text-[11px] text-ink-3 mt-0.5">{it.source}</span>
+                        {it.source && <span className="block text-[11px] text-ink-3 mt-0.5">{it.source}</span>}
                       </span>
                     </button>
                   </li>
