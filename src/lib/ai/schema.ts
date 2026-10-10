@@ -1,15 +1,16 @@
 import { z } from "zod";
 
 /**
- * The shape of the paid analysis. The model fills it through structured outputs (the API only
- * returns JSON that matches it), and the report page renders it section by section. Field
- * descriptions travel with the schema and steer length and content; numeric and length limits
- * are not supported by structured outputs, so counts are checked after parsing (see checkReport).
+ * The shape of the paid analysis. The schema travels in the system prompt as JSON Schema (see
+ * ./prompt.ts) and the reply is validated here after parsing: the API's structured outputs
+ * rejected it ("The compiled grammar is too large") on 2026-10-10, and every paid analysis
+ * failed until then. Field descriptions steer length and content; counts are checked after
+ * parsing (see checkReport), and normalizeReport repairs the small slips a prompt cannot rule out.
  *
  * Property order matters: the model writes in this order, and the waiting screen reads which
  * property it has reached to show progress (src/lib/ai/stages.ts).
  */
-export const PROMPT_VERSION = "ai-report-v1";
+export const PROMPT_VERSION = "ai-report-v2";
 
 export const FINDING_IDS = [
   "sets_end_too_early",
@@ -161,7 +162,44 @@ export const AiReportSchema = z.object({
 
 export type AiReport = z.infer<typeof AiReportSchema>;
 
-/** Counts that structured outputs cannot enforce. Returns the problems found (empty = good). */
+const lower = (v: unknown) => (typeof v === "string" ? v.trim().toLowerCase() : v);
+const isOneOf = <T extends string>(list: readonly T[], v: unknown): v is T => typeof v === "string" && (list as readonly string[]).includes(v);
+
+/**
+ * Safe repairs before validation, for the enum fields only: an unknown finding id becomes null (a
+ * scorecard problem), an odd severity becomes "medium", unknown scorecard dimensions and muscle
+ * groups are dropped. Anything else that is wrong still fails validation.
+ */
+export function normalizeReport(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const r = { ...(raw as Record<string, unknown>) };
+  if (Array.isArray(r.problems)) {
+    r.problems = r.problems.map((p) => {
+      if (!p || typeof p !== "object") return p;
+      const q = { ...(p as Record<string, unknown>) };
+      const id = lower(q.findingId);
+      q.findingId = isOneOf(FINDING_IDS, id) ? id : null;
+      const sev = lower(q.severity);
+      q.severity = isOneOf(["high", "medium", "low"] as const, sev) ? sev : "medium";
+      return q;
+    });
+  }
+  if (Array.isArray(r.scorecard)) {
+    r.scorecard = r.scorecard
+      .map((s) => (s && typeof s === "object" ? { ...(s as Record<string, unknown>), id: lower((s as Record<string, unknown>).id) } : s))
+      .filter((s) => s && typeof s === "object" && isOneOf(DIMENSION_IDS, (s as Record<string, unknown>).id));
+  }
+  if (r.doseAudit && typeof r.doseAudit === "object" && Array.isArray((r.doseAudit as Record<string, unknown>).groups)) {
+    const d = { ...(r.doseAudit as Record<string, unknown>) };
+    d.groups = (d.groups as unknown[])
+      .map((g) => (g && typeof g === "object" ? { ...(g as Record<string, unknown>), group: lower((g as Record<string, unknown>).group) } : g))
+      .filter((g) => g && typeof g === "object" && isOneOf(["chest", "back", "arms", "legs"] as const, (g as Record<string, unknown>).group));
+    r.doseAudit = d;
+  }
+  return r;
+}
+
+/** Counts the schema cannot enforce. Returns the problems found (empty = good). */
 export function checkReport(r: AiReport): string[] {
   const out: string[] = [];
   if (r.plan.length !== 4) out.push(`plan has ${r.plan.length} weeks`);

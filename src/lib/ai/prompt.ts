@@ -6,13 +6,15 @@ import type { Question, Track } from "@/content/types";
 import type { Assessment } from "@/lib/assessments";
 import { questionsForTrack } from "@/lib/engine/diagnose";
 import { buildScorecard } from "@/lib/report/scorecard";
+import { z } from "zod";
 import { KNOWLEDGE } from "./knowledge";
+import { AiReportSchema } from "./schema";
 
 /**
  * What the model is told. The system prompt is the same for every lifter (voice, rules, the
  * engine's finding library, the evidence base); the user message is the lifter: every answer in
  * plain words, the numbers derived from them, the scorecard, and what the rule engine found.
- * The model writes the report into the JSON schema in ./schema.ts.
+ * The model writes the report as one JSON object matching ./schema.ts, given below as JSON Schema.
  */
 
 function findingLibrary(): string {
@@ -46,6 +48,11 @@ Direct, warm, coach-grade, zero hype. Second person. Plain English for a reader 
 
 # Length
 Around 2,500-3,500 words across all fields. Every field earns its place: no repetition between sections; the problems carry the depth, the audits carry the numbers, the plan carries the actions.
+
+# Output
+Reply with one JSON object and nothing else: no markdown fences, no text before or after it. It must match the JSON Schema below exactly: every property is required, no property may be added, enum fields use one of the listed values, and findingId is null only for a problem drawn from the scorecard. Write the properties in the order the schema lists them. Each description says what the field holds and how long it is. Inside strings, escape double quotes and use no line breaks.
+
+${JSON.stringify(z.toJSONSchema(AiReportSchema))}
 
 # The engine's finding library (id, category, audience: title. verdict)
 ${findingLibrary()}

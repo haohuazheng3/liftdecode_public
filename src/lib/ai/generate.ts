@@ -1,9 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import type { BetaMessage, BetaUsage } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import { getAssessment } from "@/lib/assessments";
 import { captureError, captureFromUnknown } from "@/lib/errors";
-import { AiReportSchema, checkReport, type AiReport } from "./schema";
+import { AiReportSchema, checkReport, normalizeReport, type AiReport } from "./schema";
 import { buildUserMessage, SYSTEM_PROMPT } from "./prompt";
 import { progressFrom, stageFromText, STAGES } from "./stages";
 import { failJob, finishJob, setProgress } from "./jobs";
@@ -14,7 +13,9 @@ import { failJob, finishJob, setProgress } from "./jobs";
  *
  * - Streaming, so the waiting screen can follow the writer through the report (progress is
  *   written to the job row every few seconds; the page polls it).
- * - Structured outputs: the API only returns JSON matching AiReportSchema.
+ * - JSON by instruction, validated here: the schema is in the system prompt, and the reply is
+ *   parsed, repaired (normalizeReport) and checked against AiReportSchema. API-side structured
+ *   outputs refused this schema as too large to compile, so the API does not enforce it.
  * - Effort is set explicitly (this model's default is medium; medium is what its long analytical
  *   writing was tuned at). Thinking is always on for this model and counts toward max_tokens.
  * - Server-side fallbacks ("default"): if a safety classifier declines the request, the API re-runs
@@ -68,6 +69,14 @@ function finalText(m: BetaMessage): string {
   return m.content.map((b) => (b.type === "text" ? b.text : "")).join("");
 }
 
+/** the JSON object in the reply, without markdown fences or stray words around it */
+export function extractJson(text: string): string {
+  const unfenced = text.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "");
+  const start = unfenced.indexOf("{");
+  const end = unfenced.lastIndexOf("}");
+  return start >= 0 && end > start ? unfenced.slice(start, end + 1) : unfenced;
+}
+
 export class AnalysisError extends Error {
   constructor(
     message: string,
@@ -98,7 +107,7 @@ export async function runAnalysis(assessmentId: string): Promise<void> {
       max_tokens: MAX_TOKENS,
       betas: [FALLBACK_BETA],
       fallbacks: "default",
-      output_config: { effort: EFFORT, format: betaZodOutputFormat(AiReportSchema) },
+      output_config: { effort: EFFORT },
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: buildUserMessage(a) }],
     });
@@ -154,11 +163,11 @@ export async function runAnalysis(assessmentId: string): Promise<void> {
 
     let parsed: unknown;
     try {
-      parsed = JSON.parse(finalText(message));
+      parsed = JSON.parse(extractJson(finalText(message)));
     } catch {
       throw new AnalysisError("the model returned text that is not JSON", "invalid");
     }
-    const result = AiReportSchema.safeParse(parsed);
+    const result = AiReportSchema.safeParse(normalizeReport(parsed));
     if (!result.success) {
       throw new AnalysisError(`the report did not match the schema: ${result.error.issues.slice(0, 3).map((i) => i.path.join(".")).join(", ")}`, "invalid");
     }
